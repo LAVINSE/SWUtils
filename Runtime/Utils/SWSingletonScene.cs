@@ -1,4 +1,5 @@
 using UnityEngine;
+using SWTools;
 
 namespace SWUtils
 {
@@ -7,7 +8,7 @@ namespace SWUtils
     /// 씬이 전환되면 파괴되며, 새 씬에서 다시 생성된다.
     /// </summary>
     /// <typeparam name="T">싱글톤으로 관리할 컴포넌트 타입</typeparam>
-    public class SWSingletonScene<T> : MonoBehaviour where T : Component
+    public class SWSingletonScene<T> : SWMonoBehaviour where T : Component
     {
         #region 변수
         /// <summary>싱글톤 인스턴스.</summary>

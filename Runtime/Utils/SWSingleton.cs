@@ -1,4 +1,5 @@
 using UnityEngine;
+using SWTools;
 
 namespace SWUtils
 {
@@ -7,7 +8,7 @@ namespace SWUtils
     /// DontDestroyOnLoad가 적용되어 전역 관리자 용도로 사용한다.
     /// </summary>
     /// <typeparam name="T">싱글톤으로 관리할 컴포넌트 타입</typeparam>
-    public class SWSingleton<T> : MonoBehaviour where T : Component
+    public class SWSingleton<T> : SWMonoBehaviour where T : Component
     {
         #region 변수
         /// <summary>싱글톤 인스턴스.</summary>
