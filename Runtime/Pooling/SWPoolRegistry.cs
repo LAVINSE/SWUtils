@@ -2,30 +2,17 @@ using SWTools;
 using SWUtils;
 using UnityEngine;
 
-namespace SWPool
+namespace SWPooling
 {
     /// <summary>
     /// 시작 때 지정한 프리팹들을 대상 풀에 미리 등록하고 생성하는 컴포넌트입니다.
     /// </summary>
     public class SWPoolRegistry : SWMonoBehaviour
     {
-        #region 데이터
-        /// <summary>
-        /// 미리 생성할 프리팹과 개수를 저장하는 풀 등록 정보입니다.
-        /// </summary>
-        [System.Serializable]
-        public class PoolEntry
-        {
-            /// <summary>풀링할 프리팹입니다.</summary>
-            public GameObject prefab;
-            /// <summary>미리 생성할 개수입니다.</summary>
-            public int prewarmCount = 1;
-        }
-        #endregion // 데이터
-
         #region 필드
         [SerializeField] private SWPool targetPool;
-        [SerializeField] private PoolEntry[] poolEntries;
+        [SerializeField] private SWPoolCatalog poolCatalog;
+        [SerializeField] private bool unregisterOnDestroy = true;
         #endregion // 필드
 
         #region 초기화
@@ -38,15 +25,21 @@ namespace SWPool
                 return;
             }
 
-            if (poolEntries == null)
+            if (poolCatalog == null)
+            {
+                SWUtilsLog.LogWarning("[SWPoolRegistry] SWPoolCatalog가 없어 풀 등록을 건너뜁니다.");
+                return;
+            }
+
+            RegisterCatalog(resolvedPool, poolCatalog);
+        }
+
+        private void OnDestroy()
+        {
+            if (!unregisterOnDestroy || targetPool == null || poolCatalog == null)
                 return;
 
-            for (int index = 0; index < poolEntries.Length; ++index)
-            {
-                PoolEntry poolEntry = poolEntries[index];
-                if (poolEntry?.prefab != null && poolEntry.prewarmCount > 0)
-                    resolvedPool.Prewarm(poolEntry.prefab, poolEntry.prewarmCount);
-            }
+            UnregisterCatalog(targetPool, poolCatalog);
         }
         #endregion // 초기화
 
@@ -62,6 +55,45 @@ namespace SWPool
 
             targetPool = SWPool.Instance;
             return targetPool;
+        }
+
+        /// <summary>
+        /// 카탈로그에 등록된 프리팹들을 대상 풀에 미리 생성합니다.
+        /// </summary>
+        /// <param name="pool">등록할 대상 풀입니다.</param>
+        /// <param name="catalog">등록 정보가 담긴 카탈로그입니다.</param>
+        private void RegisterCatalog(SWPool pool, SWPoolCatalog catalog)
+        {
+            for (int index = 0; index < catalog.PoolEntries.Count; ++index)
+            {
+                SWPoolCatalog.PoolEntry poolEntry = catalog.PoolEntries[index];
+                if (poolEntry?.prefab == null)
+                    continue;
+
+                pool.RegisterPrefab(poolEntry.PoolName, poolEntry.prefab);
+                pool.RegisterGroup(poolEntry.GroupName, poolEntry.prefab);
+
+                if (poolEntry.prewarmCount > 0)
+                    pool.Prewarm(poolEntry.prefab, poolEntry.prewarmCount);
+            }
+        }
+
+        /// <summary>
+        /// 카탈로그에 등록된 이름과 그룹 정보를 대상 풀에서 해제합니다.
+        /// </summary>
+        /// <param name="pool">해제할 대상 풀입니다.</param>
+        /// <param name="catalog">해제 정보가 담긴 카탈로그입니다.</param>
+        private void UnregisterCatalog(SWPool pool, SWPoolCatalog catalog)
+        {
+            for (int index = 0; index < catalog.PoolEntries.Count; ++index)
+            {
+                SWPoolCatalog.PoolEntry poolEntry = catalog.PoolEntries[index];
+                if (poolEntry?.prefab == null)
+                    continue;
+
+                pool.UnregisterPrefab(poolEntry.PoolName, poolEntry.prefab);
+                pool.UnregisterGroup(poolEntry.GroupName, poolEntry.prefab);
+            }
         }
         #endregion // 내부
     }

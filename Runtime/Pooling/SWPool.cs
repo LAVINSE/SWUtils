@@ -5,7 +5,7 @@ using SWUtils;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace SWPool
+namespace SWPooling
 {
     /// <summary>
     /// Unity ObjectPool 기반으로 프리팹별 오브젝트 풀을 전역 관리하는 컴포넌트입니다.
@@ -20,6 +20,9 @@ namespace SWPool
 
         private readonly Dictionary<GameObject, ObjectPool<GameObject>> poolDictionary = new();
         private readonly Dictionary<GameObject, GameObject> instanceToPrefabDictionary = new();
+        private readonly Dictionary<string, GameObject> nameToPrefabDictionary = new();
+        private readonly Dictionary<string, List<GameObject>> groupToPrefabListDictionary = new();
+        private readonly Dictionary<string, int> groupSequenceIndexDictionary = new();
         /// <summary>지연 반환 예약 중인 코루틴을 저장하여 조기 반환 때 취소합니다.</summary>
         private readonly Dictionary<GameObject, Coroutine> delayedReleaseDictionary = new();
         /// <summary>WaitForSeconds 캐시입니다. 반복 생성에 따른 메모리 할당을 줄입니다.</summary>
@@ -40,6 +43,101 @@ namespace SWPool
         #endregion // 초기화
 
         #region 풀 기능
+        /// <summary>
+        /// 이름으로 프리팹을 찾을 수 있도록 등록합니다.
+        /// </summary>
+        /// <param name="poolName">등록할 풀 이름입니다.</param>
+        /// <param name="prefab">등록할 프리팹입니다.</param>
+        public void RegisterPrefab(string poolName, GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                SWUtilsLog.LogWarning("[SWPool] 이름 등록 실패: 프리팹이 null입니다.");
+                return;
+            }
+
+            string normalizedPoolName = NormalizeKey(poolName);
+            if (string.IsNullOrEmpty(normalizedPoolName))
+            {
+                SWUtilsLog.LogWarning("[SWPool] 이름 등록 실패: 풀 이름이 비어 있습니다.");
+                return;
+            }
+
+            if (nameToPrefabDictionary.TryGetValue(normalizedPoolName, out GameObject registeredPrefab)
+                && registeredPrefab != prefab)
+            {
+                SWUtilsLog.LogWarning($"[SWPool] 같은 이름의 프리팹 등록을 교체합니다. Name: {normalizedPoolName}");
+            }
+
+            nameToPrefabDictionary[normalizedPoolName] = prefab;
+        }
+
+        /// <summary>
+        /// 그룹으로 프리팹을 선택할 수 있도록 등록합니다.
+        /// </summary>
+        /// <param name="groupName">등록할 그룹 이름입니다.</param>
+        /// <param name="prefab">등록할 프리팹입니다.</param>
+        public void RegisterGroup(string groupName, GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                SWUtilsLog.LogWarning("[SWPool] 그룹 등록 실패: 프리팹이 null입니다.");
+                return;
+            }
+
+            string normalizedGroupName = NormalizeKey(groupName);
+            if (string.IsNullOrEmpty(normalizedGroupName))
+                return;
+
+            if (!groupToPrefabListDictionary.TryGetValue(normalizedGroupName, out List<GameObject> prefabList))
+            {
+                prefabList = new List<GameObject>();
+                groupToPrefabListDictionary[normalizedGroupName] = prefabList;
+            }
+
+            if (!prefabList.Contains(prefab))
+                prefabList.Add(prefab);
+        }
+
+        /// <summary>
+        /// 이름으로 등록된 프리팹을 해제합니다.
+        /// </summary>
+        /// <param name="poolName">해제할 풀 이름입니다.</param>
+        /// <param name="prefab">해제할 프리팹입니다.</param>
+        public void UnregisterPrefab(string poolName, GameObject prefab)
+        {
+            string normalizedPoolName = NormalizeKey(poolName);
+            if (string.IsNullOrEmpty(normalizedPoolName) || prefab == null)
+                return;
+
+            if (nameToPrefabDictionary.TryGetValue(normalizedPoolName, out GameObject registeredPrefab)
+                && registeredPrefab == prefab)
+            {
+                nameToPrefabDictionary.Remove(normalizedPoolName);
+            }
+        }
+
+        /// <summary>
+        /// 그룹으로 등록된 프리팹을 해제합니다.
+        /// </summary>
+        /// <param name="groupName">해제할 그룹 이름입니다.</param>
+        /// <param name="prefab">해제할 프리팹입니다.</param>
+        public void UnregisterGroup(string groupName, GameObject prefab)
+        {
+            string normalizedGroupName = NormalizeKey(groupName);
+            if (string.IsNullOrEmpty(normalizedGroupName) || prefab == null)
+                return;
+
+            if (!groupToPrefabListDictionary.TryGetValue(normalizedGroupName, out List<GameObject> prefabList))
+                return;
+
+            prefabList.Remove(prefab);
+            if (prefabList.Count > 0) return;
+
+            groupToPrefabListDictionary.Remove(normalizedGroupName);
+            groupSequenceIndexDictionary.Remove(normalizedGroupName);
+        }
+
         /// <inheritdoc/>
         public void Prewarm(GameObject prefab, int count)
         {
@@ -66,6 +164,15 @@ namespace SWPool
         }
 
         /// <inheritdoc/>
+        public void Prewarm(string poolName, int count)
+        {
+            if (!TryGetPrefab(poolName, out GameObject prefab))
+                return;
+
+            Prewarm(prefab, count);
+        }
+
+        /// <inheritdoc/>
         public GameObject Spawn(GameObject prefab, Vector3 position = default,
             Quaternion rotation = default, Transform parent = null)
         {
@@ -88,10 +195,64 @@ namespace SWPool
         }
 
         /// <inheritdoc/>
+        public GameObject Spawn(string poolName, Vector3 position = default,
+            Quaternion rotation = default, Transform parent = null)
+        {
+            if (!TryGetPrefab(poolName, out GameObject prefab))
+                return null;
+
+            return Spawn(prefab, position, rotation, parent);
+        }
+
+        /// <inheritdoc/>
         public T Spawn<T>(GameObject prefab, Vector3 position = default,
             Quaternion rotation = default, Transform parent = null) where T : Component
         {
             GameObject instance = Spawn(prefab, position, rotation, parent);
+            return instance != null ? instance.GetComponent<T>() : null;
+        }
+
+        /// <inheritdoc/>
+        public T Spawn<T>(string poolName, Vector3 position = default,
+            Quaternion rotation = default, Transform parent = null) where T : Component
+        {
+            GameObject instance = Spawn(poolName, position, rotation, parent);
+            return instance != null ? instance.GetComponent<T>() : null;
+        }
+
+        /// <inheritdoc/>
+        public GameObject SpawnFromGroup(string groupName, SWPoolGroupSelectionMode selectionMode = SWPoolGroupSelectionMode.Random,
+            Vector3 position = default, Quaternion rotation = default, Transform parent = null)
+        {
+            if (!TryGetPrefabFromGroup(groupName, selectionMode, out GameObject prefab))
+                return null;
+
+            return Spawn(prefab, position, rotation, parent);
+        }
+
+        /// <inheritdoc/>
+        public GameObject SpawnFromGroup(string groupName, string poolName,
+            Vector3 position = default, Quaternion rotation = default, Transform parent = null)
+        {
+            if (!TryGetPrefabFromGroup(groupName, poolName, out GameObject prefab))
+                return null;
+
+            return Spawn(prefab, position, rotation, parent);
+        }
+
+        /// <inheritdoc/>
+        public T SpawnFromGroup<T>(string groupName, SWPoolGroupSelectionMode selectionMode = SWPoolGroupSelectionMode.Random,
+            Vector3 position = default, Quaternion rotation = default, Transform parent = null) where T : Component
+        {
+            GameObject instance = SpawnFromGroup(groupName, selectionMode, position, rotation, parent);
+            return instance != null ? instance.GetComponent<T>() : null;
+        }
+
+        /// <inheritdoc/>
+        public T SpawnFromGroup<T>(string groupName, string poolName,
+            Vector3 position = default, Quaternion rotation = default, Transform parent = null) where T : Component
+        {
+            GameObject instance = SpawnFromGroup(groupName, poolName, position, rotation, parent);
             return instance != null ? instance.GetComponent<T>() : null;
         }
 
@@ -182,9 +343,154 @@ namespace SWPool
         {
             return poolDictionary.TryGetValue(prefab, out ObjectPool<GameObject> pool) ? pool.CountInactive : 0;
         }
+
+        /// <summary>
+        /// 이름으로 특정 프리팹의 현재 대기 중 오브젝트 수를 반환합니다.
+        /// </summary>
+        /// <param name="poolName">등록된 풀 이름입니다.</param>
+        /// <returns>대기 중 오브젝트 수입니다.</returns>
+        public int CountInPool(string poolName)
+        {
+            return TryGetPrefab(poolName, out GameObject prefab) ? CountInPool(prefab) : 0;
+        }
         #endregion // 풀 기능
 
         #region 내부
+        /// <summary>
+        /// 검색 키를 비교 가능한 형태로 정리합니다.
+        /// </summary>
+        /// <param name="key">정리할 키입니다.</param>
+        /// <returns>앞뒤 공백이 제거된 키입니다.</returns>
+        private string NormalizeKey(string key)
+        {
+            return string.IsNullOrWhiteSpace(key) ? string.Empty : key.Trim();
+        }
+
+        /// <summary>
+        /// 등록된 이름으로 프리팹을 찾습니다.
+        /// </summary>
+        /// <param name="poolName">등록된 풀 이름입니다.</param>
+        /// <param name="prefab">찾은 프리팹입니다.</param>
+        /// <returns>프리팹을 찾았으면 true입니다.</returns>
+        private bool TryGetPrefab(string poolName, out GameObject prefab)
+        {
+            string normalizedPoolName = NormalizeKey(poolName);
+            if (string.IsNullOrEmpty(normalizedPoolName))
+            {
+                prefab = null;
+                SWUtilsLog.LogWarning("[SWPool] 이름 검색 실패: 풀 이름이 비어 있습니다.");
+                return false;
+            }
+
+            if (nameToPrefabDictionary.TryGetValue(normalizedPoolName, out prefab))
+                return true;
+
+            SWUtilsLog.LogWarning($"[SWPool] 이름 검색 실패: 등록되지 않은 풀 이름입니다. Name: {normalizedPoolName}");
+            return false;
+        }
+
+        /// <summary>
+        /// 그룹에서 선택 방식에 맞는 프리팹을 찾습니다.
+        /// </summary>
+        /// <param name="groupName">등록된 그룹 이름입니다.</param>
+        /// <param name="selectionMode">프리팹 선택 방식입니다.</param>
+        /// <param name="prefab">선택된 프리팹입니다.</param>
+        /// <returns>프리팹을 찾았으면 true입니다.</returns>
+        private bool TryGetPrefabFromGroup(string groupName, SWPoolGroupSelectionMode selectionMode, out GameObject prefab)
+        {
+            string normalizedGroupName = NormalizeKey(groupName);
+            if (string.IsNullOrEmpty(normalizedGroupName))
+            {
+                prefab = null;
+                SWUtilsLog.LogWarning("[SWPool] 그룹 검색 실패: 그룹 이름이 비어 있습니다.");
+                return false;
+            }
+
+            if (!groupToPrefabListDictionary.TryGetValue(normalizedGroupName, out List<GameObject> prefabList)
+                || prefabList.Count <= 0)
+            {
+                prefab = null;
+                SWUtilsLog.LogWarning($"[SWPool] 그룹 검색 실패: 등록되지 않은 그룹입니다. Group: {normalizedGroupName}");
+                return false;
+            }
+
+            prefab = SelectPrefabFromGroup(normalizedGroupName, prefabList, selectionMode);
+            return prefab != null;
+        }
+
+        /// <summary>
+        /// 그룹 안에서 이름이 일치하는 프리팹을 찾습니다.
+        /// </summary>
+        /// <param name="groupName">등록된 그룹 이름입니다.</param>
+        /// <param name="poolName">등록된 풀 이름입니다.</param>
+        /// <param name="prefab">찾은 프리팹입니다.</param>
+        /// <returns>프리팹을 찾았으면 true입니다.</returns>
+        private bool TryGetPrefabFromGroup(string groupName, string poolName, out GameObject prefab)
+        {
+            prefab = null;
+            if (!TryGetPrefab(poolName, out GameObject namedPrefab))
+                return false;
+
+            string normalizedGroupName = NormalizeKey(groupName);
+            if (string.IsNullOrEmpty(normalizedGroupName))
+            {
+                SWUtilsLog.LogWarning("[SWPool] 그룹 이름 검색 실패: 그룹 이름이 비어 있습니다.");
+                return false;
+            }
+
+            if (!groupToPrefabListDictionary.TryGetValue(normalizedGroupName, out List<GameObject> prefabList)
+                || prefabList.Count <= 0)
+            {
+                SWUtilsLog.LogWarning($"[SWPool] 그룹 이름 검색 실패: 등록되지 않은 그룹입니다. Group: {normalizedGroupName}");
+                return false;
+            }
+
+            if (!prefabList.Contains(namedPrefab))
+            {
+                SWUtilsLog.LogWarning($"[SWPool] 그룹 이름 검색 실패: 해당 그룹에 등록되지 않은 풀 이름입니다. Group: {normalizedGroupName}, Name: {poolName}");
+                return false;
+            }
+
+            prefab = namedPrefab;
+            return true;
+        }
+
+        /// <summary>
+        /// 그룹 목록에서 선택 방식에 맞는 프리팹을 반환합니다.
+        /// </summary>
+        /// <param name="groupName">등록된 그룹 이름입니다.</param>
+        /// <param name="prefabList">선택 대상 프리팹 목록입니다.</param>
+        /// <param name="selectionMode">프리팹 선택 방식입니다.</param>
+        /// <returns>선택된 프리팹입니다.</returns>
+        private GameObject SelectPrefabFromGroup(string groupName, List<GameObject> prefabList, SWPoolGroupSelectionMode selectionMode)
+        {
+            switch (selectionMode)
+            {
+                case SWPoolGroupSelectionMode.Sequence:
+                    int sequenceIndex = GetGroupSequenceIndex(groupName, prefabList.Count);
+                    return prefabList[sequenceIndex];
+                case SWPoolGroupSelectionMode.Random:
+                default:
+                    return prefabList[Random.Range(0, prefabList.Count)];
+            }
+        }
+
+        /// <summary>
+        /// 그룹의 순차 선택 인덱스를 반환하고 다음 인덱스로 갱신합니다.
+        /// </summary>
+        /// <param name="groupName">등록된 그룹 이름입니다.</param>
+        /// <param name="prefabCount">그룹에 등록된 프리팹 수입니다.</param>
+        /// <returns>이번에 사용할 인덱스입니다.</returns>
+        private int GetGroupSequenceIndex(string groupName, int prefabCount)
+        {
+            if (!groupSequenceIndexDictionary.TryGetValue(groupName, out int sequenceIndex))
+                sequenceIndex = 0;
+
+            int selectedIndex = Mathf.Abs(sequenceIndex) % prefabCount;
+            groupSequenceIndexDictionary[groupName] = (selectedIndex + 1) % prefabCount;
+            return selectedIndex;
+        }
+
         /// <summary>
         /// 지연 반환 예약을 취소합니다.
         /// </summary>
