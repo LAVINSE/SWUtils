@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SWPool
 {
     /// <summary>
-    /// 시작 시 지정한 프리팹들을 대상 풀에 미리 등록하고 생성하는 컴포넌트입니다.
+    /// 시작 때 지정한 프리팹들을 대상 풀에 미리 등록하고 생성하는 컴포넌트입니다.
     /// </summary>
     public class SWPoolRegistry : SWMonoBehaviour
     {
@@ -16,9 +16,9 @@ namespace SWPool
         [System.Serializable]
         public class PoolEntry
         {
-            /// <summary>풀링할 프리팹</summary>
+            /// <summary>풀링할 프리팹입니다.</summary>
             public GameObject prefab;
-            /// <summary>미리 생성할 개수</summary>
+            /// <summary>미리 생성할 개수입니다.</summary>
             public int prewarmCount = 1;
         }
         #endregion // 데이터
@@ -28,32 +28,41 @@ namespace SWPool
         [SerializeField] private PoolEntry[] poolEntries;
         #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
-
         #region 초기화
         private void Awake()
         {
-            if (targetPool == null)
+            SWPool resolvedPool = ResolveTargetPool();
+            if (resolvedPool == null)
             {
-                SWUtilsLog.LogError("[SwPoolRegistry] SWPool을 찾을 수 없습니다");
+                SWUtilsLog.LogError("[SWPoolRegistry] SWPool을 찾을 수 없습니다.");
                 return;
             }
 
             if (poolEntries == null)
-            {
                 return;
-            }
 
             for (int index = 0; index < poolEntries.Length; ++index)
             {
                 PoolEntry poolEntry = poolEntries[index];
                 if (poolEntry?.prefab != null && poolEntry.prewarmCount > 0)
-                {
-                    targetPool.Prewarm(poolEntry.prefab, poolEntry.prewarmCount);
-                }
+                    resolvedPool.Prewarm(poolEntry.prefab, poolEntry.prewarmCount);
             }
         }
         #endregion // 초기화
+
+        #region 내부
+        /// <summary>
+        /// 등록 대상 풀을 반환합니다. 지정된 풀이 없으면 전역 풀을 사용합니다.
+        /// </summary>
+        /// <returns>등록에 사용할 풀입니다.</returns>
+        private SWPool ResolveTargetPool()
+        {
+            if (targetPool != null)
+                return targetPool;
+
+            targetPool = SWPool.Instance;
+            return targetPool;
+        }
+        #endregion // 내부
     }
 }
