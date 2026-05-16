@@ -70,8 +70,10 @@ namespace SWTools
 
         private static readonly Dictionary<string, Entry> entriesById = new();
         private static readonly Dictionary<int, Entry> entriesByInstanceId = new();
+        private static readonly Dictionary<int, string> globalIdByInstanceId = new();
         private static readonly Dictionary<int, bool> missingScriptCache = new();
         private static readonly Dictionary<int, Component[]> componentCache = new();
+        private static readonly HashSet<int> syncedIconInstanceIds = new();
         private static readonly Dictionary<string, Texture> iconCache = new();
         private static readonly Dictionary<string, Texture2D> assetIconCache = new();
         private static readonly Color defaultA = new(0.2f, 0.65f, 1f, 1f);
@@ -209,6 +211,9 @@ namespace SWTools
             ForEach(gameObjects, includeChildren, gameObject =>
             {
                 Entry entry = GetOrCreate(gameObject);
+                if (entry == null)
+                    return;
+
                 entry.colorA = ToHtml(colorA);
                 entry.colorB = ToHtml(colorB);
                 entry.useGradient = useGradient;
@@ -228,6 +233,9 @@ namespace SWTools
             ForEach(gameObjects, includeChildren, gameObject =>
             {
                 Entry entry = GetOrCreate(gameObject);
+                if (entry == null)
+                    return;
+
                 entry.iconName = iconName;
                 entry.name = gameObject.name;
                 ApplyUnityObjectIcon(gameObject, iconName);
@@ -264,6 +272,9 @@ namespace SWTools
             ForEach(gameObjects, includeChildren, gameObject =>
             {
                 Entry entry = GetOrCreate(gameObject);
+                if (entry == null)
+                    return;
+
                 entry.style = style;
                 entry.name = gameObject.name;
             });
@@ -280,7 +291,9 @@ namespace SWTools
             EnsureLoaded();
             ForEach(gameObjects, includeChildren, gameObject =>
             {
-                entriesById.Remove(GetGlobalId(gameObject));
+                if (TryGetGlobalId(gameObject, out string globalId))
+                    entriesById.Remove(globalId);
+
                 ClearUnityObjectIcon(gameObject);
             });
             Save();
@@ -294,7 +307,9 @@ namespace SWTools
         {
             if (gameObject == null) return;
             EnsureLoaded();
-            entriesById.Remove(GetGlobalId(gameObject));
+            if (TryGetGlobalId(gameObject, out string globalId))
+                entriesById.Remove(globalId);
+
             ClearUnityObjectIcon(gameObject);
             Save();
         }
@@ -587,28 +602,43 @@ namespace SWTools
         private static Entry TryGetEntry(GameObject gameObject)
         {
             EnsureLoaded();
-            return entriesByInstanceId.TryGetValue(gameObject.GetInstanceID(), out Entry entry) ? entry : null;
+            if (!TryGetGlobalId(gameObject, out string globalId))
+                return null;
+
+            int instanceId = gameObject.GetInstanceID();
+            if (entriesByInstanceId.TryGetValue(instanceId, out Entry cachedEntry))
+                return cachedEntry;
+
+            if (!entriesById.TryGetValue(globalId, out Entry entry))
+                return null;
+
+            entriesByInstanceId[instanceId] = entry;
+            SyncUnityObjectIcon(gameObject, entry);
+            return entry;
         }
 
         private static Entry GetOrCreate(GameObject gameObject)
         {
-            if (gameObject == null) return null;
             EnsureLoaded();
 
-            string id = GetGlobalId(gameObject);
-            if (!entriesById.TryGetValue(id, out Entry entry))
+            if (!TryGetGlobalId(gameObject, out string globalId))
+                return null;
+
+            if (!entriesById.TryGetValue(globalId, out Entry entry))
             {
                 entry = new Entry
                 {
-                    globalId = id,
+                    globalId = globalId,
                     name = gameObject.name,
                     colorA = ToHtml(defaultA),
                     colorB = ToHtml(defaultB),
                     useGradient = useGradientByDefault,
                     style = RowStyle.Normal
                 };
-                entriesById[id] = entry;
+                entriesById[globalId] = entry;
             }
+
+            entriesByInstanceId[gameObject.GetInstanceID()] = entry;
             return entry;
         }
 
@@ -620,12 +650,13 @@ namespace SWTools
             foreach (GameObject gameObject in gameObjects)
             {
                 if (gameObject == null) continue;
-                targets.Add(gameObject);
+                if (IsSupportedSceneObject(gameObject))
+                    targets.Add(gameObject);
 
                 if (!includeChildren) continue;
                 foreach (Transform child in gameObject.GetComponentsInChildren<Transform>(true))
                 {
-                    if (child != null && child.gameObject != null)
+                    if (child != null && IsSupportedSceneObject(child.gameObject))
                         targets.Add(child.gameObject);
                 }
             }
@@ -648,14 +679,9 @@ namespace SWTools
 
             foreach (Entry entry in list.entries)
             {
-                if (!string.IsNullOrEmpty(entry.globalId))
-                {
+                if (IsValidEntry(entry))
                     entriesById[entry.globalId] = entry;
-                    ApplyUnityObjectIcon(Resolve(entry.globalId), entry.iconName);
-                }
             }
-
-            RebuildInstanceCache();
         }
 
         private static void Save()
@@ -694,12 +720,8 @@ namespace SWTools
         private static void RebuildInstanceCache()
         {
             entriesByInstanceId.Clear();
-            foreach (Entry entry in entriesById.Values)
-            {
-                GameObject gameObject = Resolve(entry.globalId);
-                if (gameObject != null)
-                    entriesByInstanceId[gameObject.GetInstanceID()] = entry;
-            }
+            globalIdByInstanceId.Clear();
+            syncedIconInstanceIds.Clear();
         }
 
         private static void ClearTransientCaches()
@@ -739,6 +761,56 @@ namespace SWTools
         private static string GetGlobalId(GameObject gameObject)
         {
             return GlobalObjectId.GetGlobalObjectIdSlow(gameObject).ToString();
+        }
+
+        /// <summary>
+        /// 하이어라키 도구가 저장해도 되는 씬 오브젝트인지 확인합니다.
+        /// </summary>
+        /// <param name="gameObject">검사할 게임 오브젝트입니다.</param>
+        /// <returns>저장 가능한 씬 오브젝트이면 true입니다.</returns>
+        private static bool IsSupportedSceneObject(GameObject gameObject)
+        {
+            if (gameObject == null)
+                return false;
+
+            if (EditorUtility.IsPersistent(gameObject))
+                return false;
+
+            if (!gameObject.scene.IsValid())
+                return false;
+
+            return gameObject.scene.name != "DontDestroyOnLoad";
+        }
+
+        /// <summary>
+        /// 저장 가능한 오브젝트의 전역 식별자를 캐시하여 반복 호출 비용을 줄입니다.
+        /// </summary>
+        /// <param name="gameObject">전역 식별자를 가져올 게임 오브젝트입니다.</param>
+        /// <param name="globalId">캐시되었거나 새로 만든 전역 식별자입니다.</param>
+        /// <returns>전역 식별자를 얻을 수 있으면 true입니다.</returns>
+        private static bool TryGetGlobalId(GameObject gameObject, out string globalId)
+        {
+            globalId = null;
+            if (!IsSupportedSceneObject(gameObject))
+                return false;
+
+            int instanceId = gameObject.GetInstanceID();
+            if (globalIdByInstanceId.TryGetValue(instanceId, out globalId))
+                return !string.IsNullOrEmpty(globalId);
+
+            globalId = GetGlobalId(gameObject);
+            globalIdByInstanceId[instanceId] = globalId;
+            return !string.IsNullOrEmpty(globalId);
+        }
+
+        /// <summary>
+        /// 저장된 하이어라키 항목이 복원 가능한 최소 정보를 가지고 있는지 확인합니다.
+        /// </summary>
+        /// <param name="entry">검사할 하이어라키 항목입니다.</param>
+        /// <returns>사용 가능한 항목이면 true입니다.</returns>
+        private static bool IsValidEntry(Entry entry)
+        {
+            return entry != null && !string.IsNullOrEmpty(entry.globalId);
         }
 
         private static GameObject Resolve(string globalId)
@@ -785,12 +857,17 @@ namespace SWTools
 
         private static void ApplyUnityObjectIcon(GameObject gameObject, string iconName)
         {
+            ApplyUnityObjectIcon(gameObject, iconName, true);
+        }
+
+        private static void ApplyUnityObjectIcon(GameObject gameObject, string iconName, bool markDirty)
+        {
             if (gameObject == null)
                 return;
 
             if (string.IsNullOrEmpty(iconName))
             {
-                ClearUnityObjectIcon(gameObject);
+                ClearUnityObjectIcon(gameObject, markDirty);
                 return;
             }
 
@@ -799,6 +876,10 @@ namespace SWTools
                 return;
 
             EditorGUIUtility.SetIconForObject(gameObject, icon);
+            syncedIconInstanceIds.Add(gameObject.GetInstanceID());
+            if (!markDirty)
+                return;
+
             EditorUtility.SetDirty(gameObject);
             if (gameObject.scene.IsValid())
                 EditorSceneManager.MarkSceneDirty(gameObject.scene);
@@ -806,13 +887,41 @@ namespace SWTools
 
         private static void ClearUnityObjectIcon(GameObject gameObject)
         {
+            ClearUnityObjectIcon(gameObject, true);
+        }
+
+        private static void ClearUnityObjectIcon(GameObject gameObject, bool markDirty)
+        {
             if (gameObject == null)
                 return;
 
             EditorGUIUtility.SetIconForObject(gameObject, null);
+            syncedIconInstanceIds.Remove(gameObject.GetInstanceID());
+            if (!markDirty)
+                return;
+
             EditorUtility.SetDirty(gameObject);
             if (gameObject.scene.IsValid())
                 EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        }
+
+        /// <summary>
+        /// 저장된 아이콘 정보를 현재 하이어라키 오브젝트에 한 번만 반영합니다.
+        /// </summary>
+        /// <param name="gameObject">아이콘을 반영할 게임 오브젝트입니다.</param>
+        /// <param name="entry">저장된 하이어라키 항목입니다.</param>
+        private static void SyncUnityObjectIcon(GameObject gameObject, Entry entry)
+        {
+            if (gameObject == null || entry == null || syncedIconInstanceIds.Contains(gameObject.GetInstanceID()))
+                return;
+
+            if (string.IsNullOrEmpty(entry.iconName))
+            {
+                syncedIconInstanceIds.Add(gameObject.GetInstanceID());
+                return;
+            }
+
+            ApplyUnityObjectIcon(gameObject, entry.iconName, false);
         }
 
         private static void DrawFullRow(Rect rowRect, Color color)

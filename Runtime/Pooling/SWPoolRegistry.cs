@@ -10,28 +10,22 @@ namespace SWPooling
     public class SWPoolRegistry : SWMonoBehaviour
     {
         #region 필드
-        [SerializeField] private SWPool targetPool;
         [SerializeField] private SWPoolCatalog poolCatalog;
         [SerializeField] private bool unregisterOnDestroy = true;
+
+        private SWPool targetPool;
         #endregion // 필드
 
         #region 초기화
         private void Awake()
         {
-            SWPool resolvedPool = ResolveTargetPool();
-            if (resolvedPool == null)
-            {
-                SWUtilsLog.LogError("[SWPoolRegistry] SWPool을 찾을 수 없습니다.");
-                return;
-            }
-
             if (poolCatalog == null)
             {
                 SWUtilsLog.LogWarning("[SWPoolRegistry] SWPoolCatalog가 없어 풀 등록을 건너뜁니다.");
                 return;
             }
 
-            RegisterCatalog(resolvedPool, poolCatalog);
+            RegisterCatalog(poolCatalog);
         }
 
         private void OnDestroy()
@@ -54,6 +48,12 @@ namespace SWPooling
                 return targetPool;
 
             targetPool = SWPool.Instance;
+
+            if (targetPool == null)
+            {
+                SWUtilsLog.LogError("[SWPoolRegistry] SWPool을 찾을 수 없습니다.");
+            }
+            
             return targetPool;
         }
 
@@ -62,8 +62,10 @@ namespace SWPooling
         /// </summary>
         /// <param name="pool">등록할 대상 풀입니다.</param>
         /// <param name="catalog">등록 정보가 담긴 카탈로그입니다.</param>
-        private void RegisterCatalog(SWPool pool, SWPoolCatalog catalog)
+        private void RegisterCatalog(SWPoolCatalog catalog)
         {
+            SWPool pool = ResolveTargetPool();
+
             for (int index = 0; index < catalog.PoolEntries.Count; ++index)
             {
                 SWPoolCatalog.PoolEntry poolEntry = catalog.PoolEntries[index];
