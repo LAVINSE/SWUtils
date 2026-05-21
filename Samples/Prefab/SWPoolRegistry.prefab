@@ -43,6 +43,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 345c859ee38bca0498ed29ab0626b0bf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SWPooling.SWPoolRegistry
+  m_EditorClassIdentifier: SWUtils.Runtime::SWPooling.SWPoolRegistry
   targetPool: {fileID: 0}
   poolCatalog: {fileID: 0}

@@ -37,8 +37,8 @@ namespace SWUtils
         }
 
         #region 필드
-        /// <summary>암호화에 사용되는 고정 솔트. 프로젝트별로 변경 권장.</summary>
-        private const string Salt = "SwUtilsPrefs_2026_SaltKey_ChangeMe";
+        /// <summary>암호화 설정 에셋 캐시입니다.</summary>
+        private static SWUtilsPlayerPrefsSettings settingsCache;
         /// <summary>관리 중인 키 목록을 저장하는 PlayerPrefs 키.</summary>
         private static string KeyIndexName => $"SwUtilsPrefs_KeyIndex_{currentSlot}";
         /// <summary>암호화된 키 prefix (일반 PlayerPrefs와 구분).</summary>
@@ -53,6 +53,37 @@ namespace SWUtils
         #region 프로퍼티
         /// <summary>현재 활성 슬롯 이름.</summary>
         public static string CurrentSlot => currentSlot;
+
+        /// <summary>현재 암호화에 사용하는 salt 값입니다.</summary>
+        public static string CurrentSalt => Settings.Salt;
+
+        /// <summary>현재 암호화 IV 생성에 사용하는 salt 값입니다.</summary>
+        public static string CurrentIVSalt => Settings.IVSalt;
+
+        /// <summary>
+        /// 암호화 설정 캐시를 비우고 다음 접근 시 Resources 설정 에셋을 다시 읽습니다.
+        /// </summary>
+        public static void ReloadSettings()
+        {
+            settingsCache = null;
+        }
+
+        /// <summary>프로젝트 설정 에셋 또는 기본 설정을 반환합니다.</summary>
+        private static SWUtilsPlayerPrefsSettings Settings
+        {
+            get
+            {
+                if (settingsCache != null) return settingsCache;
+
+                settingsCache = Resources.Load<SWUtilsPlayerPrefsSettings>(
+                    SWUtilsPlayerPrefsSettings.ResourceAssetName);
+
+                if (settingsCache != null) return settingsCache;
+
+                settingsCache = ScriptableObject.CreateInstance<SWUtilsPlayerPrefsSettings>();
+                return settingsCache;
+            }
+        }
 
         /// <summary>관리 중인 키 목록.</summary>
         private static HashSet<string> KeyIndex
@@ -97,7 +128,7 @@ namespace SWUtils
         /// <param name="iv">생성된 AES IV</param>
         private static void GetKeyIV(out byte[] key, out byte[] iv)
         {
-            using (var derive = new Rfc2898DeriveBytes(Salt, Encoding.UTF8.GetBytes("SwUtilsIVSalt"), 1000))
+            using (var derive = new Rfc2898DeriveBytes(CurrentSalt, Encoding.UTF8.GetBytes(CurrentIVSalt), 1000))
             {
                 key = derive.GetBytes(16);
                 iv = derive.GetBytes(16);
@@ -182,7 +213,7 @@ namespace SWUtils
             using (var sha = SHA256.Create())
             {
                 // 슬롯 이름을 해시에 포함 → 슬롯별로 다른 키 생성
-                byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(key + Salt + currentSlot));
+                byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(key + CurrentSalt + currentSlot));
                 return EncryptedPrefix + Convert.ToBase64String(bytes)
                     .Replace("/", "_").Replace("+", "-").Substring(0, 22);
             }

@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5953c7e1d70ee724882febf31efc81a6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SWPooling.SWPool
+  m_EditorClassIdentifier: SWUtils.Runtime::SWPooling.SWPool
   collectionCheck: 1
   defaultCapacity: 10
   maxPoolSize: 1000

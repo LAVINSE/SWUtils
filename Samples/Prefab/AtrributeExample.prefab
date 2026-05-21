@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80d26adfe3e748842b3822f179d89b9f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SWAttributeExample
+  m_EditorClassIdentifier: SWUtils.Samples::SWAttributeExample
   groupIndex: 0
   groupReadOnly: 0
   conditionExample: 0
