@@ -776,10 +776,17 @@ namespace SWTools
             if (EditorUtility.IsPersistent(gameObject))
                 return false;
 
-            if (!gameObject.scene.IsValid())
+            UnityEngine.SceneManagement.Scene scene = gameObject.scene;
+            if (!scene.IsValid())
                 return false;
 
-            return gameObject.scene.name != "DontDestroyOnLoad";
+            if (scene.name == "DontDestroyOnLoad")
+                return false;
+
+            if (Application.isPlaying && string.IsNullOrEmpty(scene.path))
+                return false;
+
+            return true;
         }
 
         /// <summary>
