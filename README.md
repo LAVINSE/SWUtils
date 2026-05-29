@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 추가합니다.
 브랜치 또는 태그를 고정해서 설치하려면 URL 뒤에 `#브랜치명` 또는 `#태그명`을 붙입니다.
 
 ```text
-https://github.com/사용자명/저장소명.git#1.0.0
+https://github.com/사용자명/저장소명.git#v1.0.5
 ```
 
 ## 의존 패키지
@@ -360,8 +360,31 @@ private void TryUseSkill()
 - `SWTools/Quick Asset Palette`: 자주 쓰는 에셋을 빠르게 선택합니다.
 - `SWTools/Reference Finder`: 선택한 에셋의 프로젝트 참조를 찾습니다.
 - `SWTools/Test Tools Window`: 플레이 중 테스트와 씬 이동 작업을 보조합니다.
-- `SWTools/TMP Font Asset Manager`: TextMeshPro 폰트 에셋 적용을 관리합니다.
+- `SWTools/TMP Font Asset Manager`: TextMeshPro 폰트 에셋 적용과 성능 확인을 관리합니다.
 - `SWTools/Resolution Window`: 해상도 테스트 값을 확인합니다.
+
+#### `SWTools/TMP Font Asset Manager` 성능 탭
+
+TextMeshPro 폰트 에셋의 아틀라스 메모리, 글리프, 문자, 폴백 체인, 머티리얼 프리셋 비용을 한 화면에서 확인합니다.
+
+사용 순서:
+
+1. Unity 상단 메뉴에서 `SWTools > TMP Font Asset Manager`를 엽니다.
+2. `성능` 탭을 선택합니다.
+3. 확인할 `TMP_FontAsset`을 드래그 앤 드롭하거나 Object Field에 지정합니다.
+4. 선택 중인 폰트 에셋 또는 TextMeshPro 오브젝트의 폰트를 확인하려면 `선택 에셋 사용`을 누릅니다.
+5. Quick Swap 탭에 지정한 기본 폰트를 확인하려면 `기본 폰트 사용`을 누릅니다.
+6. 폴백 폰트 전체 체인을 포함해서 계산하려면 `폴백 체인 포함`을 켭니다.
+
+확인 항목:
+
+- 아틀라스 텍스처 개수, 전체 픽셀 면적, 런타임 텍스처 메모리, 저장 텍스처 메모리, RGBA32 기준 예상 메모리
+- 글리프 개수와 문자 개수
+- 직접 폴백 폰트 개수, 전체 폴백 폰트 개수, 폴백 깊이
+- 동적 아틀라스 사용 여부
+- 같은 폴더에서 찾은 TextMeshPro 머티리얼 프리셋 개수
+
+점검 항목에서는 모바일 대상에서 주의가 필요한 큰 아틀라스 메모리, 많은 글리프, 긴 폴백 체인, 동적 아틀라스, 많은 머티리얼 프리셋을 경고로 표시합니다.
 
 ### `Editor/ExcelTable`
 

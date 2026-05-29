@@ -20,7 +20,7 @@ namespace SWTools
     {
         #region 필드 - 공통
         private int selectedTab = 0;
-        private static readonly string[] tabNames = { "Quick Swap", "Presets", "Browser" };
+        private static readonly string[] tabNames = { "Quick Swap", "Presets", "Browser", "성능" };
         #endregion
 
         #region 필드 - Quick Swap 탭
@@ -99,6 +99,47 @@ namespace SWTools
         }
         #endregion
 
+        #region 필드 - 성능 탭
+        private TMP_FontAsset performanceFont;
+        private Vector2 performanceScroll;
+        private bool performanceIncludeFallbacks = true;
+
+        /// <summary>
+        /// TMP 폰트 성능 탭에서 표시할 분석 결과입니다.
+        /// </summary>
+        private class PerformanceSnapshot
+        {
+            /// <summary>분석 대상 TMP 폰트 에셋입니다.</summary>
+            public TMP_FontAsset asset;
+            /// <summary>분석 대상 TMP 폰트 에셋 경로입니다.</summary>
+            public string path;
+            /// <summary>아틀라스 텍스처 개수입니다.</summary>
+            public int atlasTextureCount;
+            /// <summary>아틀라스 전체 픽셀 면적입니다.</summary>
+            public long atlasPixels;
+            /// <summary>아틀라스 예상 메모리 사용량입니다.</summary>
+            public long estimatedAtlasBytes;
+            /// <summary>에디터가 계산한 런타임 텍스처 메모리 사용량입니다.</summary>
+            public long runtimeTextureBytes;
+            /// <summary>에디터가 계산한 저장 텍스처 메모리 사용량입니다.</summary>
+            public long storageTextureBytes;
+            /// <summary>글리프 개수입니다.</summary>
+            public int glyphCount;
+            /// <summary>문자 개수입니다.</summary>
+            public int characterCount;
+            /// <summary>직접 폴백 폰트 개수입니다.</summary>
+            public int directFallbackCount;
+            /// <summary>전체 폴백 폰트 개수입니다.</summary>
+            public int totalFallbackCount;
+            /// <summary>폴백 체인의 최대 깊이입니다.</summary>
+            public int fallbackDepth;
+            /// <summary>동적 아틀라스 사용 여부입니다.</summary>
+            public bool isDynamic;
+            /// <summary>같은 폴더에서 찾은 머티리얼 프리셋 개수입니다.</summary>
+            public int materialPresetCount;
+        }
+        #endregion
+
         // ────────────────────────────────────────────
         // Hierarchy 자동 적용용 콜백 (static)
         // ────────────────────────────────────────────
@@ -169,6 +210,7 @@ namespace SWTools
                 case 0: DrawQuickSwapTab(); break;
                 case 1: DrawPresetsTab(); break;
                 case 2: DrawBrowserTab(); break;
+                case 3: DrawPerformanceTab(); break;
             }
         }
 
@@ -929,6 +971,267 @@ namespace SWTools
         }
 
         #endregion // Browser 탭
+        // =====================================================================
+        //  성능 탭
+        // =====================================================================
+        #region 성능 탭
+
+        private void DrawPerformanceTab()
+        {
+            SWEditorUtils.DrawHeader("TMP 성능 확인");
+            EditorGUILayout.HelpBox(
+                "TMP_FontAsset을 넣으면 아틀라스 메모리, 글리프, 문자, 폴백 체인, 머티리얼 프리셋 비용을 확인합니다.",
+                MessageType.Info);
+
+            var droppedFonts = SWEditorUtils.DrawDropArea<TMP_FontAsset>("여기에 TMP_FontAsset을 드래그해서 성능 확인");
+            if (droppedFonts != null && droppedFonts.Count > 0)
+            {
+                performanceFont = droppedFonts[0];
+            }
+
+            EditorGUI.BeginChangeCheck();
+            performanceFont = (TMP_FontAsset)EditorGUILayout.ObjectField(
+                "TMP Font Asset", performanceFont, typeof(TMP_FontAsset), false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                GUI.FocusControl(null);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("선택 에셋 사용", GUILayout.Height(22)))
+            {
+                UseSelectedFontForPerformance();
+            }
+            using (new SWEditorUtils.GUIEnabledScope(defaultFont != null))
+            {
+                if (GUILayout.Button("기본 폰트 사용", GUILayout.Height(22)))
+                {
+                    performanceFont = defaultFont;
+                }
+            }
+            if (GUILayout.Button("비우기", GUILayout.Height(22)))
+            {
+                performanceFont = null;
+            }
+            EditorGUILayout.EndHorizontal();
+
+            performanceIncludeFallbacks = EditorGUILayout.ToggleLeft(
+                "폴백 체인 포함", performanceIncludeFallbacks);
+
+            EditorGUILayout.Space(6);
+
+            if (performanceFont == null)
+            {
+                SWEditorUtils.DrawEmptyNotice("성능을 확인할 TMP_FontAsset을 넣어주세요.", MessageType.None);
+                return;
+            }
+
+            PerformanceSnapshot snapshot = CreatePerformanceSnapshot(performanceFont, performanceIncludeFallbacks);
+
+            performanceScroll = EditorGUILayout.BeginScrollView(performanceScroll);
+            DrawPerformanceSummary(snapshot);
+            EditorGUILayout.Space(8);
+            DrawPerformanceAdvice(snapshot);
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void UseSelectedFontForPerformance()
+        {
+            if (Selection.activeObject is TMP_FontAsset selectedFont)
+            {
+                performanceFont = selectedFont;
+                return;
+            }
+
+            if (Selection.activeGameObject == null) return;
+
+            TMP_Text selectedText = Selection.activeGameObject.GetComponentInChildren<TMP_Text>(true);
+            if (selectedText != null)
+            {
+                performanceFont = selectedText.font;
+            }
+        }
+
+        private PerformanceSnapshot CreatePerformanceSnapshot(TMP_FontAsset asset, bool includeFallbacks)
+        {
+            List<Texture2D> atlasTextures = GetAtlasTextures(asset);
+            long atlasPixels = 0;
+            long runtimeTextureBytes = 0;
+            long storageTextureBytes = 0;
+
+            foreach (Texture2D texture in atlasTextures)
+            {
+                if (texture == null) continue;
+
+                atlasPixels += (long)texture.width * texture.height;
+                runtimeTextureBytes += TextureUtil.GetRuntimeMemorySizeLong(texture);
+                storageTextureBytes += TextureUtil.GetStorageMemorySizeLong(texture);
+            }
+
+            FallbackStats fallbackStats = includeFallbacks
+                ? CalculateFallbackStats(asset, new HashSet<TMP_FontAsset>(), 0)
+                : new FallbackStats();
+
+            return new PerformanceSnapshot
+            {
+                asset = asset,
+                path = AssetDatabase.GetAssetPath(asset),
+                atlasTextureCount = atlasTextures.Count,
+                atlasPixels = atlasPixels,
+                estimatedAtlasBytes = atlasPixels * 4L,
+                runtimeTextureBytes = runtimeTextureBytes,
+                storageTextureBytes = storageTextureBytes,
+                glyphCount = asset.glyphTable != null ? asset.glyphTable.Count : 0,
+                characterCount = asset.characterTable != null ? asset.characterTable.Count : 0,
+                directFallbackCount = asset.fallbackFontAssetTable != null ? asset.fallbackFontAssetTable.Count : 0,
+                totalFallbackCount = fallbackStats.count,
+                fallbackDepth = fallbackStats.depth,
+                isDynamic = asset.atlasPopulationMode == AtlasPopulationMode.Dynamic,
+                materialPresetCount = CountMaterialPresets(asset),
+            };
+        }
+
+        private List<Texture2D> GetAtlasTextures(TMP_FontAsset asset)
+        {
+            List<Texture2D> textures = new();
+            if (asset == null) return textures;
+
+            if (asset.atlasTextures != null)
+            {
+                foreach (Texture2D texture in asset.atlasTextures)
+                {
+                    if (texture != null && !textures.Contains(texture))
+                    {
+                        textures.Add(texture);
+                    }
+                }
+            }
+
+            if (asset.atlasTexture != null && !textures.Contains(asset.atlasTexture))
+            {
+                textures.Add(asset.atlasTexture);
+            }
+
+            return textures;
+        }
+
+        private struct FallbackStats
+        {
+            public int count;
+            public int depth;
+        }
+
+        private FallbackStats CalculateFallbackStats(TMP_FontAsset asset, HashSet<TMP_FontAsset> visited, int depth)
+        {
+            if (asset == null || asset.fallbackFontAssetTable == null || depth > 10)
+            {
+                return new FallbackStats();
+            }
+
+            FallbackStats result = new();
+            foreach (TMP_FontAsset fallback in asset.fallbackFontAssetTable)
+            {
+                if (fallback == null || !visited.Add(fallback)) continue;
+
+                result.count++;
+                result.depth = Mathf.Max(result.depth, depth + 1);
+
+                FallbackStats child = CalculateFallbackStats(fallback, visited, depth + 1);
+                result.count += child.count;
+                result.depth = Mathf.Max(result.depth, child.depth);
+            }
+
+            return result;
+        }
+
+        private int CountMaterialPresets(TMP_FontAsset asset)
+        {
+            if (asset == null) return 0;
+
+            int count = 0;
+            Material baseMaterial = asset.material;
+            if (baseMaterial != null) count++;
+
+            string fontPath = AssetDatabase.GetAssetPath(asset);
+            string folder = System.IO.Path.GetDirectoryName(fontPath);
+            if (string.IsNullOrEmpty(folder)) return count;
+
+            string[] materialGuids = AssetDatabase.FindAssets("t:Material", new[] { folder });
+            foreach (string guid in materialGuids)
+            {
+                string materialPath = AssetDatabase.GUIDToAssetPath(guid);
+                Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+                if (material == null || material == baseMaterial || material.shader == null) continue;
+                if (!material.shader.name.Contains("TextMeshPro") && !material.shader.name.Contains("TMP")) continue;
+
+                count++;
+            }
+
+            return count;
+        }
+
+        private void DrawPerformanceSummary(PerformanceSnapshot snapshot)
+        {
+            SWEditorUtils.DrawHeader("분석 결과");
+
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.ObjectField("Font Asset", snapshot.asset, typeof(TMP_FontAsset), false);
+                EditorGUILayout.TextField("Path", snapshot.path);
+                EditorGUILayout.TextField("Atlas Mode", snapshot.isDynamic ? "Dynamic" : "Static");
+                EditorGUILayout.IntField("Atlas Texture Count", snapshot.atlasTextureCount);
+                EditorGUILayout.TextField("Atlas Pixels", snapshot.atlasPixels.ToString("N0"));
+                EditorGUILayout.TextField("Runtime Texture Memory", SWEditorUtils.FormatBytes(snapshot.runtimeTextureBytes));
+                EditorGUILayout.TextField("Storage Texture Memory", SWEditorUtils.FormatBytes(snapshot.storageTextureBytes));
+                EditorGUILayout.TextField("Estimated RGBA32 Memory", SWEditorUtils.FormatBytes(snapshot.estimatedAtlasBytes));
+                EditorGUILayout.IntField("Glyph Count", snapshot.glyphCount);
+                EditorGUILayout.IntField("Character Count", snapshot.characterCount);
+                EditorGUILayout.IntField("Direct Fallback Count", snapshot.directFallbackCount);
+                EditorGUILayout.IntField("Total Fallback Count", snapshot.totalFallbackCount);
+                EditorGUILayout.IntField("Fallback Depth", snapshot.fallbackDepth);
+                EditorGUILayout.IntField("Material Preset Count", snapshot.materialPresetCount);
+            }
+        }
+
+        private void DrawPerformanceAdvice(PerformanceSnapshot snapshot)
+        {
+            SWEditorUtils.DrawHeader("점검 항목");
+
+            bool hasWarning = false;
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.runtimeTextureBytes >= 16L * 1024L * 1024L,
+                "아틀라스 런타임 메모리가 16 MB 이상입니다. 모바일 대상이면 아틀라스 크기와 텍스처 개수를 줄이는 것을 검토하세요.");
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.glyphCount >= 4000,
+                "글리프가 4,000개 이상입니다. 실제 사용하는 문자 범위만 포함하면 로딩과 메모리 비용을 줄일 수 있습니다.");
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.totalFallbackCount >= 6,
+                "폴백 폰트가 많습니다. 폴백 체인이 길면 누락 문자 탐색 비용과 메모리 사용량이 함께 늘어날 수 있습니다.");
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.fallbackDepth >= 3,
+                "폴백 깊이가 3단계 이상입니다. 자주 쓰는 문자는 상위 폰트에 배치하는 것이 좋습니다.");
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.isDynamic,
+                "동적 아틀라스 폰트입니다. 런타임에 글리프가 추가되면 순간적인 텍스처 갱신 비용이 발생할 수 있습니다.");
+            hasWarning |= DrawPerformanceWarning(
+                snapshot.materialPresetCount >= 8,
+                "머티리얼 프리셋이 많습니다. 서로 다른 프리셋을 동시에 많이 쓰면 드로우콜이 늘어날 수 있습니다.");
+
+            if (!hasWarning)
+            {
+                EditorGUILayout.HelpBox("큰 성능 위험 신호가 보이지 않습니다.", MessageType.Info);
+            }
+        }
+
+        private bool DrawPerformanceWarning(bool condition, string message)
+        {
+            if (!condition) return false;
+
+            EditorGUILayout.HelpBox(message, MessageType.Warning);
+            return true;
+        }
+
+        #endregion // 성능 탭
     }
 }
 #endif // !SW_TMP_MANAAGER_DISABLE
