@@ -1,8 +1,10 @@
-#if !SW_TMP_MANAAGER_DISABLE
+#if !SW_TMP_MANAGER_DISABLE
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 #if TMP_PRESENT || true
 using TMPro;
@@ -1064,8 +1066,8 @@ namespace SWTools
                 if (texture == null) continue;
 
                 atlasPixels += (long)texture.width * texture.height;
-                runtimeTextureBytes += TextureUtil.GetRuntimeMemorySizeLong(texture);
-                storageTextureBytes += TextureUtil.GetStorageMemorySizeLong(texture);
+                runtimeTextureBytes += GetRuntimeTextureMemoryBytes(texture);
+                storageTextureBytes += GetStorageTextureMemoryBytes(texture);
             }
 
             FallbackStats fallbackStats = includeFallbacks
@@ -1089,6 +1091,64 @@ namespace SWTools
                 isDynamic = asset.atlasPopulationMode == AtlasPopulationMode.Dynamic,
                 materialPresetCount = CountMaterialPresets(asset),
             };
+        }
+
+        private long GetRuntimeTextureMemoryBytes(Texture2D texture)
+        {
+            if (texture == null) return 0L;
+
+            long runtimeTextureBytes = Profiler.GetRuntimeMemorySizeLong(texture);
+            return runtimeTextureBytes > 0L ? runtimeTextureBytes : EstimateTextureMemoryBytes(texture);
+        }
+
+        private long GetStorageTextureMemoryBytes(Texture2D texture)
+        {
+            if (texture == null) return 0L;
+
+            string texturePath = AssetDatabase.GetAssetPath(texture);
+            if (!string.IsNullOrEmpty(texturePath))
+            {
+                FileInfo textureFile = new FileInfo(texturePath);
+                if (textureFile.Exists)
+                {
+                    return textureFile.Length;
+                }
+            }
+
+            return EstimateTextureMemoryBytes(texture);
+        }
+
+        private long EstimateTextureMemoryBytes(Texture2D texture)
+        {
+            if (texture == null) return 0L;
+
+            return (long)texture.width * texture.height * GetTextureFormatBytesPerPixel(texture.format);
+        }
+
+        private int GetTextureFormatBytesPerPixel(TextureFormat textureFormat)
+        {
+            switch (textureFormat.ToString())
+            {
+                case "Alpha8":
+                case "R8":
+                    return 1;
+                case "R16":
+                case "RG16":
+                case "RGB565":
+                case "RGBA4444":
+                    return 2;
+                case "RGB24":
+                    return 3;
+                case "RGBAHalf":
+                    return 8;
+                case "RGBAFloat":
+                    return 16;
+                case "RGBA32":
+                case "ARGB32":
+                case "BGRA32":
+                default:
+                    return 4;
+            }
         }
 
         private List<Texture2D> GetAtlasTextures(TMP_FontAsset asset)
@@ -1234,4 +1294,4 @@ namespace SWTools
         #endregion // 성능 탭
     }
 }
-#endif // !SW_TMP_MANAAGER_DISABLE
+#endif // !SW_TMP_MANAGER_DISABLE

@@ -18,13 +18,14 @@ namespace SWTools
     {
         #region 필드
         private const string PresetSymbolsKey = "SWTools.DefineSymbolWindow.Presets";
+        private const string TmpManagerDisableSymbol = "SW_TMP_MANAGER_DISABLE";
 
         private static readonly string[] defaultPresetSymbols =
         {
             "SW_DEBUG_MODE",
             "SW_GOOGLEPLAY_ENABLE",
             "SW_STEAMWORKS_NET",
-            "SW_TMP_MANAAGER_DISABLE",
+            TmpManagerDisableSymbol,
         };
 
         private BuildTargetGroup selectedGroup;
