@@ -202,7 +202,7 @@ namespace SWUtils
         }
         #endregion // 숨김 연출
 
-        #region 확장 지점
+        #region 재정의
         /// <summary>
         /// 팝업이 표시된 직후 호출됩니다.
         /// </summary>
@@ -216,6 +216,14 @@ namespace SWUtils
         protected virtual void OnHide()
         {
         }
-        #endregion // 확장 지점
+        #endregion // 재정의
+
+        #region 테스트
+        [SWButton("팝업 닫기")]
+        private void EditorTestHidePopup()
+        {
+            Hide(null);
+        }
+        #endregion // 테스트
     }
 }
