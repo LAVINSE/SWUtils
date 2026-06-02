@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -38,14 +37,35 @@ namespace SWTools
 
             if (!FieldInfoLDict.TryGetValue(targetTypeHashCode, out fieldInfoList))
             {
-                IList<Type> typeTree = targetType.GetBaseTypes();
-
                 // 모든 필드 정보 수집
-                // 상속 계층 순서대로 정렬
-                // 부모일수록 앞으로 정렬 
-                fieldInfoList = target.GetType().GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                .OrderByDescending(x => typeTree.IndexOf(x.DeclaringType))
-                .ToList();
+                // 상속 계층 순서대로 수집
+                // 부모일수록 앞으로 정렬
+                fieldInfoList = new List<FieldInfo>();
+                Stack<Type> typeStack = new();
+                Type currentType = targetType;
+
+                while (currentType != null && currentType != typeof(MonoBehaviour))
+                {
+                    typeStack.Push(currentType);
+
+                    if (currentType == typeof(SWMonoBehaviour))
+                        break;
+
+                    currentType = currentType.BaseType;
+                }
+
+                while (typeStack.Count > 0)
+                {
+                    Type type = typeStack.Pop();
+                    FieldInfo[] fields = type.GetFields(
+                        BindingFlags.Instance |
+                        BindingFlags.Static |
+                        BindingFlags.Public |
+                        BindingFlags.NonPublic |
+                        BindingFlags.DeclaredOnly);
+
+                    fieldInfoList.AddRange(fields);
+                }
 
                 FieldInfoLDict.Add(targetTypeHashCode, fieldInfoList);
             }
