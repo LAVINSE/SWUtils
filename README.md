@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 추가합니다.
 브랜치 또는 태그를 고정해서 설치하려면 URL 뒤에 `#브랜치명` 또는 `#태그명`을 붙입니다.
 
 ```text
-https://github.com/사용자명/저장소명.git#v1.0.5
+https://github.com/사용자명/저장소명.git#v1.0.6
 ```
 
 ## 의존 패키지
@@ -52,6 +52,9 @@ https://github.com/사용자명/저장소명.git#v1.0.5
 - `SWDropdown`: 지정한 값 목록을 드롭다운으로 표시합니다.
 - `SWGroup`: 인스펙터 필드를 그룹으로 묶습니다.
 - `SWReadOnly`: 필드를 읽기 전용으로 표시합니다.
+- `SWSubClassSelector`: `SerializeReference` 필드에서 추상 클래스 또는 인터페이스의 구현 타입을 검색 가능한 드롭다운으로 선택합니다.
+- `SWAddTypeMenu`: `SWSubClassSelector` 드롭다운에 표시되는 타입 메뉴 경로를 지정합니다.
+- `SWHideInTypeMenu`: `SWSubClassSelector` 드롭다운에서 특정 타입을 숨깁니다.
 - `SWRequiresConstantRepaint`, `SWRequiresConstantRepaintOnlyWhenPlaying`: 커스텀 인스펙터 갱신 조건을 지정합니다.
 - `SWTable`, `SWTableSheet`: 표 데이터를 ScriptableObject 필드와 연결할 때 사용합니다.
 
@@ -79,6 +82,54 @@ public class ExampleComponent : SWMonoBehaviour
     }
 }
 ```
+
+`SWSubClassSelector` 사용 예시:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SWTools;
+using UnityEngine;
+
+public class SubClassSelectorExample : SWMonoBehaviour
+{
+    [SerializeReference]
+    [SWSubClassSelector]
+    [SerializeField] private SkillAction skillAction;
+
+    [SerializeReference]
+    [SWSubClassSelector]
+    [SerializeField] private List<SkillAction> skillActions = new List<SkillAction>();
+}
+
+[Serializable]
+public abstract class SkillAction
+{
+    public abstract void Execute();
+}
+
+[Serializable]
+[SWAddTypeMenu("Skill/Heal")]
+public class HealSkillAction : SkillAction
+{
+    [SerializeField] private int healAmount = 10;
+
+    public override void Execute()
+    {
+    }
+}
+
+[Serializable]
+[SWHideInTypeMenu]
+public class HiddenSkillAction : SkillAction
+{
+    public override void Execute()
+    {
+    }
+}
+```
+
+`SkillAction` 같은 추상 클래스 또는 인터페이스를 기준 타입으로 두면 Inspector에서 `HealSkillAction` 같은 직렬화 가능한 구현 타입이 드롭다운에 표시됩니다. `SWAddTypeMenu`로 메뉴 경로를 지정할 수 있고, `SWHideInTypeMenu`가 붙은 타입은 표시되지 않습니다.
 
 ### `Runtime/Coroutine`
 
@@ -411,6 +462,7 @@ Hierarchy 표시 스타일과 아이콘을 저장하고 적용합니다. `SWHier
 샘플 prefab과 예제 스크립트를 제공합니다.
 
 - `Samples/Example/SWAttributeExample.cs`: 어트리뷰트 사용 예시입니다.
+- `Samples/Example/SWSubClassSelectorExample.cs`: `SWSubClassSelector`, `SWAddTypeMenu`, `SWHideInTypeMenu` 사용 예시입니다.
 - `Samples/Prefab/AtrributeExample.prefab`: 어트리뷰트 예제 prefab입니다.
 - `Samples/Prefab/SWPool.prefab`: 풀 매니저 prefab입니다.
 - `Samples/Prefab/SWPoolRegistry.prefab`: 풀 등록 prefab입니다.

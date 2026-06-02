@@ -5,6 +5,11 @@ using UnityEngine;
 /// <summary>
 /// SWTools 인스펙터 어트리뷰트 사용 예제를 보여주는 샘플 컴포넌트입니다.
 /// </summary>
+namespace SWExample
+{
+/// <summary>
+/// SWTools 인스펙터 어트리뷰트 사용 예시를 보여주는 샘플 컴포넌트입니다.
+/// </summary>
 public class SWAttributeExample : SWMonoBehaviour
 {
     /// <summary>
@@ -69,4 +74,5 @@ public class SWAttributeExample : SWMonoBehaviour
         SWUtils.SWUtilsLog.Log("버튼 바 예제 3");
     }
     #endregion // 함수
+}
 }
