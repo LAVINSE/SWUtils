@@ -12,15 +12,15 @@ namespace SWUtils
     /// 기본 구현은 GameObject 활성 상태와 표시/숨김 연출을 제어합니다.
     /// 사운드, 입력 잠금 같은 부가 처리는 <see cref="OnShow"/>와 <see cref="OnHide"/>를 재정의해 확장합니다.
     /// </remarks>
-    public class SWPopupBase : MonoBehaviour
+    public class SWPopupBase : SWMonoBehaviour
     {
         #region 필드
-        [Header("=====> 표시 연출 <=====")]
+        [SWGroup("=====> 표시 연출 <=====")]
         [SerializeField] private bool useShowEffect = true;
         [SerializeField, SWCondition("useShowEffect", true)] private SWPopupShowEffect showEffect;
         [SerializeField, SWCondition("useShowEffect", true)] private Transform showEffectTarget;
 
-        [Header("=====> 숨김 연출 <=====")]
+        [SWGroup("=====> 숨김 연출 <=====")]
         [SerializeField] private bool useHideEffect;
         [SerializeField, SWCondition("useHideEffect", true)] private SWPopupHideEffect hideEffect;
         [SerializeField, SWCondition("useHideEffect", true)] private Transform hideEffectTarget;
