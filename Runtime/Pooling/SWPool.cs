@@ -23,11 +23,29 @@ namespace SWPooling
         private readonly Dictionary<string, GameObject> nameToPrefabDictionary = new();
         private readonly Dictionary<string, List<GameObject>> groupToPrefabListDictionary = new();
         private readonly Dictionary<string, int> groupSequenceIndexDictionary = new();
+        private readonly Dictionary<GameObject, PoolStatistics> poolStatisticsDictionary = new();
         /// <summary>지연 반환 예약 중인 코루틴을 저장하여 조기 반환 때 취소합니다.</summary>
         private readonly Dictionary<GameObject, Coroutine> delayedReleaseDictionary = new();
         /// <summary>WaitForSeconds 캐시입니다. 반복 생성에 따른 메모리 할당을 줄입니다.</summary>
         private readonly Dictionary<float, WaitForSeconds> waitCacheDictionary = new();
         #endregion // 필드
+
+        #region 데이터
+        /// <summary>
+        /// 프리팹 풀별 누적 사용량을 저장하는 내부 통계입니다.
+        /// </summary>
+        private sealed class PoolStatistics
+        {
+            /// <summary>생성된 인스턴스 수입니다.</summary>
+            public int createdCount;
+            /// <summary>풀에서 꺼낸 총 횟수입니다.</summary>
+            public int spawnCount;
+            /// <summary>풀로 반환한 총 횟수입니다.</summary>
+            public int releaseCount;
+            /// <summary>풀 크기 제한 또는 정리로 파괴된 총 횟수입니다.</summary>
+            public int destroyedCount;
+        }
+        #endregion // 데이터
 
         #region 초기화
         /// <inheritdoc/>
@@ -184,6 +202,7 @@ namespace SWPooling
 
             ObjectPool<GameObject> pool = GetOrCreatePool(prefab);
             GameObject instance = pool.Get();
+            GetOrCreateStatistics(prefab).spawnCount++;
 
             Transform instanceTransform = instance.transform;
             instanceTransform.SetParent(parent != null ? parent : transform, false);
@@ -277,6 +296,7 @@ namespace SWPooling
             if (poolDictionary.TryGetValue(prefab, out ObjectPool<GameObject> pool))
             {
                 pool.Release(instance);
+                GetOrCreateStatistics(prefab).releaseCount++;
                 return;
             }
 
@@ -323,6 +343,7 @@ namespace SWPooling
             pool.Clear();
             poolDictionary.Remove(prefab);
             RemovePrefabInstances(prefab);
+            poolStatisticsDictionary.Remove(prefab);
         }
 
         /// <inheritdoc/>
@@ -336,6 +357,7 @@ namespace SWPooling
 
             poolDictionary.Clear();
             instanceToPrefabDictionary.Clear();
+            poolStatisticsDictionary.Clear();
         }
 
         /// <inheritdoc/>
@@ -352,6 +374,65 @@ namespace SWPooling
         public int CountInPool(string poolName)
         {
             return TryGetPrefab(poolName, out GameObject prefab) ? CountInPool(prefab) : 0;
+        }
+
+        /// <summary>
+        /// 현재 풀 상태를 모니터 창에서 표시할 수 있는 스냅샷으로 반환합니다.
+        /// </summary>
+        /// <returns>프리팹 풀별 현재 상태 목록입니다.</returns>
+        public IReadOnlyList<SWPoolSnapshot> GetPoolSnapshots()
+        {
+            List<SWPoolSnapshot> snapshots = new();
+            HashSet<GameObject> prefabs = new();
+
+            foreach (GameObject prefab in poolDictionary.Keys)
+            {
+                if (prefab != null)
+                    prefabs.Add(prefab);
+            }
+
+            foreach (GameObject prefab in nameToPrefabDictionary.Values)
+            {
+                if (prefab != null)
+                    prefabs.Add(prefab);
+            }
+
+            foreach (List<GameObject> prefabList in groupToPrefabListDictionary.Values)
+            {
+                for (int index = 0; index < prefabList.Count; index++)
+                {
+                    if (prefabList[index] != null)
+                        prefabs.Add(prefabList[index]);
+                }
+            }
+
+            foreach (GameObject prefab in prefabs)
+            {
+                PoolStatistics statistics = GetOrCreateStatistics(prefab);
+                bool hasPool = poolDictionary.TryGetValue(prefab, out ObjectPool<GameObject> pool);
+
+                snapshots.Add(new SWPoolSnapshot(
+                    prefab,
+                    GetPoolNames(prefab),
+                    GetGroupNames(prefab),
+                    statistics.createdCount,
+                    hasPool ? pool.CountActive : 0,
+                    hasPool ? pool.CountInactive : 0,
+                    statistics.spawnCount,
+                    statistics.releaseCount,
+                    statistics.destroyedCount,
+                    CountDelayedReleases(prefab)
+                ));
+            }
+
+            snapshots.Sort((left, right) =>
+            {
+                string leftName = left.Prefab != null ? left.Prefab.name : string.Empty;
+                string rightName = right.Prefab != null ? right.Prefab.name : string.Empty;
+                return string.Compare(leftName, rightName, System.StringComparison.Ordinal);
+            });
+
+            return snapshots;
         }
         #endregion // 풀 기능
 
@@ -592,6 +673,7 @@ namespace SWPooling
             );
 
             poolDictionary[prefab] = pool;
+            GetOrCreateStatistics(prefab);
             SWUtilsLog.Log($"[SWPool] 풀 생성 완료: {prefab.name}");
             return pool;
         }
@@ -606,6 +688,7 @@ namespace SWPooling
             GameObject instance = Instantiate(prefab, transform);
             instance.name = prefab.name;
             instanceToPrefabDictionary[instance] = prefab;
+            GetOrCreateStatistics(prefab).createdCount++;
             return instance;
         }
 
@@ -654,8 +737,81 @@ namespace SWPooling
         {
             if (instance == null) return;
 
+            if (instanceToPrefabDictionary.TryGetValue(instance, out GameObject prefab))
+                GetOrCreateStatistics(prefab).destroyedCount++;
+
             instanceToPrefabDictionary.Remove(instance);
             Destroy(instance);
+        }
+
+        /// <summary>
+        /// 지정 프리팹의 통계 정보를 반환하거나 새로 생성합니다.
+        /// </summary>
+        /// <param name="prefab">통계를 찾을 프리팹입니다.</param>
+        /// <returns>프리팹 풀 통계입니다.</returns>
+        private PoolStatistics GetOrCreateStatistics(GameObject prefab)
+        {
+            if (!poolStatisticsDictionary.TryGetValue(prefab, out PoolStatistics statistics))
+            {
+                statistics = new PoolStatistics();
+                poolStatisticsDictionary[prefab] = statistics;
+            }
+
+            return statistics;
+        }
+
+        /// <summary>
+        /// 지정 프리팹에 연결된 풀 이름 목록을 반환합니다.
+        /// </summary>
+        /// <param name="prefab">이름을 찾을 프리팹입니다.</param>
+        /// <returns>풀 이름 목록입니다.</returns>
+        private IReadOnlyList<string> GetPoolNames(GameObject prefab)
+        {
+            List<string> poolNames = new();
+            foreach (KeyValuePair<string, GameObject> keyValue in nameToPrefabDictionary)
+            {
+                if (keyValue.Value == prefab)
+                    poolNames.Add(keyValue.Key);
+            }
+
+            return poolNames;
+        }
+
+        /// <summary>
+        /// 지정 프리팹이 포함된 그룹 이름 목록을 반환합니다.
+        /// </summary>
+        /// <param name="prefab">그룹을 찾을 프리팹입니다.</param>
+        /// <returns>그룹 이름 목록입니다.</returns>
+        private IReadOnlyList<string> GetGroupNames(GameObject prefab)
+        {
+            List<string> groupNames = new();
+            foreach (KeyValuePair<string, List<GameObject>> keyValue in groupToPrefabListDictionary)
+            {
+                if (keyValue.Value.Contains(prefab))
+                    groupNames.Add(keyValue.Key);
+            }
+
+            return groupNames;
+        }
+
+        /// <summary>
+        /// 지정 프리팹에 연결된 지연 반환 예약 수를 반환합니다.
+        /// </summary>
+        /// <param name="prefab">예약 수를 확인할 프리팹입니다.</param>
+        /// <returns>지연 반환 예약 수입니다.</returns>
+        private int CountDelayedReleases(GameObject prefab)
+        {
+            int count = 0;
+            foreach (GameObject instance in delayedReleaseDictionary.Keys)
+            {
+                if (instanceToPrefabDictionary.TryGetValue(instance, out GameObject mappedPrefab)
+                    && mappedPrefab == prefab)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
         #endregion // 내부
     }

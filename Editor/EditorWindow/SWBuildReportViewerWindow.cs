@@ -124,7 +124,7 @@ namespace SWTools
         /// <summary>
         /// Build Report Viewer 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Build Report Viewer")]
+        [MenuItem("SWTools/Debug/Build Report Viewer")]
         public static void ShowWindow()
         {
             SWBuildReportViewerWindow window = GetWindow<SWBuildReportViewerWindow>();

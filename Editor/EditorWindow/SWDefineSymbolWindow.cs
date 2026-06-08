@@ -40,7 +40,7 @@ namespace SWTools
         /// <summary>
         /// Define Symbol Window 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Define Symbol Window")]
+        [MenuItem("SWTools/Utils/Define Symbol Window")]
         public static void ShowWindow()
         {
             SWDefineSymbolWindow window = GetWindow<SWDefineSymbolWindow>();

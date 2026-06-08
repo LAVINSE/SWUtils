@@ -13,7 +13,7 @@ using GooglePlayGames.BasicApi.SavedGame;
 using System.Runtime.InteropServices;
 #endif
 
-#if (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#if (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
 using Steamworks;
 #endif
 
@@ -55,7 +55,7 @@ namespace SWUtils
                 return isAuthenticated;
 #elif UNITY_IOS && !UNITY_EDITOR
                 return true;
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return SteamManager.Initialized;
 #else
                 return false;
@@ -72,7 +72,7 @@ namespace SWUtils
                 return "Google Play Games";
 #elif UNITY_IOS && !UNITY_EDITOR
                 return "iCloud";
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return "Steam Cloud";
 #else
                 return "Local Fallback";
@@ -162,7 +162,7 @@ namespace SWUtils
             isInitialized = true;
             SWUtilsLog.Log("[SWUtilsCloud] iCloud 초기화 완료");
             onComplete?.Invoke(true);
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
             isAuthenticated = SteamManager.Initialized;
             isInitialized = true;
             SWUtilsLog.Log($"[SWUtilsCloud] Steam 초기화 상태: {isAuthenticated}");
@@ -253,7 +253,7 @@ namespace SWUtils
                 SWUtilsLog.LogError($"[SWUtilsCloud] iCloud 저장 실패: {exception.Message}");
                 SaveLocalAndComplete(json, saveName, onComplete, false);
             }
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
             if (!SteamManager.Initialized)
             {
                 SWUtilsLog.LogWarning("[SWUtilsCloud] Steam이 초기화되지 않아 로컬에만 저장합니다.");
@@ -361,7 +361,7 @@ namespace SWUtils
                 SWUtilsLog.LogError($"[SWUtilsCloud] iCloud 로드 실패: {exception.Message}");
                 LoadLocalAndComplete(saveName, onComplete);
             }
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
             if (!SteamManager.Initialized)
             {
                 SWUtilsLog.LogWarning("[SWUtilsCloud] Steam이 초기화되지 않아 로컬에서만 로드합니다.");
@@ -470,7 +470,7 @@ namespace SWUtils
                 SWUtilsLog.LogError($"[SWUtilsCloud] iCloud 삭제 실패: {exception.Message}");
                 onComplete?.Invoke(false);
             }
-#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
             try
             {
                 string fileName = saveName + ".json";

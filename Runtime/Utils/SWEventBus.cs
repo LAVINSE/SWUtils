@@ -10,7 +10,23 @@ namespace SWUtils
     {
         #region 필드
         private static readonly Dictionary<Type, Delegate> eventTable = new();
+        private static readonly Dictionary<Type, PublishRecord> publishRecordTable = new();
         #endregion // 필드
+
+        #region 데이터
+        /// <summary>
+        /// 이벤트 타입별 마지막 발행 상태를 저장하는 내부 기록입니다.
+        /// </summary>
+        private sealed class PublishRecord
+        {
+            /// <summary>이벤트가 발행된 총 횟수입니다.</summary>
+            public int publishCount;
+            /// <summary>마지막 발행 시간입니다.</summary>
+            public DateTime lastPublishTime;
+            /// <summary>마지막 발행 데이터 요약입니다.</summary>
+            public string lastPayloadText;
+        }
+        #endregion // 데이터
 
         #region 함수
         /// <summary>
@@ -71,6 +87,7 @@ namespace SWUtils
             Type eventType = typeof(TEvent);
             if (!eventTable.TryGetValue(eventType, out Delegate existing))
             {
+                RecordPublish(eventType, eventData);
                 SWUtilsLog.Log($"[SWEventBus] Publish skipped. No listeners: {eventType.Name}");
                 return;
             }
@@ -95,6 +112,7 @@ namespace SWUtils
                 }
             }
 
+            RecordPublish(eventType, eventData);
             SWUtilsLog.Log($"[SWEventBus] Publish: {eventType.Name}");
         }
 
@@ -114,6 +132,7 @@ namespace SWUtils
         public static void ClearAll()
         {
             eventTable.Clear();
+            publishRecordTable.Clear();
             SWUtilsLog.Log("[SWEventBus] Clear all.");
         }
 
@@ -125,6 +144,75 @@ namespace SWUtils
         public static bool HasListener<TEvent>()
         {
             return eventTable.ContainsKey(typeof(TEvent));
+        }
+
+        /// <summary>
+        /// 현재 이벤트 버스 상태를 디버깅 창에서 표시할 수 있는 스냅샷으로 반환합니다.
+        /// </summary>
+        /// <returns>이벤트 타입별 현재 리스너와 발행 기록 목록입니다.</returns>
+        public static IReadOnlyList<SWEventBusEventSnapshot> GetEventSnapshots()
+        {
+            List<SWEventBusEventSnapshot> snapshots = new();
+            HashSet<Type> eventTypes = new();
+
+            foreach (Type eventType in eventTable.Keys)
+                eventTypes.Add(eventType);
+
+            foreach (Type eventType in publishRecordTable.Keys)
+                eventTypes.Add(eventType);
+
+            foreach (Type eventType in eventTypes)
+            {
+                int listenerCount = 0;
+                if (eventTable.TryGetValue(eventType, out Delegate existing) && existing != null)
+                    listenerCount = existing.GetInvocationList().Length;
+
+                int publishCount = 0;
+                DateTime? lastPublishTime = null;
+                string lastPayloadText = string.Empty;
+
+                if (publishRecordTable.TryGetValue(eventType, out PublishRecord record))
+                {
+                    publishCount = record.publishCount;
+                    lastPublishTime = record.lastPublishTime;
+                    lastPayloadText = record.lastPayloadText;
+                }
+
+                snapshots.Add(new SWEventBusEventSnapshot(eventType, listenerCount, publishCount,
+                    lastPublishTime, lastPayloadText));
+            }
+
+            snapshots.Sort((left, right) => string.Compare(left.EventType.Name, right.EventType.Name,
+                StringComparison.Ordinal));
+            return snapshots;
+        }
+
+        /// <summary>
+        /// 이벤트 발행 기록만 제거합니다. 현재 등록된 리스너는 유지합니다.
+        /// </summary>
+        public static void ClearPublishRecords()
+        {
+            publishRecordTable.Clear();
+            SWUtilsLog.Log("[SWEventBus] Clear publish records.");
+        }
+
+        /// <summary>
+        /// 이벤트 발행 횟수와 마지막 발행 데이터를 기록합니다.
+        /// </summary>
+        /// <typeparam name="TEvent">이벤트 데이터 타입입니다.</typeparam>
+        /// <param name="eventType">이벤트 데이터 타입입니다.</param>
+        /// <param name="eventData">발행된 이벤트 데이터입니다.</param>
+        private static void RecordPublish<TEvent>(Type eventType, TEvent eventData)
+        {
+            if (!publishRecordTable.TryGetValue(eventType, out PublishRecord record))
+            {
+                record = new PublishRecord();
+                publishRecordTable[eventType] = record;
+            }
+
+            record.publishCount++;
+            record.lastPublishTime = DateTime.Now;
+            record.lastPayloadText = eventData != null ? eventData.ToString() : "(null)";
         }
         #endregion // 함수
     }

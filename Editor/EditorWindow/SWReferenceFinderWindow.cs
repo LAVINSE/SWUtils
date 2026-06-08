@@ -52,7 +52,7 @@ namespace SWTools
         /// <summary>
         /// Reference Finder 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Reference Finder %#r")]
+        [MenuItem("SWTools/Utils/Reference Finder %#r")]
         public static void ShowWindow()
         {
             SWReferenceFinderWindow window = GetWindow<SWReferenceFinderWindow>();

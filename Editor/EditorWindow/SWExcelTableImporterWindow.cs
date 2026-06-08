@@ -58,7 +58,7 @@ namespace SWTools
         /// <summary>
         /// Excel Table Importer 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Excel Table Importer")]
+        [MenuItem("SWTools/Utils/Excel Table Importer")]
         public static void ShowWindow()
         {
             SWExcelTableImporterWindow window = GetWindow<SWExcelTableImporterWindow>();

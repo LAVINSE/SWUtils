@@ -22,7 +22,7 @@ namespace SWTools
         /// <summary>
         /// SWUtilsPlayerPrefs 설정 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/PlayerPrefs Salt Settings")]
+        [MenuItem("SWTools/Utils/PlayerPrefs Salt Settings")]
         public static void ShowWindow()
         {
             SWPlayerPrefsSettingsWindow window = GetWindow<SWPlayerPrefsSettingsWindow>();

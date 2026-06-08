@@ -48,7 +48,7 @@ namespace SWTools
         /// <summary>
         /// PlayerPrefs Viewer 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/PlayerPrefs Viewer")]
+        [MenuItem("SWTools/Debug/PlayerPrefs Viewer")]
         public static void ShowWindow()
         {
             SWPlayerPrefsViewerWindow window = GetWindow<SWPlayerPrefsViewerWindow>();

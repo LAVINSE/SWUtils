@@ -181,7 +181,7 @@ namespace SWTools
         /// <summary>
         /// TMP Font Asset Manager 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/TMP Font Asset Manager")]
+        [MenuItem("SWTools/Utils/TMP Font Asset Manager")]
         public static void ShowWindow()
         {
             var window = GetWindow<SWTMPFontAssetManagerWindow>();

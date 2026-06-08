@@ -63,7 +63,7 @@ namespace SWTools
         /// <summary>
         /// Hierarchy Tools 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Hierarchy Tools")]
+        [MenuItem("SWTools/Utils/Hierarchy Tools")]
         public static void ShowWindow()
         {
             SWHierarchyToolsWindow window = GetWindow<SWHierarchyToolsWindow>();

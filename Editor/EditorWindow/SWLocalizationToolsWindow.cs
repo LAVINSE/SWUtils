@@ -115,7 +115,7 @@ namespace SWTools
         /// <summary>
         /// Localization Tools 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Localization Tools %#l")]
+        [MenuItem("SWTools/Utils/Localization Tools %#l")]
         public static void ShowWindow()
         {
             SWLocalizationToolsWindow window = GetWindow<SWLocalizationToolsWindow>();

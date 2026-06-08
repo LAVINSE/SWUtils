@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.7] - 2026-06-08
+
+### Added
+- `SWTools/Debug/EventBus Debugger Window`를 추가했습니다.
+- `SWEventBus`에 이벤트 타입별 리스너 수, 발행 횟수, 마지막 발행 시간, 마지막 발행 데이터 스냅샷 기능을 추가했습니다.
+- `SWTools/Debug/Pool Monitor Window`를 추가했습니다.
+- `SWPool`에 프리팹별 생성 수, 활성 수, 대기 수, 스폰 횟수, 반환 횟수, 파괴 수, 지연 반환 수 스냅샷 기능을 추가했습니다.
+
+### Changed
+- EditorWindow 메뉴 경로를 `SWTools/Debug`와 `SWTools/Utils`로 구분했습니다.
+- README의 EditorWindow 설명에 실제 메뉴 경로를 표기했습니다.
+- 패키지 버전을 `v1.0.7`로 갱신했습니다.
+
+### Fixed
+- Runtime 스크립트에서 Unity 빌드 시 문제가 생기지 않도록 Steamworks.NET 분기를 `!UNITY_EDITOR` 조건으로 보호했습니다.
+- `SWConditionAttribute`에서 사용하지 않는 `UnityEditor` 참조를 제거했습니다.
+
 ## [v1.0.6] - 2026-06-02
 
 ### Added

@@ -42,7 +42,7 @@ namespace SWUtils.Editor
         /// <summary>
         /// Resolution Window 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Resolution Window")]
+        [MenuItem("SWTools/Utils/Resolution Window")]
         public static void OpenWindow()
         {
             var window = GetWindow<SWUtilsResolutionWindow>();

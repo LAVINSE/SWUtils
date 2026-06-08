@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 추가합니다.
 브랜치 또는 태그를 고정해서 설치하려면 URL 뒤에 `#브랜치명` 또는 `#태그명`을 붙입니다.
 
 ```text
-https://github.com/LAVINSE/SwUtils.git#v1.0.6
+https://github.com/LAVINSE/SwUtils.git#v1.0.7
 ```
 
 ## 의존 패키지
@@ -185,7 +185,7 @@ SWUtilsPlayerPrefs.Save();
 int coin = SWUtilsPlayerPrefs.GetInt("coin", 0);
 ```
 
-salt 설정은 `SWTools/PlayerPrefs Salt Settings`에서 생성하고 수정합니다. 설정 에셋은 `Assets/Resources/SWUtilsPlayerPrefsSettings.asset`에 생성되며, 빌드 런타임에서는 Resources를 통해 자동으로 읽습니다. salt 값을 변경하면 이전 salt로 저장된 데이터는 읽을 수 없으므로 변경 전에 데이터를 삭제하거나 마이그레이션을 준비해야 합니다.
+salt 설정은 `SWTools/Utils/PlayerPrefs Salt Settings`에서 생성하고 수정합니다. 설정 에셋은 `Assets/Resources/SWUtilsPlayerPrefsSettings.asset`에 생성되며, 빌드 런타임에서는 Resources를 통해 자동으로 읽습니다. salt 값을 변경하면 이전 salt로 저장된 데이터는 읽을 수 없으므로 변경 전에 데이터를 삭제하거나 마이그레이션을 준비해야 합니다.
 
 저장 관리자 사용 예시:
 
@@ -233,6 +233,7 @@ GameObject 풀링과 그룹 기반 생성 기능을 제공합니다.
 - `SWPoolCatalog`: 풀 등록 정보를 담는 ScriptableObject입니다.
 - `SWPoolRegistry`: 씬 시작 시 풀과 그룹을 등록하는 컴포넌트입니다.
 - `SWPoolGroupSelectionMode`: 그룹 생성 방식입니다.
+- `SWPoolSnapshot`: `SWTools/Debug/Pool Monitor Window`에서 풀 상태를 표시하기 위한 읽기 전용 스냅샷입니다.
 
 사용 예시:
 
@@ -342,6 +343,7 @@ SWPopupManager.Instance.Hide("option");
 - `SWAudioLibrary`, `SWAudioManager`: 음악과 효과음 키 기반 재생을 관리합니다.
 - `SWCooldown`: 쿨다운 진행률, 남은 시간, 사용 가능 여부를 계산합니다.
 - `SWEventBus`: 타입 기반 이벤트 구독, 발행, 해제를 처리합니다.
+- `SWEventBusEventSnapshot`: `SWTools/Debug/EventBus Debugger Window`에서 이벤트 상태를 표시하기 위한 읽기 전용 스냅샷입니다.
 - `SWSceneLoader`: 씬 로드, additive 로드, 언로드, 재로드를 처리합니다.
 - `SWSingleton`, `SWSingletonScene`: 싱글톤 MonoBehaviour 기반 클래스입니다.
 - `SWTimer`, `SWUtilsRefillTimer`: 시간 경과와 충전형 타이머를 다룹니다.
@@ -398,29 +400,59 @@ private void TryUseSkill()
 
 ### `Editor/EditorWindow`
 
-상단 메뉴 `SWTools`에서 열 수 있는 에디터 창 모음입니다.
+상단 메뉴 `SWTools`에서 열 수 있는 에디터 창 모음입니다. 디버그 용도는 `SWTools/Debug`, 일반 편의 기능은 `SWTools/Utils` 아래에 배치되어 있습니다.
 
-- `SWTools/Build Report Viewer`: 빌드 리포트와 포함 에셋 크기를 확인합니다.
-- `SWTools/Define Symbol Window`: Scripting Define Symbols를 관리합니다.
-- `SWTools/Excel Table Importer`: 표 텍스트를 ScriptableObject 데이터로 적용합니다.
-- `SWTools/Hierarchy Tools`: Hierarchy 오브젝트 색상, 아이콘, 스타일을 설정합니다.
-- `SWTools/Input Debugger Window`: Input System 장치와 입력 상태를 확인합니다.
-- `SWTools/Localization Tools`: Localization 테이블 작업을 보조합니다.
-- `SWTools/PlayerPrefs Viewer`: PlayerPrefs 데이터를 조회, 수정, 삭제합니다.
-- `SWTools/PlayerPrefs Salt Settings`: SWUtilsPlayerPrefs 암호화 salt 설정 에셋을 생성하고 수정합니다.
-- `SWTools/Quick Asset Palette`: 자주 쓰는 에셋을 빠르게 선택합니다.
-- `SWTools/Reference Finder`: 선택한 에셋의 프로젝트 참조를 찾습니다.
-- `SWTools/Test Tools Window`: 플레이 중 테스트와 씬 이동 작업을 보조합니다.
-- `SWTools/TMP Font Asset Manager`: TextMeshPro 폰트 에셋 적용과 성능 확인을 관리합니다.
-- `SWTools/Resolution Window`: 해상도 테스트 값을 확인합니다.
+- `SWTools/Debug/Build Report Viewer`: 빌드 리포트와 포함 에셋 크기를 확인합니다.
+- `SWTools/Debug/EventBus Debugger Window`: `SWEventBus`에 등록된 이벤트 타입, 리스너 수, 발행 횟수, 마지막 발행 데이터를 확인합니다.
+- `SWTools/Debug/Input Debugger Window`: Input System 장치와 입력 상태를 확인합니다.
+- `SWTools/Debug/PlayerPrefs Viewer`: PlayerPrefs 데이터를 조회, 수정, 삭제합니다.
+- `SWTools/Debug/Pool Monitor Window`: `SWPool`의 프리팹별 생성 수, 활성 수, 대기 수, 스폰 횟수, 반환 횟수, 지연 반환 수를 확인합니다.
+- `SWTools/Debug/Test Tools Window`: 플레이 중 테스트와 씬 이동 작업을 보조합니다.
+- `SWTools/Utils/Define Symbol Window`: Scripting Define Symbols를 관리합니다.
+- `SWTools/Utils/Excel Table Importer`: 표 텍스트를 ScriptableObject 데이터로 적용합니다.
+- `SWTools/Utils/Hierarchy Tools`: Hierarchy 오브젝트 색상, 아이콘, 스타일을 설정합니다.
+- `SWTools/Utils/Localization Tools`: Localization 테이블 작업을 보조합니다.
+- `SWTools/Utils/PlayerPrefs Salt Settings`: SWUtilsPlayerPrefs 암호화 salt 설정 에셋을 생성하고 수정합니다.
+- `SWTools/Utils/Quick Asset Palette`: 자주 쓰는 에셋을 빠르게 선택합니다.
+- `SWTools/Utils/Reference Finder`: 선택한 에셋의 프로젝트 참조를 찾습니다.
+- `SWTools/Utils/TMP Font Asset Manager`: TextMeshPro 폰트 에셋 적용과 성능 확인을 관리합니다.
+- `SWTools/Utils/Resolution Window`: 해상도 테스트 값을 확인합니다.
 
-#### `SWTools/TMP Font Asset Manager` 성능 탭
+#### `SWTools/Debug/EventBus Debugger Window`
+
+`SWEventBus`의 현재 상태를 플레이 중 또는 에디터에서 확인하는 디버그 창입니다.
+
+확인 항목:
+
+- 이벤트 타입 이름과 전체 이름
+- 현재 등록된 리스너 수
+- 이벤트 발행 횟수
+- 마지막 발행 시간
+- 마지막 발행 데이터 요약
+
+`발행 기록 초기화` 버튼으로 리스너는 유지한 채 발행 횟수와 마지막 발행 기록만 초기화할 수 있습니다.
+
+#### `SWTools/Debug/Pool Monitor Window`
+
+`SWPool`의 프리팹별 상태를 확인하는 디버그 창입니다.
+
+확인 항목:
+
+- 풀에 등록된 프리팹
+- 풀 이름과 그룹 이름
+- 생성 수, 활성 수, 대기 수
+- 스폰 횟수, 반환 횟수, 파괴 수
+- 지연 반환 예약 수
+
+씬에 존재하는 `SWPool`을 기준으로 표시하며, 등록만 되고 아직 실제 ObjectPool이 생성되지 않은 프리팹도 0 상태로 확인할 수 있습니다.
+
+#### `SWTools/Utils/TMP Font Asset Manager` 성능 탭
 
 TextMeshPro 폰트 에셋의 아틀라스 메모리, 글리프, 문자, 폴백 체인, 머티리얼 프리셋 비용을 한 화면에서 확인합니다.
 
 사용 순서:
 
-1. Unity 상단 메뉴에서 `SWTools > TMP Font Asset Manager`를 엽니다.
+1. Unity 상단 메뉴에서 `SWTools > Utils > TMP Font Asset Manager`를 엽니다.
 2. `성능` 탭을 선택합니다.
 3. 확인할 `TMP_FontAsset`을 드래그 앤 드롭하거나 Object Field에 지정합니다.
 4. 선택 중인 폰트 에셋 또는 TextMeshPro 오브젝트의 폰트를 확인하려면 `선택 에셋 사용`을 누릅니다.

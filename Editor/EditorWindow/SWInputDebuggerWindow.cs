@@ -41,7 +41,7 @@ namespace SWTools
         /// <summary>
         /// Input Debugger 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Input Debugger Window")]
+        [MenuItem("SWTools/Debug/Input Debugger Window")]
         public static void ShowWindow()
         {
             SWInputDebuggerWindow window = GetWindow<SWInputDebuggerWindow>();
