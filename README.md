@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 추가합니다.
 브랜치 또는 태그를 고정해서 설치하려면 URL 뒤에 `#브랜치명` 또는 `#태그명`을 붙입니다.
 
 ```text
-https://github.com/LAVINSE/SwUtils.git#v1.0.7
+https://github.com/LAVINSE/SWUtils.git#v1.0.7
 ```
 
 ## 의존 패키지
