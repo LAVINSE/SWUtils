@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 추가합니다.
 브랜치 또는 태그를 고정해서 설치하려면 URL 뒤에 `#브랜치명` 또는 `#태그명`을 붙입니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.7
+https://github.com/LAVINSE/SWUtils.git#v1.0.8
 ```
 
 ## 의존 패키지
@@ -356,6 +356,9 @@ SWPopupManager.Instance.Hide("option");
 - `SWUtilsTriggerDispatcher`: Trigger 이벤트를 위임해서 처리합니다.
 - `SWUtilsUtility`: UI gauge 설정 같은 공통 보조 기능입니다.
 - `SWVibration`: Android, iOS 진동 호출을 처리합니다.
+- `SWAmountFormat`: 큰 숫자를 K, M, B, T 같은 단위 문자열로 변환합니다.
+- `SWAmountFormatProfile`: 숫자 단위, 소수점 자리수, 소수점 처리 방식을 Resources 프리셋 에셋으로 관리합니다.
+- `SWRectDummy`: Image 없이 UI 레이캐스트 사각 영역을 만드는 메시 없는 Graphic입니다.
 
 이벤트 버스 사용 예시:
 
@@ -392,6 +395,38 @@ private void TryUseSkill()
 }
 ```
 
+숫자 포맷 프리셋 사용 예시:
+
+```csharp
+using SWUtils;
+using TMPro;
+using UnityEngine;
+
+public class GoldTextExample : MonoBehaviour
+{
+    [SerializeField] private SWAmountFormatProfile amountFormatProfile;
+    [SerializeField] private TMP_Text goldText;
+
+    public void SetGold(long goldAmount)
+    {
+        SWAmountFormatProfile profile = amountFormatProfile != null
+            ? amountFormatProfile
+            : SWAmountFormatProfile.LoadDefault();
+
+        goldText.text = profile.Format(goldAmount);
+    }
+}
+```
+
+숫자 포맷 기본 프리셋은 `SWTools/Utils/Amount Format Window`에서 생성하고 수정합니다. 설정 에셋은 `Assets/Resources/SWAmountFormatProfile.asset`에 생성되며, 빌드 런타임에서는 Resources를 통해 읽을 수 있습니다.
+
+Rect Dummy 사용법:
+
+1. 클릭 영역만 필요한 UI 오브젝트에 `SWRectDummy`를 추가합니다.
+2. Image 컴포넌트 대신 `SWRectDummy`의 Raycast Target을 켜서 입력 영역으로 사용합니다.
+3. 부모 RectTransform에 맞추려면 인스펙터의 `Fit Parent` 버튼 또는 컨텍스트 메뉴를 사용합니다.
+4. 메뉴에서 생성하려면 `GameObject > UI > SW Rect Dummy`를 선택합니다.
+
 ## Editor 폴더 기능
 
 ### `Editor/Attribute`
@@ -412,6 +447,7 @@ private void TryUseSkill()
 - `SWTools/Utils/Excel Table Importer`: 표 텍스트를 ScriptableObject 데이터로 적용합니다.
 - `SWTools/Utils/Hierarchy Tools`: Hierarchy 오브젝트 색상, 아이콘, 스타일을 설정합니다.
 - `SWTools/Utils/Localization Tools`: Localization 테이블 작업을 보조합니다.
+- `SWTools/Utils/Amount Format Window`: 숫자 단위 포맷 프리셋을 생성하고 수정합니다.
 - `SWTools/Utils/PlayerPrefs Salt Settings`: SWUtilsPlayerPrefs 암호화 salt 설정 에셋을 생성하고 수정합니다.
 - `SWTools/Utils/Quick Asset Palette`: 자주 쓰는 에셋을 빠르게 선택합니다.
 - `SWTools/Utils/Reference Finder`: 선택한 에셋의 프로젝트 참조를 찾습니다.

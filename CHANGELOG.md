@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.8] - 2026-06-16
+
+### Added
+- `SWAmountFormat`을 추가했습니다. 큰 숫자를 K, M, B, T 같은 단위 문자열로 변환합니다.
+- `SWAmountFormatProfile`을 추가했습니다. 숫자 포맷 단위와 소수점 설정을 Resources 프리셋 에셋으로 관리합니다.
+- `SWTools/Utils/Amount Format Window`를 추가했습니다. 프리셋 에셋을 자동 생성하고 에디터 창에서 바로 수정 및 미리보기할 수 있습니다.
+- `SWRectDummy`를 추가했습니다. 메시를 생성하지 않는 UI Graphic으로 Image 없이 레이캐스트 영역을 만들 수 있습니다.
+- `GameObject/UI/SW Rect Dummy` 메뉴와 전용 인스펙터를 추가했습니다.
+
+### Changed
+- 패키지 버전을 `v1.0.8`로 갱신했습니다.
+- README에 숫자 포맷 프리셋과 Rect Dummy 사용법을 추가했습니다.
+
 ## [v1.0.7] - 2026-06-08
 
 ### Added
