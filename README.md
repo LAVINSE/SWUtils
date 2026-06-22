@@ -443,7 +443,7 @@ Rect Dummy 사용법:
 - `SWTools/Debug/Build Report Viewer`: 빌드 리포트와 포함 에셋 크기를 확인합니다.
 - `SWTools/Debug/EventBus Debugger Window`: `SWEventBus`에 등록된 이벤트 타입, 리스너 수, 발행 횟수, 마지막 발행 데이터를 확인합니다.
 - `SWTools/Debug/Input Debugger Window`: Input System 장치와 입력 상태를 확인합니다.
-- `SWTools/Debug/PlayerPrefs Viewer`: PlayerPrefs 데이터를 조회, 수정, 삭제합니다.
+- `SWTools/Debug/PlayerPrefs Viewer`: SWUtils PlayerPrefs와 기본 Unity PlayerPrefs 데이터를 탭으로 나누어 조회, 수정, 삭제합니다.
 - `SWTools/Debug/Pool Monitor Window`: `SWPool`의 프리팹별 생성 수, 활성 수, 대기 수, 스폰 횟수, 반환 횟수, 지연 반환 수를 확인합니다.
 - `SWTools/Debug/Test Tools Window`: 플레이 중 테스트와 씬 이동 작업을 보조합니다.
 - `SWTools/Utils/Define Symbol Window`: Scripting Define Symbols를 관리합니다.

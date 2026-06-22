@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- `SWTools/Debug/PlayerPrefs Viewer`에 기본 Unity PlayerPrefs를 조회, 수정, 삭제할 수 있는 `Unity PlayerPrefs` 탭을 추가했습니다.
+
 ### Changed
+- `SWTools/Debug/PlayerPrefs Viewer`의 Entries 목록에서 값을 바로 수정하고 저장할 수 있도록 개선했습니다.
 - `SWEventBus`에 로그 출력 여부를 제어하는 `IsLogOutputEnabled` 설정을 추가했습니다.
 - `SWEventBus.Publish`에 발행 단위 로그 출력 여부를 정하는 `shouldOutputLog` 매개변수를 추가했습니다.
 

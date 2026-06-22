@@ -3,14 +3,30 @@ using System.Collections.Generic;
 using SWUtils;
 using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR_WIN
+using Microsoft.Win32;
+#endif
 
 namespace SWTools
 {
     /// <summary>
-    /// SWUtilsPlayerPrefs가 관리하는 암호화 PlayerPrefs 데이터를 조회, 수정, 삭제, JSON 입출력하는 에디터 창.
+    /// SWUtilsPlayerPrefs와 기본 PlayerPrefs 데이터를 조회, 수정, 삭제, JSON 입출력하는 에디터 창.
     /// </summary>
     public class SWPlayerPrefsViewerWindow : EditorWindow
     {
+        private enum PlayerPrefsViewMode
+        {
+            SWUtilsPlayerPrefs,
+            UnityPlayerPrefs
+        }
+
+        private enum PlayerPrefsValueType
+        {
+            String,
+            Integer,
+            Float
+        }
+
         /// <summary>
         /// JSON 입출력에 사용하는 PlayerPrefs 항목 컨테이너입니다.
         /// </summary>
@@ -31,17 +47,22 @@ namespace SWTools
             public string key;
             /// <summary>PlayerPrefs 값입니다.</summary>
             public string value;
+            /// <summary>PlayerPrefs 값 타입입니다.</summary>
+            public PlayerPrefsValueType valueType;
         }
 
         private const string SlotPrefKey = "SWTools.PlayerPrefsViewer.Slot";
+        private static readonly string[] ViewModeTabNames = { "SWUtils PlayerPrefs", "Unity PlayerPrefs" };
 
         private readonly List<PrefsEntry> entries = new();
         private Vector2 scrollPosition;
         private Vector2 jsonScrollPosition;
+        private PlayerPrefsViewMode viewMode;
         private string slotName = "default";
         private string searchFilter = "";
         private string editKey = "";
         private string editValue = "";
+        private PlayerPrefsValueType editValueType = PlayerPrefsValueType.String;
         private string jsonText = "";
         private string statusMessage = "";
 
@@ -65,13 +86,26 @@ namespace SWTools
 
         private void OnGUI()
         {
-            DrawSlotSection();
+            PlayerPrefsViewMode previousViewMode = viewMode;
+            viewMode = (PlayerPrefsViewMode)SWEditorUtils.DrawTabBar((int)viewMode, ViewModeTabNames);
+            if (previousViewMode != viewMode)
+                RefreshEntries();
+
+            if (viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs)
+                DrawSlotSection();
+            else
+                DrawUnityPlayerPrefsSection();
+
             EditorGUILayout.Space(8);
             DrawEditSection();
             EditorGUILayout.Space(8);
             DrawListSection();
-            EditorGUILayout.Space(8);
-            DrawJsonSection();
+
+            if (viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs)
+            {
+                EditorGUILayout.Space(8);
+                DrawJsonSection();
+            }
 
             if (!string.IsNullOrEmpty(statusMessage))
             {
@@ -102,17 +136,41 @@ namespace SWTools
             EditorGUILayout.EndHorizontal();
         }
 
+        private void DrawUnityPlayerPrefsSection()
+        {
+            SWEditorUtils.DrawHeader("Unity PlayerPrefs");
+
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.TextField("Company", PlayerSettings.companyName);
+                EditorGUILayout.TextField("Product", PlayerSettings.productName);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            searchFilter = EditorGUILayout.TextField("Search", searchFilter);
+            if (GUILayout.Button("Refresh", GUILayout.Width(80)))
+                RefreshEntries();
+            EditorGUILayout.EndHorizontal();
+
+#if !UNITY_EDITOR_WIN
+            EditorGUILayout.HelpBox("현재 기본 PlayerPrefs 자동 목록은 Windows Editor 저장소만 지원합니다. 키를 직접 입력하면 추가, 수정, 삭제는 가능합니다.", MessageType.Warning);
+#endif
+        }
+
         private void DrawEditSection()
         {
             SWEditorUtils.DrawHeader("Add / Edit");
 
             editKey = EditorGUILayout.TextField("Key", editKey);
             editValue = EditorGUILayout.TextField("Value", editValue);
+            if (viewMode == PlayerPrefsViewMode.UnityPlayerPrefs)
+                editValueType = (PlayerPrefsValueType)EditorGUILayout.EnumPopup("Type", editValueType);
 
             EditorGUILayout.BeginHorizontal();
             using (new SWEditorUtils.GUIEnabledScope(!string.IsNullOrWhiteSpace(editKey)))
             {
-                if (GUILayout.Button("Save String", GUILayout.Height(SWEditorUtils.DefaultButtonHeight)))
+                string saveButtonText = viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs ? "Save String" : "Save";
+                if (GUILayout.Button(saveButtonText, GUILayout.Height(SWEditorUtils.DefaultButtonHeight)))
                     SaveEntry();
             }
 
@@ -131,7 +189,10 @@ namespace SWTools
 
             if (entries.Count == 0)
             {
-                SWEditorUtils.DrawEmptyNotice("No SWUtilsPlayerPrefs entries in this slot.", MessageType.None);
+                string emptyMessage = viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs
+                    ? "No SWUtilsPlayerPrefs entries in this slot."
+                    : "No Unity PlayerPrefs entries found.";
+                SWEditorUtils.DrawEmptyNotice(emptyMessage, MessageType.None);
                 return;
             }
 
@@ -145,12 +206,21 @@ namespace SWTools
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.SelectableLabel(entry.key, EditorStyles.boldLabel, GUILayout.Height(18));
+                if (viewMode == PlayerPrefsViewMode.UnityPlayerPrefs)
+                    entry.valueType = (PlayerPrefsValueType)EditorGUILayout.EnumPopup(entry.valueType, GUILayout.Width(70));
 
                 if (GUILayout.Button("Edit", GUILayout.Width(48), GUILayout.Height(20)))
                 {
                     editKey = entry.key;
                     editValue = entry.value;
+                    editValueType = entry.valueType;
                     GUI.FocusControl(null);
+                }
+
+                if (GUILayout.Button("Save", GUILayout.Width(50), GUILayout.Height(20)))
+                {
+                    SaveEntry(entry.key, entry.value, entry.valueType);
+                    GUIUtility.ExitGUI();
                 }
 
                 if (GUILayout.Button("Copy", GUILayout.Width(52), GUILayout.Height(20)))
@@ -167,16 +237,16 @@ namespace SWTools
 
                 EditorGUILayout.EndHorizontal();
 
-                using (new EditorGUI.DisabledScope(true))
-                    EditorGUILayout.TextField(entry.value ?? "");
+                entry.value = EditorGUILayout.TextField(entry.value ?? "");
 
                 EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndScrollView();
 
-            if (SWEditorUtils.DangerButton("Delete All In Slot", "Delete SWUtilsPlayerPrefs",
-                    $"Delete all encrypted SWUtilsPlayerPrefs entries in slot '{SWUtilsPlayerPrefs.CurrentSlot}'?",
-                    "Delete"))
+            if (viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs &&
+                SWEditorUtils.DangerButton("Delete All In Slot", "Delete SWUtilsPlayerPrefs",
+                $"Delete all encrypted SWUtilsPlayerPrefs entries in slot '{SWUtilsPlayerPrefs.CurrentSlot}'?",
+                "Delete"))
             {
                 SWUtilsPlayerPrefs.DeleteAll();
                 RefreshEntries("Deleted all entries in current slot.");
@@ -235,6 +305,14 @@ namespace SWTools
         private void RefreshEntries(string message = "")
         {
             entries.Clear();
+            if (viewMode == PlayerPrefsViewMode.UnityPlayerPrefs)
+            {
+                entries.AddRange(UnityPlayerPrefsStore.LoadEntries());
+                entries.Sort((left, right) => string.Compare(left.key, right.key, StringComparison.Ordinal));
+                statusMessage = message;
+                Repaint();
+                return;
+            }
 
             string json = SWUtilsPlayerPrefs.ExportToJson();
             if (!string.IsNullOrEmpty(json))
@@ -252,8 +330,26 @@ namespace SWTools
         private void SaveEntry()
         {
             string key = editKey.Trim();
-            SWUtilsPlayerPrefs.SetString(key, editValue ?? "");
-            SWUtilsPlayerPrefs.Save();
+            SaveEntry(key, editValue, editValueType);
+        }
+
+        private void SaveEntry(string key, string value, PlayerPrefsValueType valueType)
+        {
+            if (viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs)
+            {
+                SWUtilsPlayerPrefs.SetString(key, value ?? "");
+                SWUtilsPlayerPrefs.Save();
+                RefreshEntries($"Saved key: {key}");
+                return;
+            }
+
+            if (!UnityPlayerPrefsStore.SaveEntry(key, value, valueType, out string errorMessage))
+            {
+                statusMessage = errorMessage;
+                Repaint();
+                return;
+            }
+
             RefreshEntries($"Saved key: {key}");
         }
 
@@ -262,8 +358,16 @@ namespace SWTools
             if (!EditorUtility.DisplayDialog("Delete Entry", $"Delete '{key}'?", "Delete", "Cancel"))
                 return;
 
-            SWUtilsPlayerPrefs.DeleteKey(key);
-            SWUtilsPlayerPrefs.Save();
+            if (viewMode == PlayerPrefsViewMode.SWUtilsPlayerPrefs)
+            {
+                SWUtilsPlayerPrefs.DeleteKey(key);
+                SWUtilsPlayerPrefs.Save();
+            }
+            else
+            {
+                PlayerPrefs.DeleteKey(key);
+                PlayerPrefs.Save();
+            }
             RefreshEntries($"Deleted key: {key}");
         }
 
@@ -284,6 +388,149 @@ namespace SWTools
             string filter = searchFilter.Trim();
             return SWEditorUtils.MatchesFilter(entry.key, filter) ||
                    SWEditorUtils.MatchesFilter(entry.value, filter);
+        }
+
+        /// <summary>
+        /// 기본 Unity PlayerPrefs 저장소 접근을 담당합니다.
+        /// </summary>
+        private static class UnityPlayerPrefsStore
+        {
+            /// <summary>
+            /// 현재 프로젝트의 기본 PlayerPrefs 항목을 불러옵니다.
+            /// </summary>
+            public static List<PrefsEntry> LoadEntries()
+            {
+#if UNITY_EDITOR_WIN
+                return LoadWindowsEditorEntries();
+#else
+                return new List<PrefsEntry>();
+#endif
+            }
+
+            /// <summary>
+            /// 기본 PlayerPrefs에 값을 저장합니다.
+            /// </summary>
+            public static bool SaveEntry(string key, string value, PlayerPrefsValueType valueType, out string errorMessage)
+            {
+                errorMessage = "";
+                key = key?.Trim();
+                if (value == null)
+                    value = "";
+
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    errorMessage = "Key is empty.";
+                    return false;
+                }
+
+                switch (valueType)
+                {
+                    case PlayerPrefsValueType.Integer:
+                        if (!int.TryParse(value, out int intValue))
+                        {
+                            errorMessage = $"Integer value parse failed: {value}";
+                            return false;
+                        }
+                        PlayerPrefs.SetInt(key, intValue);
+                        break;
+                    case PlayerPrefsValueType.Float:
+                        if (!float.TryParse(value, System.Globalization.NumberStyles.Float,
+                                System.Globalization.CultureInfo.InvariantCulture, out float floatValue))
+                        {
+                            errorMessage = $"Float value parse failed: {value}";
+                            return false;
+                        }
+                        PlayerPrefs.SetFloat(key, floatValue);
+                        break;
+                    default:
+                        PlayerPrefs.SetString(key, value);
+                        break;
+                }
+
+                PlayerPrefs.Save();
+                return true;
+            }
+
+#if UNITY_EDITOR_WIN
+            private static List<PrefsEntry> LoadWindowsEditorEntries()
+            {
+                var loadedEntries = new List<PrefsEntry>();
+                string registryPath = $@"Software\Unity\UnityEditor\{PlayerSettings.companyName}\{PlayerSettings.productName}";
+
+                using (RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(registryPath))
+                {
+                    if (registryKey == null)
+                        return loadedEntries;
+
+                    foreach (string storedName in registryKey.GetValueNames())
+                    {
+                        string key = NormalizeWindowsEditorKey(storedName);
+                        if (IsSWUtilsManagedKey(key))
+                            continue;
+
+                        object storedValue = registryKey.GetValue(storedName);
+                        RegistryValueKind valueKind = registryKey.GetValueKind(storedName);
+                        loadedEntries.Add(CreateEntry(key, storedValue, valueKind));
+                    }
+                }
+
+                return loadedEntries;
+            }
+
+            private static PrefsEntry CreateEntry(string key, object storedValue, RegistryValueKind valueKind)
+            {
+                switch (valueKind)
+                {
+                    case RegistryValueKind.DWord:
+                        return new PrefsEntry
+                        {
+                            key = key,
+                            value = Convert.ToInt32(storedValue).ToString(),
+                            valueType = PlayerPrefsValueType.Integer
+                        };
+                    case RegistryValueKind.Binary:
+                        byte[] bytes = storedValue as byte[];
+                        if (bytes != null && bytes.Length >= 4)
+                        {
+                            return new PrefsEntry
+                            {
+                                key = key,
+                                value = BitConverter.ToSingle(bytes, 0).ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                valueType = PlayerPrefsValueType.Float
+                            };
+                        }
+                        break;
+                }
+
+                return new PrefsEntry
+                {
+                    key = key,
+                    value = storedValue?.ToString() ?? "",
+                    valueType = PlayerPrefsValueType.String
+                };
+            }
+
+            private static string NormalizeWindowsEditorKey(string storedName)
+            {
+                int hashSeparatorIndex = storedName.LastIndexOf("_h", StringComparison.Ordinal);
+                if (hashSeparatorIndex <= 0 || hashSeparatorIndex + 2 >= storedName.Length)
+                    return storedName;
+
+                for (int index = hashSeparatorIndex + 2; index < storedName.Length; index++)
+                {
+                    if (!char.IsDigit(storedName[index]))
+                        return storedName;
+                }
+
+                return storedName.Substring(0, hashSeparatorIndex);
+            }
+#endif
+
+            private static bool IsSWUtilsManagedKey(string key)
+            {
+                return key.StartsWith("SwEnc_", StringComparison.Ordinal) ||
+                       key.StartsWith("SwUtilsPrefs_KeyIndex_", StringComparison.Ordinal);
+            }
         }
     }
 }
