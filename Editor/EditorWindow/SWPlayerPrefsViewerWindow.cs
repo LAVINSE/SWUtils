@@ -27,6 +27,14 @@ namespace SWTools
             Float
         }
 
+        private enum PlayerPrefsSearchTarget
+        {
+            All,
+            Key,
+            Value,
+            Type
+        }
+
         /// <summary>
         /// JSON 입출력에 사용하는 PlayerPrefs 항목 컨테이너입니다.
         /// </summary>
@@ -60,6 +68,7 @@ namespace SWTools
         private PlayerPrefsViewMode viewMode;
         private string slotName = "default";
         private string searchFilter = "";
+        private PlayerPrefsSearchTarget searchTarget = PlayerPrefsSearchTarget.All;
         private string editKey = "";
         private string editValue = "";
         private PlayerPrefsValueType editValueType = PlayerPrefsValueType.String;
@@ -129,11 +138,7 @@ namespace SWTools
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.BeginHorizontal();
-            searchFilter = EditorGUILayout.TextField("Search", searchFilter);
-            if (GUILayout.Button("Refresh", GUILayout.Width(80)))
-                RefreshEntries();
-            EditorGUILayout.EndHorizontal();
+            DrawSearchSection();
         }
 
         private void DrawUnityPlayerPrefsSection()
@@ -146,15 +151,26 @@ namespace SWTools
                 EditorGUILayout.TextField("Product", PlayerSettings.productName);
             }
 
-            EditorGUILayout.BeginHorizontal();
-            searchFilter = EditorGUILayout.TextField("Search", searchFilter);
-            if (GUILayout.Button("Refresh", GUILayout.Width(80)))
-                RefreshEntries();
-            EditorGUILayout.EndHorizontal();
+            DrawSearchSection();
 
 #if !UNITY_EDITOR_WIN
             EditorGUILayout.HelpBox("현재 기본 PlayerPrefs 자동 목록은 Windows Editor 저장소만 지원합니다. 키를 직접 입력하면 추가, 수정, 삭제는 가능합니다.", MessageType.Warning);
 #endif
+        }
+
+        private void DrawSearchSection()
+        {
+            EditorGUILayout.BeginHorizontal();
+            searchFilter = EditorGUILayout.TextField("Search", searchFilter);
+            searchTarget = (PlayerPrefsSearchTarget)EditorGUILayout.EnumPopup(searchTarget, GUILayout.Width(86));
+            using (new SWEditorUtils.GUIEnabledScope(!string.IsNullOrWhiteSpace(searchFilter)))
+            {
+                if (GUILayout.Button("Clear", GUILayout.Width(58)))
+                    searchFilter = "";
+            }
+            if (GUILayout.Button("Refresh", GUILayout.Width(80)))
+                RefreshEntries();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawEditSection()
@@ -185,7 +201,11 @@ namespace SWTools
 
         private void DrawListSection()
         {
-            SWEditorUtils.DrawHeader($"Entries ({entries.Count})");
+            int filteredCount = GetFilteredEntryCount();
+            string listTitle = string.IsNullOrWhiteSpace(searchFilter)
+                ? $"Entries ({entries.Count})"
+                : $"Entries ({filteredCount}/{entries.Count})";
+            SWEditorUtils.DrawHeader(listTitle);
 
             if (entries.Count == 0)
             {
@@ -250,6 +270,17 @@ namespace SWTools
             {
                 SWUtilsPlayerPrefs.DeleteAll();
                 RefreshEntries("Deleted all entries in current slot.");
+            }
+
+            if (viewMode == PlayerPrefsViewMode.UnityPlayerPrefs &&
+                SWEditorUtils.DangerButton("Clear All PlayerPrefs", "Clear All PlayerPrefs",
+                    "Delete every PlayerPrefs value for this Unity project? This also removes SWUtilsPlayerPrefs encrypted data stored in PlayerPrefs.",
+                    "Clear All"))
+            {
+                PlayerPrefs.DeleteAll();
+                PlayerPrefs.Save();
+                SWUtilsPlayerPrefs.SetSlot(slotName);
+                RefreshEntries("Cleared all PlayerPrefs.");
             }
         }
 
@@ -386,8 +417,34 @@ namespace SWTools
                 return true;
 
             string filter = searchFilter.Trim();
-            return SWEditorUtils.MatchesFilter(entry.key, filter) ||
-                   SWEditorUtils.MatchesFilter(entry.value, filter);
+            switch (searchTarget)
+            {
+                case PlayerPrefsSearchTarget.Key:
+                    return SWEditorUtils.MatchesFilter(entry.key, filter);
+                case PlayerPrefsSearchTarget.Value:
+                    return SWEditorUtils.MatchesFilter(entry.value, filter);
+                case PlayerPrefsSearchTarget.Type:
+                    return SWEditorUtils.MatchesFilter(entry.valueType.ToString(), filter);
+                default:
+                    return SWEditorUtils.MatchesFilter(entry.key, filter) ||
+                           SWEditorUtils.MatchesFilter(entry.value, filter) ||
+                           SWEditorUtils.MatchesFilter(entry.valueType.ToString(), filter);
+            }
+        }
+
+        private int GetFilteredEntryCount()
+        {
+            if (string.IsNullOrWhiteSpace(searchFilter))
+                return entries.Count;
+
+            int count = 0;
+            foreach (PrefsEntry entry in entries)
+            {
+                if (MatchesFilter(entry))
+                    count++;
+            }
+
+            return count;
         }
 
         /// <summary>
