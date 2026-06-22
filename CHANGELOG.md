@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- `SWEventBus`에 로그 출력 여부를 제어하는 `IsLogOutputEnabled` 설정을 추가했습니다.
+- `SWEventBus.Publish`에 발행 단위 로그 출력 여부를 정하는 `shouldOutputLog` 매개변수를 추가했습니다.
+
 ## [v1.0.8] - 2026-06-16
 
 ### Added

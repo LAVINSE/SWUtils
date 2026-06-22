@@ -377,7 +377,10 @@ public readonly struct CoinChangedEvent
 
 SWEventBus.Subscribe<CoinChangedEvent>(OnCoinChanged);
 SWEventBus.Publish(new CoinChangedEvent(100));
+SWEventBus.Publish(new CoinChangedEvent(200), false); // 발행 로그를 출력하지 않습니다.
 SWEventBus.Unsubscribe<CoinChangedEvent>(OnCoinChanged);
+
+SWEventBus.IsLogOutputEnabled = false; // 이벤트 버스 로그 전체를 출력하지 않습니다.
 ```
 
 쿨다운 사용 예시:

@@ -13,6 +13,13 @@ namespace SWUtils
         private static readonly Dictionary<Type, PublishRecord> publishRecordTable = new();
         #endregion // 필드
 
+        #region 프로퍼티
+        /// <summary>
+        /// 이벤트 버스 로그를 출력할지 여부입니다.
+        /// </summary>
+        public static bool IsLogOutputEnabled { get; set; } = true;
+        #endregion // 프로퍼티
+
         #region 데이터
         /// <summary>
         /// 이벤트 타입별 마지막 발행 상태를 저장하는 내부 기록입니다.
@@ -38,7 +45,8 @@ namespace SWUtils
         {
             if (listener == null)
             {
-                SWUtilsLog.LogWarning($"[SWEventBus] Subscribe failed. Listener is null. Event: {typeof(TEvent).Name}");
+                if (CanOutputLog())
+                    OutputWarningLog($"[SWEventBus] Subscribe failed. Listener is null. Event: {typeof(TEvent).Name}");
                 return;
             }
 
@@ -48,7 +56,8 @@ namespace SWUtils
             else
                 eventTable[eventType] = listener;
 
-            SWUtilsLog.Log($"[SWEventBus] Subscribe: {eventType.Name}");
+            if (CanOutputLog())
+                OutputLog($"[SWEventBus] Subscribe: {eventType.Name}");
         }
 
         /// <summary>
@@ -60,7 +69,8 @@ namespace SWUtils
         {
             if (listener == null)
             {
-                SWUtilsLog.LogWarning($"[SWEventBus] Unsubscribe failed. Listener is null. Event: {typeof(TEvent).Name}");
+                if (CanOutputLog())
+                    OutputWarningLog($"[SWEventBus] Unsubscribe failed. Listener is null. Event: {typeof(TEvent).Name}");
                 return;
             }
 
@@ -74,7 +84,8 @@ namespace SWUtils
             else
                 eventTable[eventType] = updated;
 
-            SWUtilsLog.Log($"[SWEventBus] Unsubscribe: {eventType.Name}");
+            if (CanOutputLog())
+                OutputLog($"[SWEventBus] Unsubscribe: {eventType.Name}");
         }
 
         /// <summary>
@@ -82,20 +93,25 @@ namespace SWUtils
         /// </summary>
         /// <typeparam name="TEvent">이벤트 데이터 타입.</typeparam>
         /// <param name="eventData">전달할 이벤트 데이터.</param>
-        public static void Publish<TEvent>(TEvent eventData)
+        /// <param name="shouldOutputLog">발행 과정에서 로그를 출력할지 여부입니다.</param>
+        public static void Publish<TEvent>(TEvent eventData, bool shouldOutputLog = true)
         {
             Type eventType = typeof(TEvent);
+            bool canOutputLog = CanOutputLog(shouldOutputLog);
+
             if (!eventTable.TryGetValue(eventType, out Delegate existing))
             {
                 RecordPublish(eventType, eventData);
-                SWUtilsLog.Log($"[SWEventBus] Publish skipped. No listeners: {eventType.Name}");
+                if (canOutputLog)
+                    OutputLog($"[SWEventBus] Publish skipped. No listeners: {eventType.Name}");
                 return;
             }
 
             Action<TEvent> callback = existing as Action<TEvent>;
             if (callback == null)
             {
-                SWUtilsLog.LogError($"[SWEventBus] Publish failed. Invalid delegate type: {eventType.Name}");
+                if (canOutputLog)
+                    OutputErrorLog($"[SWEventBus] Publish failed. Invalid delegate type: {eventType.Name}");
                 return;
             }
 
@@ -108,12 +124,14 @@ namespace SWUtils
                 }
                 catch (Exception exception)
                 {
-                    SWUtilsLog.LogError($"[SWEventBus] Listener exception. Event: {eventType.Name}, Error: {exception.Message}");
+                    if (canOutputLog)
+                        OutputErrorLog($"[SWEventBus] Listener exception. Event: {eventType.Name}, Error: {exception.Message}");
                 }
             }
 
             RecordPublish(eventType, eventData);
-            SWUtilsLog.Log($"[SWEventBus] Publish: {eventType.Name}");
+            if (canOutputLog)
+                OutputLog($"[SWEventBus] Publish: {eventType.Name}");
         }
 
         /// <summary>
@@ -123,7 +141,8 @@ namespace SWUtils
         public static void Clear<TEvent>()
         {
             eventTable.Remove(typeof(TEvent));
-            SWUtilsLog.Log($"[SWEventBus] Clear: {typeof(TEvent).Name}");
+            if (CanOutputLog())
+                OutputLog($"[SWEventBus] Clear: {typeof(TEvent).Name}");
         }
 
         /// <summary>
@@ -133,7 +152,8 @@ namespace SWUtils
         {
             eventTable.Clear();
             publishRecordTable.Clear();
-            SWUtilsLog.Log("[SWEventBus] Clear all.");
+            if (CanOutputLog())
+                OutputLog("[SWEventBus] Clear all.");
         }
 
         /// <summary>
@@ -193,7 +213,8 @@ namespace SWUtils
         public static void ClearPublishRecords()
         {
             publishRecordTable.Clear();
-            SWUtilsLog.Log("[SWEventBus] Clear publish records.");
+            if (CanOutputLog())
+                OutputLog("[SWEventBus] Clear publish records.");
         }
 
         /// <summary>
@@ -213,6 +234,43 @@ namespace SWUtils
             record.publishCount++;
             record.lastPublishTime = DateTime.Now;
             record.lastPayloadText = eventData != null ? eventData.ToString() : "(null)";
+        }
+
+        /// <summary>
+        /// 이벤트 버스 로그를 출력할 수 있는지 확인합니다.
+        /// </summary>
+        /// <param name="shouldOutputLog">호출 단위로 로그를 출력할지 여부입니다.</param>
+        /// <returns>로그를 출력할 수 있으면 true입니다.</returns>
+        private static bool CanOutputLog(bool shouldOutputLog = true)
+        {
+            return IsLogOutputEnabled && shouldOutputLog;
+        }
+
+        /// <summary>
+        /// 이벤트 버스 일반 로그를 출력합니다.
+        /// </summary>
+        /// <param name="message">출력할 로그 메시지입니다.</param>
+        private static void OutputLog(string message)
+        {
+            SWUtilsLog.Log(message);
+        }
+
+        /// <summary>
+        /// 이벤트 버스 경고 로그를 출력합니다.
+        /// </summary>
+        /// <param name="message">출력할 경고 메시지입니다.</param>
+        private static void OutputWarningLog(string message)
+        {
+            SWUtilsLog.LogWarning(message);
+        }
+
+        /// <summary>
+        /// 이벤트 버스 오류 로그를 출력합니다.
+        /// </summary>
+        /// <param name="message">출력할 오류 메시지입니다.</param>
+        private static void OutputErrorLog(string message)
+        {
+            SWUtilsLog.LogError(message);
         }
         #endregion // 함수
     }
