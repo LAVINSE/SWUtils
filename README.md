@@ -170,7 +170,7 @@ public class CoroutineExample : MonoBehaviour
 - `SWUtilsPlayerPrefsSettings`: 프로젝트별 salt와 IV salt를 보관하는 설정 에셋입니다.
 - `SWSaveDataManager`: 여러 데이터 타입을 모아 파일로 저장하고 불러오는 저장 관리자입니다.
 - `SWUtilsCloud`: Google Play Games, iCloud, Steamworks.NET, 로컬 fallback을 통합한 클라우드 저장 진입점입니다.
-- `SWEncrypt`: 문자열 암호화 보조 기능입니다.
+- `SWEncrypt<T>`: `int`, `long`, `float`, `double`, `bool`, `string` 값을 암호화된 PlayerPrefs 값으로 다룹니다.
 - `SWSaveSlot`: 기본 저장 슬롯 상수입니다.
 
 사용 예시:

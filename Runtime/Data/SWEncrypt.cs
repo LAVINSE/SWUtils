@@ -64,8 +64,14 @@ namespace SWUtils
             if (valueType == typeof(int))
                 return (T)(object)SWUtilsPlayerPrefs.GetInt(Key, (int)(object)DefaultValue);
 
+            if (valueType == typeof(long))
+                return (T)(object)SWUtilsPlayerPrefs.GetLong(Key, (long)(object)DefaultValue);
+
             if (valueType == typeof(float))
                 return (T)(object)SWUtilsPlayerPrefs.GetFloat(Key, (float)(object)DefaultValue);
+
+            if (valueType == typeof(double))
+                return (T)(object)SWUtilsPlayerPrefs.GetDouble(Key, (double)(object)DefaultValue);
 
             if (valueType == typeof(bool))
                 return (T)(object)SWUtilsPlayerPrefs.GetBool(Key, (bool)(object)DefaultValue);
@@ -100,9 +106,21 @@ namespace SWUtils
                 return;
             }
 
+            if (valueType == typeof(long))
+            {
+                SWUtilsPlayerPrefs.SetLong(Key, (long)(object)value);
+                return;
+            }
+
             if (valueType == typeof(float))
             {
                 SWUtilsPlayerPrefs.SetFloat(Key, (float)(object)value);
+                return;
+            }
+
+            if (valueType == typeof(double))
+            {
+                SWUtilsPlayerPrefs.SetDouble(Key, (double)(object)value);
                 return;
             }
 
@@ -155,7 +173,9 @@ namespace SWUtils
         {
             Type valueType = typeof(T);
             if (valueType == typeof(int)
+                || valueType == typeof(long)
                 || valueType == typeof(float)
+                || valueType == typeof(double)
                 || valueType == typeof(bool)
                 || valueType == typeof(string))
             {
@@ -171,7 +191,7 @@ namespace SWUtils
         private static NotSupportedException CreateUnsupportedTypeException()
         {
             return new NotSupportedException(
-                $"SWEncrypt<{typeof(T).Name}>는 지원하지 않는 타입입니다. int, float, bool, string만 사용할 수 있습니다.");
+                $"SWEncrypt<{typeof(T).Name}>는 지원하지 않는 타입입니다. int, long, float, double, bool, string만 사용할 수 있습니다.");
         }
     }
 }

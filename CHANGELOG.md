@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `SWTools/Debug/PlayerPrefs Viewer`에 기본 Unity PlayerPrefs를 조회, 수정, 삭제할 수 있는 `Unity PlayerPrefs` 탭을 추가했습니다.
 - `SWTools/Debug/PlayerPrefs Viewer`에 검색 대상 필터와 기본 Unity PlayerPrefs 전체 삭제 기능을 추가했습니다.
+- `SWEncrypt<T>`에서 `long`, `double` 타입을 사용할 수 있도록 지원을 추가했습니다.
+- `SWUtilsPlayerPrefs`에 `SetLong`, `GetLong`, `SetDouble`, `GetDouble` 기능을 추가했습니다.
 
 ### Changed
 - `SWTools/Debug/PlayerPrefs Viewer`의 Entries 목록에서 값을 바로 수정하고 저장할 수 있도록 개선했습니다.

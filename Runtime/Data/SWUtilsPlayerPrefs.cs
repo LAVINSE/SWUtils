@@ -280,6 +280,16 @@ namespace SWUtils
         }
 
         /// <summary>
+        /// 64비트 정수 값을 암호화하여 저장한다.
+        /// </summary>
+        /// <param name="key">저장 키</param>
+        /// <param name="value">저장할 값</param>
+        public static void SetLong(string key, long value)
+        {
+            SetString(key, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
         /// 실수 값을 암호화하여 저장한다.
         /// </summary>
         /// <param name="key">저장 키</param>
@@ -287,6 +297,16 @@ namespace SWUtils
         public static void SetFloat(string key, float value)
         {
             SetString(key, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// 배정밀도 실수 값을 암호화하여 저장한다.
+        /// </summary>
+        /// <param name="key">저장 키</param>
+        /// <param name="value">저장할 값</param>
+        public static void SetDouble(string key, double value)
+        {
+            SetString(key, value.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -330,6 +350,20 @@ namespace SWUtils
         }
 
         /// <summary>
+        /// 암호화된 64비트 정수 값을 복호화하여 반환한다.
+        /// </summary>
+        /// <param name="key">저장 키</param>
+        /// <param name="defaultValue">키가 없을 때 반환할 기본값</param>
+        /// <returns>복호화된 값</returns>
+        public static long GetLong(string key, long defaultValue = 0L)
+        {
+            string stored = GetString(key, null);
+            if (string.IsNullOrEmpty(stored)) return defaultValue;
+            return long.TryParse(stored, System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out long result) ? result : defaultValue;
+        }
+
+        /// <summary>
         /// 암호화된 실수 값을 복호화하여 반환한다.
         /// </summary>
         /// <param name="key">저장 키</param>
@@ -341,6 +375,20 @@ namespace SWUtils
             if (string.IsNullOrEmpty(stored)) return defaultValue;
             return float.TryParse(stored, System.Globalization.NumberStyles.Float,
                 System.Globalization.CultureInfo.InvariantCulture, out float result) ? result : defaultValue;
+        }
+
+        /// <summary>
+        /// 암호화된 배정밀도 실수 값을 복호화하여 반환한다.
+        /// </summary>
+        /// <param name="key">저장 키</param>
+        /// <param name="defaultValue">키가 없을 때 반환할 기본값</param>
+        /// <returns>복호화된 값</returns>
+        public static double GetDouble(string key, double defaultValue = 0d)
+        {
+            string stored = GetString(key, null);
+            if (string.IsNullOrEmpty(stored)) return defaultValue;
+            return double.TryParse(stored, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double result) ? result : defaultValue;
         }
 
         /// <summary>
