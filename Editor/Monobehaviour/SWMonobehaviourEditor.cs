@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -59,14 +58,14 @@ namespace SWTools
         private bool requiresConstantRepaintOnlyWhenPlaying;
 
         /// <summary>
-        /// 타겟 SWMonobehaviour
+        /// 활성화 상태를 확인할 수 있는 타겟 Behaviour
         /// </summary>
-        private SWMonoBehaviour targetMonobehaviour;
+        private Behaviour targetBehaviour;
 
         /// <summary>
-        /// 타겟 SWMonobehaviour가 null이 아닌지 여부
+        /// 타겟 오브젝트가 존재하는지 여부
         /// </summary>
-        private bool targetMonobehaviourIsNotNull;
+        private bool targetObjectIsNotNull;
 
         /// <summary>
         /// SWHiddenAttribute로 숨겨야 할 프로퍼티 이름 배열
@@ -115,10 +114,11 @@ namespace SWTools
         {
             if (requiresConstantRepaintOnlyWhenPlaying)
             {
-                // 플레이 중 + 타켓이 존재 + 컴포넌트 활성화 상태일 때만 리페인트
+                // 플레이 중이며 타겟이 존재할 때만 리페인트합니다.
+                // Behaviour는 컴포넌트 활성화 상태도 확인합니다.
                 return Application.isPlaying
-                && targetMonobehaviourIsNotNull
-                && targetMonobehaviour.enabled;
+                && targetObjectIsNotNull
+                && (targetBehaviour == null || targetBehaviour.enabled);
             }
             else
             {
@@ -161,12 +161,8 @@ namespace SWTools
             buttonMethodList = new();
             targetTypeName = target.GetType().Name;
 
-            targetMonobehaviour = (SWMonoBehaviour)target;
-
-            if (targetMonobehaviour != null)
-            {
-                targetMonobehaviourIsNotNull = true;
-            }
+            targetBehaviour = target as Behaviour;
+            targetObjectIsNotNull = target != null;
 
             //리페인트 관련 어트리뷰트 확인
             requiresConstantRepaint = serializedObject.targetObject
@@ -283,7 +279,9 @@ namespace SWTools
 
             // 상속된 메서드도 포함
             Type baseType = targetType.BaseType;
-            while (baseType != null && baseType != typeof(MonoBehaviour))
+            while (baseType != null &&
+                   baseType != typeof(MonoBehaviour) &&
+                   baseType != typeof(ScriptableObject))
             {
                 MethodInfo[] baseMethods = baseType.GetMethods(
                     BindingFlags.Instance |

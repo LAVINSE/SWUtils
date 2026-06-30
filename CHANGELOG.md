@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added `SWScriptableObject` with the same grouped fields, inspector buttons, and repaint attributes provided by `SWMonoBehaviour`.
 - Added a `Unity PlayerPrefs` tab to `SWTools/Debug/PlayerPrefs Viewer` for viewing, editing, and deleting standard Unity PlayerPrefs.
 - Added search-target filters and an option to delete all standard Unity PlayerPrefs from `SWTools/Debug/PlayerPrefs Viewer`.
 - Added `long` and `double` support to `SWEncrypt<T>`.

@@ -44,11 +44,16 @@ namespace SWTools
                 Stack<Type> typeStack = new();
                 Type currentType = targetType;
 
-                while (currentType != null && currentType != typeof(MonoBehaviour))
+                Type unityBaseType = target is ScriptableObject
+                    ? typeof(ScriptableObject)
+                    : typeof(MonoBehaviour);
+
+                while (currentType != null && currentType != unityBaseType)
                 {
                     typeStack.Push(currentType);
 
-                    if (currentType == typeof(SWMonoBehaviour))
+                    if (currentType == typeof(SWMonoBehaviour) ||
+                        currentType == typeof(SWScriptableObject))
                         break;
 
                     currentType = currentType.BaseType;

@@ -223,6 +223,38 @@ public class PlayerController : SWMonoBehaviour
 }
 ```
 
+### `Runtime/ScriptableObject`
+
+Provides the `SWScriptableObject` base class for ScriptableObject assets that use the same attribute-driven custom Inspector as `SWMonoBehaviour`.
+
+Fields and methods can use Inspector features such as `SWGroup`, `SWButton`, `SWCondition`, `SWReadOnly`, and the constant repaint attributes.
+
+Example:
+
+```csharp
+using SWTools;
+using UnityEngine;
+
+[CreateAssetMenu(
+    fileName = "CharacterData",
+    menuName = "Game Data/Character Data")]
+public class CharacterData : SWScriptableObject
+{
+    [SWGroup("Status")]
+    [SerializeField] private int maxHp = 100;
+
+    [SWGroup("Status")]
+    [SWReadOnly]
+    [SerializeField] private int calculatedPower;
+
+    [SWButton("Recalculate Power")]
+    private void RecalculatePower()
+    {
+        calculatedPower = maxHp * 2;
+    }
+}
+```
+
 ### `Runtime/Pooling`
 
 Provides GameObject pooling and group-based spawning.
@@ -518,7 +550,11 @@ Stores and applies Hierarchy display styles and icons. Used with `SWHierarchyToo
 
 ### `Editor/Monobehaviour`
 
-Builds custom Inspectors for components derived from `SWMonoBehaviour`, including groups, buttons, conditional display, and constant repaint behavior.
+Builds custom Inspectors for components derived from `SWMonoBehaviour`, including groups, buttons, conditional display, and constant repaint behavior. The shared Inspector implementation is also used by `SWScriptableObject`.
+
+### `Editor/ScriptableObject`
+
+Applies the shared SWUtils custom Inspector to assets derived from `SWScriptableObject`.
 
 ### `Editor/StyleSheet`
 
