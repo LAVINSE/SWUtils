@@ -80,6 +80,17 @@ namespace SWUtils
         }
 
         /// <summary>
+        /// 시간 문자열을 <see cref="DateTime"/>으로 변환한다.
+        /// 문자열이 비어 있으면 현재 로컬 시각을 반환한다.
+        /// </summary>
+        /// <param name="time">변환할 시간 문자열</param>
+        /// <returns>변환된 시각 또는 현재 로컬 시각</returns>
+        public static DateTime ToDateTime(string time)
+        {
+            return string.IsNullOrEmpty(time) ? DateTime.Now : Convert.ToDateTime(time);
+        }
+
+        /// <summary>
         /// <see cref="DateTime"/>을 지정한 포맷의 문자열로 변환한다.
         /// </summary>
         /// <param name="time">변환할 DateTime</param>

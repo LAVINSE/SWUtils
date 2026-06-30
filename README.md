@@ -378,7 +378,7 @@ A collection of small, general-purpose game utilities.
 - `SWEventBusEventSnapshot`: A read-only event state snapshot for `SWTools/Debug/EventBus Debugger Window`.
 - `SWSceneLoader`: Handles scene loading, additive loading, unloading, and reloading.
 - `SWSingleton`, `SWSingletonScene`: Singleton MonoBehaviour base classes.
-- `SWTimer`, `SWUtilsRefillTimer`: Provide elapsed-time and refill timer behavior.
+- `SWTimer`, `SWRefillTimer`: Provide elapsed-time and refill timer behavior.
 - `SWUtilsExtension`: Extension methods for Transform, GameObject, and other types.
 - `SWUtilsFactory`: Assists with runtime object creation.
 - `SWUtilsLog`: A logging wrapper.

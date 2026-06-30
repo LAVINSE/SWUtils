@@ -8,7 +8,7 @@ namespace SWUtils
     /// 하트, 스태미너, 에너지 시스템 등에 사용한다.
     /// </summary>
     [System.Serializable]
-    public class SWUtilsRefillTimer
+    public class SWRefillTimer
     {
         #region 필드
         /// <summary>PlayerPrefs 저장에 사용되는 고유 식별자.</summary>
@@ -91,12 +91,12 @@ namespace SWUtils
 
         #region 생성자
         /// <summary>
-        /// RefillTimer를 생성한다.
+        /// SWRefillTimer를 생성한다.
         /// </summary>
         /// <param name="id">고유 식별자 (PlayerPrefs 키에 사용)</param>
         /// <param name="maxCount">최대 보유 수량</param>
         /// <param name="intervalSeconds">1개 회복 간격(초)</param>
-        public SWUtilsRefillTimer(string id, int maxCount, float intervalSeconds)
+        public SWRefillTimer(string id, int maxCount, float intervalSeconds)
         {
             this.id = id;
             this.maxCount = maxCount;
