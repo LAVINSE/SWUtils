@@ -106,6 +106,29 @@ namespace SWUtils
 
             Load();
         }
+
+        /// <summary>
+        /// 지정한 초기 수량과 마지막 사용 시각으로 SWRefillTimer를 생성한다.
+        /// 서버 동기화 데이터처럼 외부 상태를 기준으로 시작할 때 사용한다.
+        /// </summary>
+        /// <param name="id">고유 식별자 (PlayerPrefs 키에 사용)</param>
+        /// <param name="maxCount">최대 보유 수량</param>
+        /// <param name="intervalSeconds">1개 회복 간격(초)</param>
+        /// <param name="initialCount">초기 보유 수량</param>
+        /// <param name="lastUseUtc">마지막 사용 UTC 시각</param>
+        public SWRefillTimer(
+            string id,
+            int maxCount,
+            float intervalSeconds,
+            int initialCount,
+            DateTime lastUseUtc)
+        {
+            this.id = id;
+            this.maxCount = maxCount;
+            this.intervalSeconds = intervalSeconds;
+            count = Mathf.Clamp(initialCount, 0, maxCount);
+            this.lastUseUtc = lastUseUtc;
+        }
         #endregion // 생성자
 
         #region 기능
