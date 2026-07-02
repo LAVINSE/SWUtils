@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.0.10] - 2026-07-02
+
+### Changed
+- Updated the package version and README installation URL to `v1.0.10`.
+
+### Fixed
+- Corrected the folder `.meta` file names for `Runtime/SWMonoBehaviour`, `Runtime/SWScriptableObject`, `Editor/SWMonobehaviour`, and `Editor/SWScriptableObject` so immutable package installations can import them.
+
 ## [v1.0.9] - 2026-07-02
 
 ### Added
@@ -24,9 +32,6 @@ All notable changes to this project will be documented in this file.
 - Renamed the MonoBehaviour and ScriptableObject implementation folders to match their SWUtils type names.
 - Updated the package version to `v1.0.9`.
 - Expanded the README with setup steps and practical examples for the major runtime and editor workflows.
-
-### Fixed
-- Corrected folder `.meta` file names so immutable package installations can import the renamed folders.
 
 ## [v1.0.8] - 2026-06-16
 

@@ -14,7 +14,7 @@ Add the package through Unity Package Manager:
 Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.9
+https://github.com/LAVINSE/SWUtils.git#v1.0.10
 ```
 
 ## Dependencies
