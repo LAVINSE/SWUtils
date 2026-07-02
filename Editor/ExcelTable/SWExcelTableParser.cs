@@ -41,6 +41,10 @@ namespace SWTools
             public Type ElementType;
             /// <summary>대상 필드가 배열인지 여부입니다.</summary>
             public bool IsArray;
+            /// <summary>대상 필드가 리스트인지 여부입니다.</summary>
+            public bool IsList;
+            /// <summary>대상 필드가 단일 클래스인지 여부입니다.</summary>
+            public bool IsSingleObject => !IsArray && !IsList;
         }
         #endregion // 클래스
 
@@ -130,7 +134,11 @@ namespace SWTools
                 SWTableSheetAttribute sheetAttribute = field.GetCustomAttribute<SWTableSheetAttribute>();
                 if (sheetAttribute == null) continue;
 
-                if (TryGetElementType(field.FieldType, out Type elementType, out bool isArray))
+                if (TryGetSheetFieldType(
+                    field.FieldType,
+                    out Type elementType,
+                    out bool isArray,
+                    out bool isList))
                 {
                     result.Add(new SheetFieldInfo
                     {
@@ -138,6 +146,7 @@ namespace SWTools
                         SheetName = sheetAttribute.SheetName,
                         ElementType = elementType,
                         IsArray = isArray,
+                        IsList = isList,
                     });
                 }
                 else
@@ -150,12 +159,17 @@ namespace SWTools
         }
 
         /// <summary>
-        /// 리스트/배열 필드의 요소 타입을 가져온다.
+        /// 리스트, 배열 또는 단일 클래스 필드에서 매핑할 데이터 타입을 가져온다.
         /// </summary>
-        private static bool TryGetElementType(Type fieldType, out Type elementType, out bool isArray)
+        private static bool TryGetSheetFieldType(
+            Type fieldType,
+            out Type elementType,
+            out bool isArray,
+            out bool isList)
         {
             elementType = null;
             isArray = false;
+            isList = false;
 
             if (fieldType.IsArray)
             {
@@ -167,6 +181,16 @@ namespace SWTools
             if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
             {
                 elementType = fieldType.GetGenericArguments()[0];
+                isList = true;
+                return true;
+            }
+
+            if (fieldType.IsClass &&
+                fieldType != typeof(string) &&
+                !fieldType.IsAbstract &&
+                fieldType.GetConstructor(Type.EmptyTypes) != null)
+            {
+                elementType = fieldType;
                 return true;
             }
 
@@ -204,7 +228,15 @@ namespace SWTools
                 return false;
             }
 
-            for (int rowIndex = 0; rowIndex < parseResult.Rows.Count; rowIndex++)
+            int applyRowCount = sheetField.IsSingleObject
+                ? Mathf.Min(parseResult.Rows.Count, 1)
+                : parseResult.Rows.Count;
+
+            if (sheetField.IsSingleObject && parseResult.Rows.Count > 1)
+                parseResult.Warnings.Add(
+                    $"'{sheetField.SheetName}' 단일 클래스 필드에는 첫 번째 데이터 행만 적용됩니다.");
+
+            for (int rowIndex = 0; rowIndex < applyRowCount; rowIndex++)
             {
                 object rowObject = Activator.CreateInstance(sheetField.ElementType);
                 Dictionary<string, string> row = parseResult.Rows[rowIndex];
@@ -247,13 +279,17 @@ namespace SWTools
                     array.SetValue(values[index], index);
                 sheetField.Field.SetValue(target, array);
             }
-            else
+            else if (sheetField.IsList)
             {
                 object list = Activator.CreateInstance(typeof(List<>).MakeGenericType(sheetField.ElementType));
                 System.Collections.IList typedList = (System.Collections.IList)list;
                 foreach (object value in values)
                     typedList.Add(value);
                 sheetField.Field.SetValue(target, list);
+            }
+            else
+            {
+                sheetField.Field.SetValue(target, values.Count > 0 ? values[0] : null);
             }
 
             SWUtilsLog.Log($"[SWExcelTableParser] Apply complete. Sheet: {sheetField.SheetName}, Count: {values.Count}");

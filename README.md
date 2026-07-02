@@ -543,6 +543,8 @@ The inspection warns about large atlas memory, high glyph counts, long fallback 
 ### `Editor/ExcelTable`
 
 Parses tabular text and applies it to ScriptableObject fields marked with `SWTable` or `SWTableSheet`.
+`SWTableSheet` supports `List<T>`, arrays, and ordinary class fields. Collections receive every
+data row, while an ordinary class field receives only the first data row.
 
 ### `Editor/HierarchyTools`
 

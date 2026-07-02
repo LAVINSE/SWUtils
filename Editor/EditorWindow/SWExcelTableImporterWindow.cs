@@ -285,7 +285,7 @@ namespace SWTools
             if (sheetFields.Count == 0)
             {
                 SWEditorUtils.DrawEmptyNotice(
-                    "[SWTableSheet]가 붙은 List<T> 또는 배열 필드를 찾을 수 없습니다.",
+                    "[SWTableSheet]가 붙은 List<T>, 배열 또는 일반 클래스 필드를 찾을 수 없습니다.",
                     MessageType.Warning);
                 return;
             }
@@ -634,7 +634,9 @@ namespace SWTools
             AssetDatabase.SaveAssets();
 
             EditorUtility.DisplayDialog("적용 완료",
-                $"{sheetField.SheetName} 시트 데이터 {previewResult.Rows.Count}개를 적용했습니다.",
+                sheetField.IsSingleObject
+                    ? $"{sheetField.SheetName} 시트의 첫 번째 데이터 행을 적용했습니다."
+                    : $"{sheetField.SheetName} 시트 데이터 {previewResult.Rows.Count}개를 적용했습니다.",
                 "확인");
             SWUtilsLog.Log(
                 $"[SWExcelTableImporter] Apply complete. Target: {targetObject.name}, Sheet: {sheetField.SheetName}");
