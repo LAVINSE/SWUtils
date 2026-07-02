@@ -12,6 +12,19 @@ namespace SWTools
     /// </summary>
     public static class SWExcelTableParser
     {
+        #region 열거형
+        /// <summary>
+        /// 입력 테이블의 데이터 배치 방식입니다.
+        /// </summary>
+        public enum TableLayout
+        {
+            /// <summary>첫 행은 헤더이고 이후 행은 데이터인 가로 배치입니다.</summary>
+            Horizontal,
+            /// <summary>각 행이 필드명과 값으로 구성된 세로 배치입니다.</summary>
+            Vertical,
+        }
+        #endregion // 열거형
+
         #region 클래스
         /// <summary>
         /// TSV 파싱 결과와 경고, 오류 메시지를 담는 데이터입니다.
@@ -99,6 +112,59 @@ namespace SWTools
 
                 result.Rows.Add(row);
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 각 행이 필드명과 값으로 구성된 세로형 TSV 문자열을 단일 행 데이터로 파싱한다.
+        /// </summary>
+        /// <param name="tableText">엑셀에서 복사한 세로형 TSV 문자열.</param>
+        /// <returns>단일 행으로 변환된 파싱 결과.</returns>
+        public static ParseResult ParseVertical(string tableText)
+        {
+            ParseResult result = new();
+            if (string.IsNullOrWhiteSpace(tableText))
+            {
+                result.Errors.Add("입력된 TSV 데이터가 비어 있습니다.");
+                return result;
+            }
+
+            string normalized = tableText.Replace("\r\n", "\n").Replace('\r', '\n').Trim('\n');
+            string[] lines = normalized.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<string, string> row = new(StringComparer.OrdinalIgnoreCase);
+
+            for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+            {
+                string[] columns = SplitLine(lines[lineIndex]);
+                if (columns.Length != 2)
+                {
+                    result.Errors.Add(
+                        $"{lineIndex + 1}번째 줄은 필드명과 값의 두 열로 구성되어야 합니다.");
+                    continue;
+                }
+
+                string columnName = columns[0].Trim();
+                string rawValue = columns[1].Trim();
+                if (string.IsNullOrEmpty(columnName))
+                {
+                    result.Errors.Add($"{lineIndex + 1}번째 줄의 필드명이 비어 있습니다.");
+                    continue;
+                }
+
+                if (row.ContainsKey(columnName))
+                {
+                    result.Errors.Add(
+                        $"{lineIndex + 1}번째 줄의 필드명 '{columnName}'이 중복되었습니다.");
+                    continue;
+                }
+
+                result.Headers.Add(columnName);
+                row[columnName] = rawValue;
+            }
+
+            if (row.Count > 0)
+                result.Rows.Add(row);
 
             return result;
         }

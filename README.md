@@ -545,6 +545,8 @@ The inspection warns about large atlas memory, high glyph counts, long fallback 
 Parses tabular text and applies it to ScriptableObject fields marked with `SWTable` or `SWTableSheet`.
 `SWTableSheet` supports `List<T>`, arrays, and ordinary class fields. Collections receive every
 data row, while an ordinary class field receives only the first data row.
+For an ordinary class field, the importer also provides a vertical layout where each row contains
+a field name and value, such as `InitCoinValue    1000`. Select the input layout in the editor window.
 
 ### `Editor/HierarchyTools`
 

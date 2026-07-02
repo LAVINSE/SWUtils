@@ -7,7 +7,7 @@ using UnityEngine;
 namespace SWTools
 {
     /// <summary>
-    /// 엑셀에서 복사한 TSV 데이터를 ScriptableObject의 [SWTableSheet] 리스트에 적용하는 에디터 창.
+    /// 엑셀에서 복사한 TSV 데이터를 ScriptableObject의 [SWTableSheet] 필드에 적용하는 에디터 창.
     /// 왼쪽 패널에서 ScriptableObject 목록을 관리하고, 오른쪽에서 TSV 입력/미리보기/적용을 수행합니다.
     /// </summary>
     public class SWExcelTableImporterWindow : EditorWindow
@@ -32,6 +32,8 @@ namespace SWTools
         private Vector2 inputScroll;
         private Vector2 previewScroll;
         private bool showPreview = true;
+        private SWExcelTableParser.TableLayout tableLayout =
+            SWExcelTableParser.TableLayout.Horizontal;
 
         private List<SWExcelTableParser.SheetFieldInfo> sheetFields = new();
         private SWExcelTableParser.ParseResult previewResult;
@@ -293,13 +295,43 @@ namespace SWTools
             string[] sheetNames = sheetFields.Select(field => field.SheetName).ToArray();
             int selectedIndex = Mathf.Max(0, System.Array.IndexOf(sheetNames, selectedSheetName));
             int nextIndex = EditorGUILayout.Popup("Sheet", selectedIndex, sheetNames);
-            selectedSheetName = sheetNames[nextIndex];
+            string nextSheetName = sheetNames[nextIndex];
+            if (nextSheetName != selectedSheetName)
+            {
+                selectedSheetName = nextSheetName;
+                previewResult = null;
+            }
 
             SWExcelTableParser.SheetFieldInfo sheetField = GetSelectedSheetField();
             if (sheetField != null)
+            {
                 EditorGUILayout.LabelField("Target Field",
                     $"{sheetField.Field.Name} : {sheetField.ElementType.Name}",
                     EditorStyles.miniLabel);
+
+                if (!sheetField.IsSingleObject &&
+                    tableLayout != SWExcelTableParser.TableLayout.Horizontal)
+                {
+                    tableLayout = SWExcelTableParser.TableLayout.Horizontal;
+                    previewResult = null;
+                }
+
+                using (new EditorGUI.DisabledScope(!sheetField.IsSingleObject))
+                {
+                    string[] layoutNames = { "가로형: 첫 행 헤더", "세로형: 필드명 / 값" };
+                    int selectedLayout = tableLayout == SWExcelTableParser.TableLayout.Horizontal ? 0 : 1;
+                    int nextLayout = EditorGUILayout.Popup("입력 형식", selectedLayout, layoutNames);
+                    SWExcelTableParser.TableLayout nextTableLayout = nextLayout == 0
+                        ? SWExcelTableParser.TableLayout.Horizontal
+                        : SWExcelTableParser.TableLayout.Vertical;
+
+                    if (nextTableLayout != tableLayout)
+                    {
+                        tableLayout = nextTableLayout;
+                        previewResult = null;
+                    }
+                }
+            }
         }
 
         private void DrawInputSection()
@@ -321,9 +353,10 @@ namespace SWTools
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.HelpBox(
-                "엑셀 또는 구글시트에서 헤더 행을 포함해 복사한 뒤 붙여넣으세요. 첫 줄은 컬럼명으로 사용됩니다.",
-                MessageType.Info);
+            string inputGuide = tableLayout == SWExcelTableParser.TableLayout.Horizontal
+                ? "엑셀 또는 구글시트에서 헤더 행을 포함해 복사한 뒤 붙여넣으세요. 첫 줄은 컬럼명으로 사용됩니다."
+                : "각 행을 필드명과 값의 두 열로 작성한 뒤 붙여넣으세요. 일반 클래스 필드에만 사용할 수 있습니다.";
+            EditorGUILayout.HelpBox(inputGuide, MessageType.Info);
 
             inputScroll = EditorGUILayout.BeginScrollView(inputScroll, GUILayout.MinHeight(120));
             tableText = EditorGUILayout.TextArea(tableText, GUILayout.ExpandHeight(true));
@@ -588,7 +621,9 @@ namespace SWTools
 
         private void ParsePreview()
         {
-            previewResult = SWExcelTableParser.Parse(tableText);
+            previewResult = tableLayout == SWExcelTableParser.TableLayout.Horizontal
+                ? SWExcelTableParser.Parse(tableText)
+                : SWExcelTableParser.ParseVertical(tableText);
             SWUtilsLog.Log(
                 $"[SWExcelTableImporter] Parse preview. Rows: {previewResult.Rows.Count}");
         }
