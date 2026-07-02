@@ -39,6 +39,18 @@ Add the following define symbols when using external libraries for cloud saves:
 - `SW_GOOGLEPLAY_ENABLE`: Enables Google Play Games saves on Android.
 - `SW_STEAMWORKS_NET`: Enables Steamworks.NET saves on standalone platforms.
 
+## Quick Start
+
+After installation:
+
+1. Import the package sample from the `Samples` tab in Unity Package Manager when you want working attribute and pooling examples.
+2. Add `using SWTools;` for `SWMonoBehaviour`, `SWScriptableObject`, and Inspector attributes.
+3. Add `using SWUtils;` for saving, popups, audio, timers, scene loading, and general runtime helpers.
+4. Add `using SWCoroutine;` when using `ICoroutineRunner` or `SWCoroutineRunner`.
+5. If your project uses assembly definition files, add references to `SWUtils.Runtime` and any optional assemblies required by the feature.
+
+Most manager components are scene-owned. Add the required manager or registry to a bootstrap scene and keep that scene alive when the feature must persist between scene changes.
+
 ## Runtime Features
 
 ### `Runtime/Attribute`
@@ -162,6 +174,21 @@ public class CoroutineExample : MonoBehaviour
 }
 ```
 
+`SWCoroutineRunner` also provides cached wait instructions and common scheduling operations:
+
+```csharp
+coroutineRunner.DelayedCall(1f, () => Debug.Log("One second later"));
+coroutineRunner.NextFrame(() => Debug.Log("Next frame"));
+coroutineRunner.Repeat(0.5f, 3, index => Debug.Log($"Repeat {index}"));
+coroutineRunner.Tween(
+    0.25f,
+    progress => transform.localScale = Vector3.one * progress,
+    () => Debug.Log("Tween complete"),
+    true);
+```
+
+Keep the returned `Coroutine` when an individual operation may need to be cancelled with `Stop`.
+
 ### `Runtime/Data`
 
 Provides save data, PlayerPrefs, encryption, and cloud save features.
@@ -185,6 +212,22 @@ SWUtilsPlayerPrefs.Save();
 int coin = SWUtilsPlayerPrefs.GetInt("coin", 0);
 ```
 
+The selected slot is included in the stored key space. Select the slot before every read or write flow that can run before your bootstrap initialization.
+
+```csharp
+SWUtilsPlayerPrefs.SetSlot("player_01");
+
+SWUtilsPlayerPrefs.SetLong("total_score", 125000L);
+SWUtilsPlayerPrefs.SetDouble("play_time", 42.5d);
+SWUtilsPlayerPrefs.SetBool("tutorial_complete", true);
+SWUtilsPlayerPrefs.Save();
+
+string exportedJson = SWUtilsPlayerPrefs.ExportToJson();
+bool imported = SWUtilsPlayerPrefs.ImportFromJson(exportedJson);
+```
+
+`ImportFromJson` replaces the imported keys, while `MergeFromJson` merges incoming entries into the current slot. Use `HasKey`, `DeleteKey`, and `DeleteAll` for key-level or slot-level cleanup.
+
 Create and edit salt settings from `SWTools/Utils/PlayerPrefs Salt Settings`. The settings asset is created at `Assets/Resources/SWUtilsPlayerPrefsSettings.asset` and loaded automatically through Resources at runtime. Data saved with a previous salt cannot be read after the salt changes, so delete or migrate existing data first.
 
 Save manager example:
@@ -207,7 +250,25 @@ SWSaveDataManager.LoadAll();
 PlayerSaveData data = SWSaveDataManager.GetData<PlayerSaveData>();
 ```
 
-### `Runtime/MonoBehaviour`
+Use `TryGetData` when a save may not exist, and use the asynchronous methods when cloud synchronization is enabled:
+
+```csharp
+SWSaveDataManager.SetSlot("player_01");
+
+if (SWSaveDataManager.HasSave())
+{
+    await SWSaveDataManager.LoadAllAsync();
+
+    if (SWSaveDataManager.TryGetData(out PlayerSaveData loadedData))
+        Debug.Log($"Loaded level: {loadedData.level}");
+}
+
+await SWSaveDataManager.SaveAllAsync();
+```
+
+`ListSaves`, `CopySlot`, `Delete`, and `GetSaveInfo` provide save-slot management. `SaveAll` writes the registered data and the current SWUtils PlayerPrefs slot together; changing the save-manager slot also aligns the PlayerPrefs slot.
+
+### `Runtime/SWMonoBehaviour`
 
 Provides the `SWMonoBehaviour` base class for use with the attribute-driven `SWTools` custom Inspector.
 
@@ -223,7 +284,7 @@ public class PlayerController : SWMonoBehaviour
 }
 ```
 
-### `Runtime/ScriptableObject`
+### `Runtime/SWScriptableObject`
 
 Provides the `SWScriptableObject` base class for ScriptableObject assets that use the same attribute-driven custom Inspector as `SWMonoBehaviour`.
 
@@ -290,6 +351,13 @@ public class SpawnExample : MonoBehaviour
 }
 ```
 
+Setup:
+
+1. Create an `SWPoolCatalog` asset and register each prefab with its prewarm count and maximum size.
+2. Add `SWPool` and `SWPoolRegistry` to the bootstrap scene.
+3. Assign the catalog to `SWPoolRegistry`.
+4. Spawn by prefab reference or by a configured group, then return instances through `Release`.
+
 Pool callback example:
 
 ```csharp
@@ -345,6 +413,13 @@ public class PopupExample : MonoBehaviour
 }
 ```
 
+Setup:
+
+1. Add `SWPopupManager` to the bootstrap scene.
+2. Create popup prefabs derived from `SWPopupBase`.
+3. Assign optional show and hide effect assets on each popup.
+4. Use prefab-based calls directly, or create an `SWPopupCatalog` and register string keys for key-based calls.
+
 Key-based example:
 
 ```csharp
@@ -392,6 +467,39 @@ A collection of small, general-purpose game utilities.
 - `SWAmountFormatProfile`: Stores number suffixes, decimal places, and decimal handling in a Resources preset asset.
 - `SWRectDummy`: A mesh-free Graphic that creates a rectangular user interface raycast area without an Image.
 
+#### Audio
+
+1. Create an audio library from `Assets > Create > SWUtils > Audio Library`.
+2. Register music and sound-effect clips with unique string keys.
+3. Add `SWAudioManager` to the bootstrap scene and assign the library.
+4. Optionally assign dedicated music and sound-effect `AudioSource` components. Missing sources are created automatically.
+
+```csharp
+using SWUtils;
+using UnityEngine;
+
+public class AudioExample : MonoBehaviour
+{
+    public void PlayLobbyMusic()
+    {
+        SWAudioManager.Instance.PlayMusic("lobby", true, 0.5f);
+    }
+
+    public void PlayButtonSound()
+    {
+        SWAudioManager.Instance.PlaySfx("button");
+    }
+
+    public void ApplyVolume(float volume)
+    {
+        SWAudioManager.Instance.SetMasterVolume(volume);
+        SWAudioManager.Instance.SaveVolumes();
+    }
+}
+```
+
+Call `LoadVolumes` during initialization if volume settings were saved previously.
+
 Event bus example:
 
 ```csharp
@@ -429,6 +537,51 @@ private void TryUseSkill()
     // Execute the skill.
 }
 ```
+
+Timer example:
+
+```csharp
+using SWUtils;
+using UnityEngine;
+
+public class RoundTimerExample : MonoBehaviour
+{
+    private readonly SWTimer roundTimer = new SWTimer(60f);
+
+    private void Start()
+    {
+        roundTimer.Start();
+    }
+
+    private void Update()
+    {
+        if (roundTimer.Tick())
+            Debug.Log("Round complete");
+    }
+}
+```
+
+`SWTimer.Tick` must be called by an update owner. Use `Pause`, `Resume`, `Restart`, and `SetDuration` to control it. `SWRefillTimer` is intended for count recovery across sessions; construct it with a stable save key, call `Use` when spending a count, and call `RecoverOffline` after loading.
+
+Scene-loading example:
+
+```csharp
+using SWUtils;
+using UnityEngine;
+
+public class SceneTransitionExample : MonoBehaviour
+{
+    public void LoadLobby()
+    {
+        SWSceneLoader.Instance.LoadScene(
+            "Lobby",
+            onProgress: progress => Debug.Log($"Loading: {progress:P0}"),
+            onComplete: () => Debug.Log("Lobby loaded"));
+    }
+}
+```
+
+Add all target scenes to Build Settings before loading them. `LoadAdditive`, `UnloadScene`, `ReloadActiveScene`, and `SetActiveScene` cover multi-scene flows. Set `AllowSceneActivation` when a loading screen must hold activation after loading reaches the ready state.
 
 Number format preset example:
 
@@ -517,6 +670,16 @@ Displayed information:
 
 The window uses the `SWPool` in the scene. Registered prefabs whose underlying ObjectPool has not been created yet are also shown with zero counts.
 
+#### `SWTools/Debug/PlayerPrefs Viewer`
+
+Use the `SWUtils PlayerPrefs` tab to inspect decrypted logical keys for the selected slot. Use the `Unity PlayerPrefs` tab to inspect ordinary Unity PlayerPrefs entries that are not internal SWUtils storage keys.
+
+Values can be edited and saved from the entries list. Deleting all Unity PlayerPrefs also deletes the encrypted backend used by SWUtils, so reserve that action for development and testing.
+
+#### `SWTools/Utils/Reference Finder`
+
+Select an asset and open `Assets > SWTools > Find References In Project`, or open the window from `SWTools > Utils > Reference Finder`. The search scans project assets for references to the selected object and lets you select or ping each result.
+
 #### `SWTools/Utils/TMP Font Asset Manager` Performance Tab
 
 Inspects atlas memory, glyphs, characters, fallback chains, and material preset costs for a TextMeshPro font asset.
@@ -548,15 +711,26 @@ data row, while an ordinary class field receives only the first data row.
 For an ordinary class field, the importer also provides a vertical layout where each row contains
 a field name and value, such as `InitCoinValue    1000`. Select the input layout in the editor window.
 
+Usage:
+
+1. Derive the target asset from `SWScriptableObject` or another ScriptableObject type.
+2. Apply `SWTable` or `SWTableSheet` to the destination field.
+3. Open `SWTools > Utils > Excel Table Importer`.
+4. Assign the target asset and paste tab-separated spreadsheet data.
+5. Select the table layout that matches the pasted data.
+6. Preview parsing errors, then apply the imported values and save the asset.
+
+Collection fields receive every data row. An ordinary class field receives the first row in horizontal layout, or matching field-and-value rows in vertical layout. Field names must match serialized field names.
+
 ### `Editor/HierarchyTools`
 
 Stores and applies Hierarchy display styles and icons. Used with `SWHierarchyToolsWindow`.
 
-### `Editor/Monobehaviour`
+### `Editor/SWMonoBehaviour`
 
 Builds custom Inspectors for components derived from `SWMonoBehaviour`, including groups, buttons, conditional display, and constant repaint behavior. The shared Inspector implementation is also used by `SWScriptableObject`.
 
-### `Editor/ScriptableObject`
+### `Editor/SWScriptableObject`
 
 Applies the shared SWUtils custom Inspector to assets derived from `SWScriptableObject`.
 

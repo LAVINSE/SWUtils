@@ -4,17 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.0.9] - 2026-07-02
+
 ### Added
 - Added `SWScriptableObject` with the same grouped fields, inspector buttons, and repaint attributes provided by `SWMonoBehaviour`.
 - Added a `Unity PlayerPrefs` tab to `SWTools/Debug/PlayerPrefs Viewer` for viewing, editing, and deleting standard Unity PlayerPrefs.
 - Added search-target filters and an option to delete all standard Unity PlayerPrefs from `SWTools/Debug/PlayerPrefs Viewer`.
 - Added `long` and `double` support to `SWEncrypt<T>`.
 - Added `SetLong`, `GetLong`, `SetDouble`, and `GetDouble` to `SWUtilsPlayerPrefs`.
+- Added `SWUtilsTime.ToDateTime` for converting saved time strings to `DateTime` values.
 
 ### Changed
 - Updated the Entries list in `SWTools/Debug/PlayerPrefs Viewer` to support inline value editing and saving.
 - Added `IsLogOutputEnabled` to control log output from `SWEventBus`.
 - Added the `shouldOutputLog` parameter to `SWEventBus.Publish` for per-publication log control.
+- Renamed `SWUtilsRefillTimer` to `SWRefillTimer` while preserving its saved-data keys.
+- Extended `SWTableSheet` importing to support ordinary class fields in addition to lists and arrays.
+- Added a vertical field-and-value layout to `SWTools/Utils/Excel Table Importer`.
+- Renamed the MonoBehaviour and ScriptableObject implementation folders to match their SWUtils type names.
+- Updated the package version to `v1.0.9`.
+- Expanded the README with setup steps and practical examples for the major runtime and editor workflows.
+
+### Fixed
+- Corrected folder `.meta` file names so immutable package installations can import the renamed folders.
 
 ## [v1.0.8] - 2026-06-16
 
