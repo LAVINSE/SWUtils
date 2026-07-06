@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SWPooling
+namespace SW.Pooling
 {
     /// <summary>
     /// 풀에 미리 생성할 프리팹 목록을 에셋으로 관리하는 카탈로그입니다.

@@ -1,8 +1,10 @@
-using SWTools;
-using SWUtils;
 using UnityEngine;
 
-namespace SWPooling
+using SW.Base;
+
+using SW.Util;
+
+namespace SW.Pooling
 {
     /// <summary>
     /// 시작 때 지정한 프리팹들을 대상 풀에 미리 등록하고 생성하는 컴포넌트입니다.
@@ -21,7 +23,7 @@ namespace SWPooling
         {
             if (poolCatalog == null)
             {
-                SWUtilsLog.LogWarning("[SWPoolRegistry] SWPoolCatalog가 없어 풀 등록을 건너뜁니다.");
+                SWLog.LogWarning("[SWPoolRegistry] SWPoolCatalog가 없어 풀 등록을 건너뜁니다.");
                 return;
             }
 
@@ -51,7 +53,7 @@ namespace SWPooling
 
             if (targetPool == null)
             {
-                SWUtilsLog.LogError("[SWPoolRegistry] SWPool을 찾을 수 없습니다.");
+                SWLog.LogError("[SWPoolRegistry] SWPool을 찾을 수 없습니다.");
             }
             
             return targetPool;
@@ -60,11 +62,14 @@ namespace SWPooling
         /// <summary>
         /// 카탈로그에 등록된 프리팹들을 대상 풀에 미리 생성합니다.
         /// </summary>
-        /// <param name="pool">등록할 대상 풀입니다.</param>
         /// <param name="catalog">등록 정보가 담긴 카탈로그입니다.</param>
         private void RegisterCatalog(SWPoolCatalog catalog)
         {
             SWPool pool = ResolveTargetPool();
+            if (pool == null)
+            {
+                return;
+            }
 
             for (int index = 0; index < catalog.PoolEntries.Count; ++index)
             {

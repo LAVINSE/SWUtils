@@ -2,7 +2,11 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-namespace SWTools
+using SW.Attribute;
+
+using SW.Util;
+
+namespace SW.Editor.Attribute
 {
     /// <summary>
     /// Inspector에서 드롭다운으로 렌더링하는 PropertyDrawer입니다.
@@ -22,12 +26,12 @@ namespace SWTools
         protected string[] dropdownDisplayNames;
 
         /// <summary>
-        /// 현재 선택된 드롭다운 인덱스
+        /// 현재 선택된 드롭다운 인덱스.
         /// </summary>
         protected int selectedIndex = -1;
 
         /// <summary>
-        /// 드롭다운 값들의 타입
+        /// 드롭다운 값들의 타입.
         /// </summary>
         protected Type valueType;
 
@@ -72,7 +76,7 @@ namespace SWTools
 
             if (dropdownAttribute.DropdownValues == null || dropdownAttribute.DropdownValues.Length == 0)
             {
-                SWUtils.SWUtilsLog.LogWarning($"[SWDropdown] '{property.name}' 필드의 드롭다운 값이 비어있습니다.");
+                SWLog.LogWarning($"[SWDropdown] '{property.name}' 필드의 드롭다운 값이 비어있습니다.");
                 return;
             }
 
@@ -81,7 +85,7 @@ namespace SWTools
             // 프로퍼티 타입과 드롭다운 값 타입 일치 여부 검사
             if (!IsTypeCompatible(property))
             {
-                SWUtils.SWUtilsLog.LogError($"[SWDropdown] '{property.name}' 필드 타입과 드롭다운 값 타입이 일치하지 않습니다.");
+                SWLog.LogError($"[SWDropdown] '{property.name}' 필드 타입과 드롭다운 값 타입이 일치하지 않습니다.");
                 return;
             }
 

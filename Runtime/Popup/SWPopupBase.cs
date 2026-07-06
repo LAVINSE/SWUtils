@@ -1,9 +1,11 @@
 using System;
-using DG.Tweening;
 using UnityEngine;
-using SWTools;
 
-namespace SWUtils
+using SW.Attribute;
+
+using SW.Base;
+
+namespace SW.Popup
 {
     /// <summary>
     /// 모든 팝업이 상속하는 기본 클래스입니다.
@@ -11,6 +13,7 @@ namespace SWUtils
     /// <remarks>
     /// 기본 구현은 GameObject 활성 상태와 표시/숨김 연출을 제어합니다.
     /// 사운드, 입력 잠금 같은 부가 처리는 <see cref="OnShow"/>와 <see cref="OnHide"/>를 재정의해 확장합니다.
+    /// DOTween 의존성이 제거되어 연출은 <see cref="SWPopupEffectHandle"/>로 재생됩니다.
     /// </remarks>
     public class SWPopupBase : SWMonoBehaviour
     {
@@ -25,8 +28,8 @@ namespace SWUtils
         [SerializeField, SWCondition("useHideEffect", true)] private SWPopupHideEffect hideEffect;
         [SerializeField, SWCondition("useHideEffect", true)] private Transform hideEffectTarget;
 
-        private Tween showEffectTween;
-        private Tween hideEffectTween;
+        private SWPopupEffectHandle showEffectHandle;
+        private SWPopupEffectHandle hideEffectHandle;
         #endregion // 필드
 
         #region 프로퍼티
@@ -122,9 +125,7 @@ namespace SWUtils
             if (showEffect == null) return;
 
             Transform target = showEffectTarget != null ? showEffectTarget : transform;
-            showEffectTween = showEffect.Play(this, target);
-            if (showEffectTween != null)
-                showEffectTween.SetTarget(this);
+            showEffectHandle = showEffect.Play(this, target);
         }
 
         /// <summary>
@@ -132,10 +133,10 @@ namespace SWUtils
         /// </summary>
         protected void StopShowEffect()
         {
-            if (showEffectTween == null) return;
+            if (showEffectHandle == null) return;
 
-            showEffectTween.Kill();
-            showEffectTween = null;
+            showEffectHandle.Kill();
+            showEffectHandle = null;
         }
         #endregion // 표시 연출
 
@@ -175,17 +176,16 @@ namespace SWUtils
             }
 
             Transform target = hideEffectTarget != null ? hideEffectTarget : transform;
-            hideEffectTween = hideEffect.Play(this, target);
-            if (hideEffectTween == null)
+            hideEffectHandle = hideEffect.Play(this, target);
+            if (hideEffectHandle == null)
             {
                 onComplete?.Invoke();
                 return;
             }
 
-            hideEffectTween.SetTarget(this);
-            hideEffectTween.OnComplete(() =>
+            hideEffectHandle.OnComplete(() =>
             {
-                hideEffectTween = null;
+                hideEffectHandle = null;
                 onComplete?.Invoke();
             });
         }
@@ -195,10 +195,10 @@ namespace SWUtils
         /// </summary>
         protected void StopHideEffect()
         {
-            if (hideEffectTween == null) return;
+            if (hideEffectHandle == null) return;
 
-            hideEffectTween.Kill();
-            hideEffectTween = null;
+            hideEffectHandle.Kill();
+            hideEffectHandle = null;
         }
         #endregion // 숨김 연출
 

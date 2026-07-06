@@ -2,11 +2,15 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace SWTools
+using SW.Attribute;
+
+using SW.Util;
+
+namespace SW.Editor.Attribute
 {
     /// <summary>
     /// Inspector에서 렌더링하는 커스텀 PropertyDrawer입니다.
-    /// 조건 enum 값에 따라 필드를 표시하거나 숨기고, 비활성화 상태를 제어합니다.
+    /// 조건 열거형 값에 따라 필드를 표시하거나 숨기고, 비활성화 상태를 제어합니다.
     /// </summary>
     [CustomPropertyDrawer(typeof(SWEnumConditionAttribute))]
     public class SWEnumConditionAttributeDrawer : PropertyDrawer
@@ -29,7 +33,7 @@ namespace SWTools
         }
 
         /// <summary>
-        /// 조건 enum 값에 따라 필드를 표시하거나 비활성화 상태로 그립니다.
+        /// 조건 열거형 값에 따라 필드를 표시하거나 비활성화 상태로 그립니다.
         /// </summary>
         /// <param name="position">그려질 영역입니다.</param>
         /// <param name="property">대상 SerializedProperty입니다.</param>
@@ -48,7 +52,7 @@ namespace SWTools
         }
 
         /// <summary>
-        /// 조건 enum 값을 확인하여 필드 표시 여부를 결정합니다.
+        /// 조건 열거형 값을 확인하여 필드 표시 여부를 결정합니다.
         /// </summary>
         /// <param name="enumConditionAttribute">검사할 어트리뷰트</param>
         /// <param name="property">대상 프로퍼티</param>
@@ -76,7 +80,7 @@ namespace SWTools
             }
             else
             {
-                SWUtils.SWUtilsLog.LogError($"[SWEnumCondition] 조건 enum을 찾을 수 없습니다: '{enumConditionAttribute.ConditionEnum}'");
+                SWLog.LogError($"[SWEnumCondition] 조건 enum을 찾을 수 없습니다: '{enumConditionAttribute.ConditionEnum}'");
             }
 
             return enabled;

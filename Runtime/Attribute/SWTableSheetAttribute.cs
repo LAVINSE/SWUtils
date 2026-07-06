@@ -1,6 +1,6 @@
 using System;
 
-namespace SWTools
+namespace SW.Attribute
 {
     /// <summary>
     /// ScriptableObject 안의 리스트, 배열 또는 일반 클래스 필드와 TSV 시트명을 연결하는 어트리뷰트.

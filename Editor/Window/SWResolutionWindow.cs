@@ -1,0 +1,326 @@
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEngine;
+
+using SW.Editor.Util;
+
+using SW.Util;
+
+namespace SW.Editor.Window
+{
+    /// <summary>
+    /// SWResolution 기능을 시각적으로 확인하고 테스트할 수 있는 에디터 윈도우.
+    /// </summary>
+    public class SWResolutionWindow : EditorWindow
+    {
+        #region 필드
+        private enum Tab
+        {
+            Monitor,
+            BaseResolution,
+            CoordinateTest,
+            CameraTest,
+            DPITest,
+        }
+
+        private Tab currentTab = Tab.Monitor;
+        private Vector2 scrollPosition;
+
+        // 좌표 변환 테스트용
+        private Vector2 testScreenPosition;
+        private Vector2 testNormalizedPosition;
+
+        // 카메라 테스트용
+        private Camera testCamera;
+        private float testHorizontalFov = 60f;
+        private float testBaseOrthoSize = 5f;
+
+        // DPI 테스트용
+        private float testDpiInputValue = 10f;
+
+        // 탭 이름
+        private static readonly string[] tabNamesArray = { "모니터", "기준해상도", "좌표변환", "카메라", "DPI" };
+        #endregion // 필드
+
+        #region 윈도우 열기
+        /// <summary>
+        /// Resolution Window 창을 엽니다.
+        /// </summary>
+        [MenuItem("SWTools/Utils/Resolution Window")]
+        public static void OpenWindow()
+        {
+            var window = GetWindow<SWResolutionWindow>();
+            SWEditorUtils.SetupWindow(window, "Resolution", null, 360, 400);
+            window.Show();
+        }
+        #endregion // 윈도우 열기
+
+        #region GUI
+        private void OnInspectorUpdate()
+        {
+            if (currentTab == Tab.Monitor) Repaint();
+        }
+
+        private void OnGUI()
+        {
+            DrawHeader();
+            DrawTabs();
+
+            EditorGUILayout.Space(4f);
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+            switch (currentTab)
+            {
+                case Tab.Monitor: DrawMonitorTab(); break;
+                case Tab.BaseResolution: DrawBaseResolutionTab(); break;
+                case Tab.CoordinateTest: DrawCoordinateTab(); break;
+                case Tab.CameraTest: DrawCameraTab(); break;
+                case Tab.DPITest: DrawDpiTab(); break;
+            }
+
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawHeader()
+        {
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("SWUtils Resolution Tool", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("해상도 관련 유틸리티를 시각적으로 테스트합니다.", EditorStyles.miniLabel);
+            EditorGUILayout.Space(4f);
+        }
+
+        private void DrawTabs()
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                int newTab = GUILayout.Toolbar((int)currentTab, tabNamesArray);
+                currentTab = (Tab)newTab;
+            }
+        }
+        #endregion // GUI
+
+        #region 모니터 탭
+        private void DrawMonitorTab()
+        {
+            EditorGUILayout.LabelField("실시간 화면 정보", EditorStyles.boldLabel);
+            EditorGUILayout.Space(2f);
+
+            DrawInfo("Screen.width x height", $"{Screen.width} x {Screen.height}");
+            DrawInfo("SWResolution.ScreenWidth", SWResolution.ScreenWidth.ToString("F1"));
+            DrawInfo("SWResolution.ScreenHeight", SWResolution.ScreenHeight.ToString("F1"));
+            DrawInfo("ScreenAspect (w/h)", SWResolution.ScreenAspect.ToString("F3"));
+            DrawInfo("Ratio (h/w)", ((float)Screen.height / Screen.width).ToString("F3"));
+            DrawInfo("IsPortrait", SWResolution.IsPortrait.ToString());
+            DrawInfo("IsLandscape", SWResolution.IsLandscape.ToString());
+            DrawInfo("Orientation", Screen.orientation.ToString());
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("DPI 정보", EditorStyles.boldLabel);
+            EditorGUILayout.Space(2f);
+            DrawInfo("Screen.dpi", Screen.dpi > 0f ? Screen.dpi.ToString("F1") : "Unknown");
+            DrawInfo("DPI Category", SWResolution.DpiCategory.ToString());
+            DrawInfo("MinTouchSize (px)", SWResolution.GetMinTouchSizePixels().ToString("F1"));
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("SafeArea", EditorStyles.boldLabel);
+            EditorGUILayout.Space(2f);
+            DrawInfo("Screen.safeArea", Screen.safeArea.ToString());
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.HelpBox("Game View 또는 Device Simulator 해상도를 변경하면 값이 실시간으로 갱신됩니다.", MessageType.Info);
+        }
+
+        private void DrawInfo(string label, string value)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(label, GUILayout.Width(220f));
+                EditorGUILayout.SelectableLabel(value, EditorStyles.textField,
+                    GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            }
+        }
+        #endregion // 모니터 탭
+
+        #region 기준 해상도 탭
+        private void DrawBaseResolutionTab()
+        {
+            EditorGUILayout.LabelField("기준 해상도 (BaseResolution)", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "프로젝트의 디자인 기준 해상도를 설정합니다. " +
+                "SWResolution.GetBaseResolutionScale() 등에서 사용됩니다.\n" +
+                "※ 런타임에만 유효하며, 플레이 모드에서도 값이 유지되진 않습니다.",
+                MessageType.Info);
+            EditorGUILayout.Space(4f);
+
+            float newBaseWidth = EditorGUILayout.FloatField("Base Width", SWResolution.BaseWidth);
+            float newBaseHeight = EditorGUILayout.FloatField("Base Height", SWResolution.BaseHeight);
+
+            if (!Mathf.Approximately(newBaseWidth, SWResolution.BaseWidth))
+                SWResolution.BaseWidth = newBaseWidth;
+            if (!Mathf.Approximately(newBaseHeight, SWResolution.BaseHeight))
+                SWResolution.BaseHeight = newBaseHeight;
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("프리셋", EditorStyles.boldLabel);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("1080x1920 (세로)"))
+                {
+                    SWResolution.BaseWidth = 1080f;
+                    SWResolution.BaseHeight = 1920f;
+                }
+                if (GUILayout.Button("1920x1080 (가로)"))
+                {
+                    SWResolution.BaseWidth = 1920f;
+                    SWResolution.BaseHeight = 1080f;
+                }
+            }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("750x1334 (iPhone)"))
+                {
+                    SWResolution.BaseWidth = 750f;
+                    SWResolution.BaseHeight = 1334f;
+                }
+                if (GUILayout.Button("2048x1536 (iPad)"))
+                {
+                    SWResolution.BaseWidth = 2048f;
+                    SWResolution.BaseHeight = 1536f;
+                }
+            }
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("계산 결과", EditorStyles.boldLabel);
+            EditorGUILayout.Space(2f);
+            DrawInfo("BaseAspect (w/h)", SWResolution.BaseAspect.ToString("F3"));
+            DrawInfo("ScreenAspect (w/h)", SWResolution.ScreenAspect.ToString("F3"));
+            DrawInfo("GetBaseResolutionScale", SWResolution.GetBaseResolutionScale().ToString("F3"));
+            DrawInfo("LetterboxHeight (px)", SWResolution.GetLetterboxHeight(SWResolution.BaseAspect).ToString("F1"));
+            DrawInfo("PillarboxWidth (px)", SWResolution.GetPillarboxWidth(SWResolution.BaseAspect).ToString("F1"));
+        }
+        #endregion // 기준 해상도 탭
+
+        #region 좌표 변환 탭
+        private void DrawCoordinateTab()
+        {
+            EditorGUILayout.LabelField("스크린 → 정규화", EditorStyles.boldLabel);
+            testScreenPosition = EditorGUILayout.Vector2Field("Screen Position (px)", testScreenPosition);
+            Vector2 normalized = SWResolution.ToNormalized(testScreenPosition);
+            DrawInfo("Normalized (0~1)", $"({normalized.x:F3}, {normalized.y:F3})");
+
+            EditorGUILayout.Space(8f);
+
+            EditorGUILayout.LabelField("정규화 → 스크린", EditorStyles.boldLabel);
+            testNormalizedPosition = EditorGUILayout.Vector2Field("Normalized (0~1)", testNormalizedPosition);
+            Vector2 screenResult = SWResolution.FromNormalized(testNormalizedPosition);
+            DrawInfo("Screen Position (px)", $"({screenResult.x:F1}, {screenResult.y:F1})");
+
+            EditorGUILayout.Space(8f);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("중앙 좌표 설정"))
+                {
+                    testScreenPosition = SWResolution.ScreenCenter;
+                    testNormalizedPosition = new Vector2(0.5f, 0.5f);
+                }
+                if (GUILayout.Button("우상단 좌표 설정"))
+                {
+                    testScreenPosition = SWResolution.ScreenSize2D;
+                    testNormalizedPosition = new Vector2(1f, 1f);
+                }
+            }
+        }
+        #endregion // 좌표 변환 탭
+
+        #region 카메라 탭
+        private void DrawCameraTab()
+        {
+            EditorGUILayout.LabelField("카메라 선택", EditorStyles.boldLabel);
+            testCamera = (Camera)EditorGUILayout.ObjectField("Camera", testCamera, typeof(Camera), true);
+            if (testCamera == null && Camera.main != null && GUILayout.Button("Main Camera 사용"))
+            {
+                testCamera = Camera.main;
+            }
+
+            EditorGUILayout.Space(8f);
+
+            if (testCamera == null)
+            {
+                SWEditorUtils.DrawEmptyNotice("카메라를 선택하세요.", MessageType.Warning);
+                return;
+            }
+
+            EditorGUILayout.LabelField("현재 카메라 정보", EditorStyles.boldLabel);
+            DrawInfo("Is Orthographic", testCamera.orthographic.ToString());
+            DrawInfo("Vertical FOV", testCamera.fieldOfView.ToString("F2"));
+            DrawInfo("Aspect", testCamera.aspect.ToString("F3"));
+            DrawInfo("Horizontal FOV (계산)", testCamera.GetHorizontalFov().ToString("F2"));
+            DrawInfo("Orthographic Size", testCamera.orthographicSize.ToString("F2"));
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("수평 FOV 적용 테스트", EditorStyles.boldLabel);
+            testHorizontalFov = EditorGUILayout.Slider("Horizontal FOV", testHorizontalFov, 10f, 170f);
+            if (GUILayout.Button("SetHorizontalFov 적용"))
+            {
+                Undo.RecordObject(testCamera, "Set Horizontal FOV");
+                testCamera.SetHorizontalFov(testHorizontalFov);
+            }
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("Orthographic 크기 자동 조정", EditorStyles.boldLabel);
+            testBaseOrthoSize = EditorGUILayout.FloatField("Base OrthographicSize", testBaseOrthoSize);
+            using (new EditorGUI.DisabledScope(!testCamera.orthographic))
+            {
+                if (GUILayout.Button("FitOrthographicSize 적용"))
+                {
+                    Undo.RecordObject(testCamera, "Fit Orthographic Size");
+                    testCamera.FitOrthographicSize(testBaseOrthoSize);
+                }
+            }
+            if (!testCamera.orthographic)
+            {
+                EditorGUILayout.HelpBox("FitOrthographicSize는 Orthographic 카메라에만 적용됩니다.", MessageType.Info);
+            }
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("월드 화면 경계", EditorStyles.boldLabel);
+            Rect worldBounds = SWResolution.GetWorldScreenBounds(testCamera, 10f);
+            DrawInfo("World Bounds @z=10", worldBounds.ToString());
+        }
+        #endregion // 카메라 탭
+
+        #region DPI 탭
+        private void DrawDpiTab()
+        {
+            EditorGUILayout.LabelField("DPI 정보", EditorStyles.boldLabel);
+            DrawInfo("Screen.dpi", Screen.dpi > 0f ? Screen.dpi.ToString("F1") : "Unknown (96 가정)");
+            DrawInfo("DPI Category", SWResolution.DpiCategory.ToString());
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("변환 테스트", EditorStyles.boldLabel);
+            testDpiInputValue = EditorGUILayout.FloatField("입력 값", testDpiInputValue);
+
+            EditorGUILayout.Space(4f);
+            DrawInfo($"{testDpiInputValue} inches → pixels",
+                SWResolution.InchesToPixels(testDpiInputValue).ToString("F1"));
+            DrawInfo($"{testDpiInputValue} pixels → inches",
+                SWResolution.PixelsToInches(testDpiInputValue).ToString("F3"));
+            DrawInfo($"{testDpiInputValue} mm → pixels",
+                SWResolution.MillimetersToPixels(testDpiInputValue).ToString("F1"));
+            DrawInfo($"{testDpiInputValue} pixels → mm",
+                SWResolution.PixelsToMillimeters(testDpiInputValue).ToString("F3"));
+
+            EditorGUILayout.Space(8f);
+            EditorGUILayout.LabelField("접근성 가이드라인", EditorStyles.boldLabel);
+            DrawInfo("최소 터치 타겟 (9mm 기준)", $"{SWResolution.GetMinTouchSizePixels():F1} px");
+            EditorGUILayout.HelpBox(
+                "iOS HIG: 44pt (~9mm)\n" +
+                "Material Design: 48dp (~9mm)\n" +
+                "버튼의 최소 크기는 위 값 이상이어야 합니다.",
+                MessageType.Info);
+        }
+        #endregion // DPI 탭
+    }
+}
+#endif

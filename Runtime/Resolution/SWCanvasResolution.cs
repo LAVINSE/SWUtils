@@ -1,8 +1,13 @@
-using SWTools;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SWUtils
+using SW.Attribute;
+
+using SW.Base;
+
+using SW.Util;
+
+namespace SW.Resolution
 {
     /// <summary>
     /// 화면 비율 구간별 CanvasScaler의 matchWidthOrHeight 값 설정.
@@ -18,8 +23,8 @@ namespace SWUtils
     }
 
     /// <summary>
-    /// 해상도(화면 비율)에 따라 CanvasScaler의 matchWidthOrHeight 값을 자동 조정한다.
-    /// 예: 16:9 기기와 19.5:9 기기에서 서로 다른 매칭 값을 적용하여 UI가 자연스럽게 표시되도록 한다.
+    /// 해상도(화면 비율)에 따라 CanvasScaler의 matchWidthOrHeight 값을 자동 조정합니다.
+    /// 예: 16:9 기기와 19.5:9 기기에서 서로 다른 매칭 값을 적용하여 UI가 자연스럽게 표시되도록 합니다.
     /// </summary>
     [RequireComponent(typeof(CanvasScaler))]
     public class SWCanvasResolution : SWMonoBehaviour
@@ -48,7 +53,7 @@ namespace SWUtils
 
         #region 유니티 이벤트
         /// <summary>
-        /// Awake 시 CanvasScaler 참조를 확보하고 초기 해상도를 적용한다.
+        /// Awake 시 CanvasScaler 참조를 확보하고 초기 해상도를 적용합니다.
         /// </summary>
         private void Awake()
         {
@@ -59,7 +64,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// autoUpdateOnResize가 켜진 경우, 해상도 변경을 감지하여 매칭 값을 재적용한다.
+        /// autoUpdateOnResize가 켜진 경우, 해상도 변경을 감지하여 매칭 값을 재적용합니다.
         /// </summary>
         private void Update()
         {
@@ -74,7 +79,7 @@ namespace SWUtils
 
         #region 프리셋
         /// <summary>
-        /// 세로 모드 게임용 프리셋을 적용한다. (기준 해상도 1080x1920 기준)
+        /// 세로 모드 게임용 프리셋을 적용합니다. (기준 해상도 1080x1920 기준)
         /// 태블릿(4:3)부터 노치폰(20:9)까지 자연스럽게 스케일되도록 구성.
         /// </summary>
         [SWButton("Preset/세로 게임 (Portrait)")]
@@ -92,11 +97,11 @@ namespace SWUtils
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
 #endif
-            SWUtilsLog.Log("[CanvasResolution] Portrait preset applied");
+            SWLog.Log("[CanvasResolution] Portrait preset applied");
         }
 
         /// <summary>
-        /// 가로 모드 게임용 프리셋을 적용한다. (기준 해상도 1920x1080 기준)
+        /// 가로 모드 게임용 프리셋을 적용합니다. (기준 해상도 1920x1080 기준)
         /// 태블릿(4:3)부터 와이드 모니터까지 자연스럽게 스케일되도록 구성.
         /// </summary>
         [SWButton("Preset/가로 게임 (Landscape)")]
@@ -115,17 +120,17 @@ namespace SWUtils
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
 #endif
-            SWUtilsLog.Log("[CanvasResolution] Landscape preset applied");
+            SWLog.Log("[CanvasResolution] Landscape preset applied");
         }
 
         /// <summary>
-        /// 현재 설정을 로그로 출력한다. 디버깅용.
+        /// 현재 설정을 로그로 출력합니다. 디버깅용.
         /// </summary>
         [SWButton("현재 설정 로그 출력")]
         private void LogCurrentSettings()
         {
             float currentRatio = (float)Screen.height / Screen.width;
-            SWUtilsLog.Log($"[CanvasResolution] Screen: {Screen.width}x{Screen.height}, " +
+            SWLog.Log($"[CanvasResolution] Screen: {Screen.width}x{Screen.height}, " +
                            $"Ratio(h/w): {currentRatio:F3}, " +
                            $"Current match: {(canvasScaler != null ? canvasScaler.matchWidthOrHeight : -1f):F2}");
 
@@ -134,22 +139,22 @@ namespace SWUtils
                 for (int index = 0; index < ratioSettings.Length; index++)
                 {
                     var setting = ratioSettings[index];
-                    SWUtilsLog.Log($"  [{index}] maxRatio <= {setting.maxRatio:F2} → match {setting.matchWidthOrHeight:F2}");
+                    SWLog.Log($"  [{index}] maxRatio <= {setting.maxRatio:F2} → match {setting.matchWidthOrHeight:F2}");
                 }
             }
-            SWUtilsLog.Log($"default → match {defaultMatchWidthOrHeight:F2}");
+            SWLog.Log($"default → match {defaultMatchWidthOrHeight:F2}");
         }
         #endregion // 프리셋
 
         #region 함수
         /// <summary>
-        /// 현재 화면 비율을 계산하여 적절한 matchWidthOrHeight 값을 CanvasScaler에 적용한다.
+        /// 현재 화면 비율을 계산하여 적절한 matchWidthOrHeight 값을 CanvasScaler에 적용합니다.
         /// </summary>
         private void CanvasScalerResolution()
         {
             if (canvasScaler == null)
             {
-                SWUtilsLog.LogWarning("[CanvasResolution] canvasScaler is null");
+                SWLog.LogWarning("[CanvasResolution] canvasScaler is null");
                 return;
             }
 
@@ -179,7 +184,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// 외부에서 수동으로 해상도 적용을 다시 수행한다.
+        /// 외부에서 수동으로 해상도 적용을 다시 수행합니다.
         /// </summary>
         public void Refresh()
         {

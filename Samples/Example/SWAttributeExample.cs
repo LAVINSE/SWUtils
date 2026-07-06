@@ -1,11 +1,16 @@
 using System.Collections.Generic;
-using SWTools;
 using UnityEngine;
 
 /// <summary>
 /// SWTools 인스펙터 어트리뷰트 사용 예제를 보여주는 샘플 컴포넌트입니다.
 /// </summary>
-namespace SWExample
+using SW.Attribute;
+
+using SW.Base;
+
+using SW.Util;
+
+namespace SW.Sample
 {
 /// <summary>
 /// SWTools 인스펙터 어트리뷰트 사용 예시를 보여주는 샘플 컴포넌트입니다.
@@ -56,22 +61,22 @@ public class SWAttributeExample : SWMonoBehaviour
     [SWButton("함수 버튼 예제")]
     private void ButtonExample()
     {
-        SWUtils.SWUtilsLog.Log("버튼 예제");
+        SWLog.Log("버튼 예제");
     }
 
     private void ButtonBarExample1()
     {
-        SWUtils.SWUtilsLog.Log("버튼 바 예제 1");
+        SWLog.Log("버튼 바 예제 1");
     }
 
     private void ButtonBarExample2()
     {
-        SWUtils.SWUtilsLog.Log("버튼 바 예제 2");
+        SWLog.Log("버튼 바 예제 2");
     }
 
     private void ButtonBarExample3()
     {
-        SWUtils.SWUtilsLog.Log("버튼 바 예제 3");
+        SWLog.Log("버튼 바 예제 3");
     }
     #endregion // 함수
 }

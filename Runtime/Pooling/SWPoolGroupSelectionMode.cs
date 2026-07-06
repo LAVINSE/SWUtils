@@ -1,4 +1,4 @@
-namespace SWPooling
+namespace SW.Pooling
 {
     /// <summary>
     /// 풀 그룹에서 프리팹을 선택하는 방식입니다.

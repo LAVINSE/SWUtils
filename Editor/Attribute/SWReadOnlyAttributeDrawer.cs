@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace SWTools
+using SW.Attribute;
+
+namespace SW.Editor.Attribute
 {
     /// <summary>
     /// <see cref="SWReadOnlyAttribute"/>가 붙은 필드를 읽기 전용으로 그리는 드로어입니다.

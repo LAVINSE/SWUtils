@@ -1,15 +1,19 @@
 using UnityEngine;
 using System;
 
-namespace SWTools
+namespace SW.Attribute
 {
     /// <summary>
     /// Inspector에서 필드를 조건부로 표시/숨김/비활성화하기 위한 커스텀 어트리뷰트입니다.
     /// 지정된 boolean 필드의 값에 따라 해당 프로퍼티의 표시 상태가 결정됩니다.
-    /// EX - [SWCondition("필드명")]
-    /// EX - [SWCondition("필드명 , true)]
-    /// EX - [SWCondition("필드명 , true, true)]  
     /// </summary>
+    /// <example>
+    /// <code>
+    /// [SWCondition("필드명")]
+    /// [SWCondition("필드명", true)]
+    /// [SWCondition("필드명", true, true)]
+    /// </code>
+    /// </example>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
     public class SWConditionAttribute : PropertyAttribute
     {
@@ -18,19 +22,18 @@ namespace SWTools
 
         #region 프로퍼티
         /// <summary>
-        /// 조건으로 사용할 Boolean 필드 이름
+        /// 조건으로 사용할 Boolean 필드 이름입니다.
         /// </summary>
         public string ConditionBoolean { get; private set; } = "";
 
         /// <summary>
-        /// true일 경우 : 조건이 충족되지 않아 프로퍼티를 숨김
-        /// false일 경우 : 조건이 충족되지 않아도 비활성화 상태로 표시
+        /// <see langword="true"/>이면 조건이 충족되지 않은 프로퍼티를 숨깁니다.
+        /// <see langword="false"/>이면 조건이 충족되지 않은 프로퍼티를 비활성화 상태로 표시합니다.
         /// </summary>
         public bool Hidden { get; private set; } = false;
 
         /// <summary>
-        /// true일 경우 : 조건 결과를 반전
-        /// Boolean 필드가 false일 때 활성화, true일 때 비활성화 
+        /// <see langword="true"/>이면 조건 결과를 반전합니다.
         /// </summary>
         public bool Negative { get; private set; } = false;
         #endregion // 프로퍼티

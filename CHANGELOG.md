@@ -1,8 +1,17 @@
 # Changelog
 
+[English](CHANGELOG.md) | [한국어](CHANGELOG.ko.md)
+
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v1.0.11] - 2026-07-06
+
+### Changed
+- Reorganized runtime namespaces into feature-oriented `SW.*` namespaces and aligned Runtime and Editor folders with those namespaces.
+- Renamed remaining public `SWUtils...` types to the consistent `SW...` form while preserving saved-data keys.
+- Standardized Korean XML documentation and corrected malformed attribute examples.
+- Added English and Korean README and Changelog documents with language navigation links.
+- Updated the package version and README installation URL to `v1.0.11`.
 
 ## [v1.0.10] - 2026-07-02
 
@@ -19,8 +28,8 @@ All notable changes to this project will be documented in this file.
 - Added a `Unity PlayerPrefs` tab to `SWTools/Debug/PlayerPrefs Viewer` for viewing, editing, and deleting standard Unity PlayerPrefs.
 - Added search-target filters and an option to delete all standard Unity PlayerPrefs from `SWTools/Debug/PlayerPrefs Viewer`.
 - Added `long` and `double` support to `SWEncrypt<T>`.
-- Added `SetLong`, `GetLong`, `SetDouble`, and `GetDouble` to `SWUtilsPlayerPrefs`.
-- Added `SWUtilsTime.ToDateTime` for converting saved time strings to `DateTime` values.
+- Added `SetLong`, `GetLong`, `SetDouble`, and `GetDouble` to `SWPlayerPrefs`.
+- Added `SWTime.ToDateTime` for converting saved time strings to `DateTime` values.
 
 ### Changed
 - Updated the Entries list in `SWTools/Debug/PlayerPrefs Viewer` to support inline value editing and saving.

@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SWTools;
 using UnityEngine;
 
-namespace SWCoroutine
+using SW.Base;
+
+namespace SW.Coroutine
 {
     /// <summary>
     /// 공통 코루틴 실행과 대기 객체 캐싱을 제공하는 코루틴 러너입니다.
@@ -36,7 +37,7 @@ namespace SWCoroutine
 
         #region Wait 캐시
         /// <summary>
-        /// 캐시된 WaitForSeconds를 반환한다. 없으면 생성하여 캐싱한다.
+        /// 캐시된 WaitForSeconds를 반환합니다. 없으면 생성하여 캐시합니다.
         /// </summary>
         /// <param name="seconds">대기 시간(초)</param>
         /// <returns>캐시된 WaitForSeconds 인스턴스</returns>
@@ -51,7 +52,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 캐시된 WaitForSecondsRealtime을 반환한다. 없으면 생성하여 캐싱한다.
+        /// 캐시된 WaitForSecondsRealtime을 반환합니다. 없으면 생성하여 캐시합니다.
         /// </summary>
         /// <param name="seconds">대기 시간(초)</param>
         /// <returns>캐시된 WaitForSecondsRealtime 인스턴스</returns>
@@ -68,7 +69,7 @@ namespace SWCoroutine
 
         #region 코루틴 실행
         /// <summary>
-        /// 코루틴을 실행한다.
+        /// 코루틴을 실행합니다.
         /// </summary>
         /// <param name="routine">실행할 IEnumerator</param>
         /// <returns>제어용 Coroutine 핸들</returns>
@@ -78,7 +79,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 실행 중인 코루틴을 중단한다.
+        /// 실행 중인 코루틴을 중단합니다.
         /// </summary>
         /// <param name="routine">중단할 Coroutine 핸들</param>
         public void Stop(Coroutine routine)
@@ -87,7 +88,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 모든 코루틴을 중단한다.
+        /// 모든 코루틴을 중단합니다.
         /// </summary>
         public void StopAll()
         {
@@ -97,7 +98,7 @@ namespace SWCoroutine
 
         #region 지연 실행
         /// <summary>
-        /// 일정 시간 후 액션을 실행한다.
+        /// 일정 시간 후 액션을 실행합니다.
         /// </summary>
         /// <param name="delay">지연 시간(초)</param>
         /// <param name="action">실행할 액션</param>
@@ -108,7 +109,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 다음 프레임에 액션을 실행한다.
+        /// 다음 프레임에 액션을 실행합니다.
         /// </summary>
         /// <param name="action">실행할 액션</param>
         /// <returns>제어용 Coroutine 핸들</returns>
@@ -118,7 +119,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 프레임 끝에 액션을 실행한다.
+        /// 프레임 끝에 액션을 실행합니다.
         /// </summary>
         /// <param name="action">실행할 액션</param>
         /// <returns>제어용 Coroutine 핸들</returns>
@@ -128,7 +129,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 조건이 참이 될 때까지 기다렸다가 액션을 실행한다.
+        /// 조건이 참이 될 때까지 기다렸다가 액션을 실행합니다.
         /// </summary>
         /// <param name="condition">평가할 조건</param>
         /// <param name="action">실행할 액션</param>
@@ -139,7 +140,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// 지정한 횟수만큼 간격을 두고 액션을 반복 실행한다.
+        /// 지정한 횟수만큼 간격을 두고 액션을 반복 실행합니다.
         /// </summary>
         /// <param name="interval">실행 간격(초)</param>
         /// <param name="count">반복 횟수. 0 이하면 무한 반복</param>
@@ -151,7 +152,7 @@ namespace SWCoroutine
         }
 
         /// <summary>
-        /// duration 동안 0~1 값을 매 프레임 전달한다. 트윈/애니메이션에 사용.
+        /// duration 동안 0~1 값을 매 프레임 전달합니다. 트윈/애니메이션에 사용.
         /// </summary>
         /// <param name="duration">전체 시간(초)</param>
         /// <param name="onUpdate">0~1 값을 받는 콜백</param>

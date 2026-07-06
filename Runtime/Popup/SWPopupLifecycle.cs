@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SWUtils
+namespace SW.Popup
 {
     /// <summary>
     /// 팝업이 외부에서 비활성화되거나 파괴될 때 관리자에게 숨김 완료를 통지합니다.

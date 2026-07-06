@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SWTools
+namespace SW.Attribute
 {
     /// <summary>
     /// 인스펙터에 메서드 실행 버튼을 표시하기 위한 어트리뷰트입니다.

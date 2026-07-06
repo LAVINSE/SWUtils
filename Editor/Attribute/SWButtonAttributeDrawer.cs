@@ -1,7 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace SWTools
+using SW.Attribute;
+
+namespace SW.Editor.Attribute
 {
     /// <summary>
     /// <see cref="SWButtonAttribute"/>가 붙은 메서드를 인스펙터 버튼으로 그리는 드로어입니다.

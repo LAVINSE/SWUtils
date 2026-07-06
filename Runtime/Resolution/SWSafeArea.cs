@@ -1,16 +1,21 @@
 using UnityEngine;
-using SWTools;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace SWUtils
+using SW.Attribute;
+
+using SW.Base;
+
+using SW.Util;
+
+namespace SW.Resolution
 {
     /// <summary>
-    /// 노치/다이나믹 아일랜드/펀치홀 등을 피해 UI를 SafeArea 영역에 자동 배치한다.
-    /// RectTransform의 anchorMin/Max를 SafeArea에 맞게 설정한다.
-    /// 에디터에서 가상 SafeArea를 시뮬레이션하는 기능도 제공한다.
+    /// 노치/다이나믹 아일랜드/펀치홀 등을 피해 UI를 SafeArea 영역에 자동 배치합니다.
+    /// RectTransform의 anchorMin/Max를 SafeArea에 맞게 설정합니다.
+    /// 에디터에서 가상 SafeArea를 시뮬레이션하는 기능도 제공합니다.
     /// </summary>
     [RequireComponent(typeof(RectTransform))]
     [ExecuteAlways]
@@ -87,7 +92,7 @@ namespace SWUtils
 
         #region 유니티 이벤트
         /// <summary>
-        /// Awake 시 RectTransform 참조를 확보하고 SafeArea를 적용한다.
+        /// Awake 시 RectTransform 참조를 확보하고 SafeArea를 적용합니다.
         /// </summary>
         private void Awake()
         {
@@ -98,7 +103,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// 해상도/회전 변경 감지 시 SafeArea를 재적용한다.
+        /// 해상도/회전 변경 감지 시 SafeArea를 재적용합니다.
         /// </summary>
         private void Update()
         {
@@ -117,7 +122,7 @@ namespace SWUtils
 
 #if UNITY_EDITOR
         /// <summary>
-        /// 인스펙터 값이 변경되면 즉시 반영한다.
+        /// 인스펙터 값이 변경되면 즉시 반영합니다.
         /// </summary>
         private void OnValidate()
         {
@@ -126,7 +131,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// Scene 뷰에 SafeArea 영역을 시각화한다.
+        /// Scene 뷰에 SafeArea 영역을 시각화합니다.
         /// </summary>
         private void OnDrawGizmosSelected()
         {
@@ -146,8 +151,8 @@ namespace SWUtils
 
         #region 함수
         /// <summary>
-        /// 현재 적용할 SafeArea를 반환한다.
-        /// 에디터 시뮬레이션이 켜져 있으면 가상 값을 반환하고, 아니면 Screen.safeArea를 반환한다.
+        /// 현재 적용할 SafeArea를 반환합니다.
+        /// 에디터 시뮬레이션이 켜져 있으면 가상 값을 반환하고, 아니면 Screen.safeArea를 반환합니다.
         /// </summary>
         /// <returns>적용할 SafeArea Rect</returns>
         private Rect GetEffectiveSafeArea()
@@ -163,7 +168,7 @@ namespace SWUtils
 
 #if UNITY_EDITOR
         /// <summary>
-        /// 선택된 시뮬레이션 프리셋에 해당하는 SafeArea Rect를 반환한다.
+        /// 선택된 시뮬레이션 프리셋에 해당하는 SafeArea Rect를 반환합니다.
         /// </summary>
         /// <returns>시뮬레이션 SafeArea (픽셀 단위)</returns>
         private Rect GetSimulatedSafeArea()
@@ -208,7 +213,7 @@ namespace SWUtils
 #endif
 
         /// <summary>
-        /// SafeArea에 맞춰 UI를 자동 배치한다.
+        /// SafeArea에 맞춰 UI를 자동 배치합니다.
         /// </summary>
         private void ApplySafeArea()
         {
@@ -264,7 +269,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// 외부에서 수동으로 SafeArea 적용을 다시 수행한다.
+        /// 외부에서 수동으로 SafeArea 적용을 다시 수행합니다.
         /// </summary>
         public void Refresh()
         {
@@ -274,7 +279,7 @@ namespace SWUtils
 
         #region 에디터 버튼
         /// <summary>
-        /// 기본 구역(전체 화면)에 UI를 배치한다.
+        /// 기본 구역(전체 화면)에 UI를 배치합니다.
         /// </summary>
         [SWButton("전체 화면으로 리셋")]
         private void ResetToFullscreen()
@@ -300,7 +305,7 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// 수동으로 SafeArea를 재적용한다.
+        /// 수동으로 SafeArea를 재적용합니다.
         /// </summary>
         [SWButton("SafeArea 재적용")]
         private void ManualRefresh()
@@ -309,13 +314,13 @@ namespace SWUtils
         }
 
         /// <summary>
-        /// 현재 SafeArea 정보를 로그로 출력한다.
+        /// 현재 SafeArea 정보를 로그로 출력합니다.
         /// </summary>
         [SWButton("SafeArea 정보 로그")]
         private void LogSafeAreaInfo()
         {
             var effectiveSafeArea = GetEffectiveSafeArea();
-            SWUtilsLog.Log($"[SWSafeArea] 화면: {Screen.width}x{Screen.height}\n" +
+            SWLog.Log($"[SWSafeArea] 화면: {Screen.width}x{Screen.height}\n" +
                            $"  실제 SafeArea: {Screen.safeArea}\n" +
                            $"  적용 SafeArea: {effectiveSafeArea}\n" +
                            $"  화면 방향: {Screen.orientation}\n" +

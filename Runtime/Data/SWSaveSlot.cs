@@ -1,4 +1,4 @@
-namespace SWUtils
+namespace SW.Data
 {
     /// <summary>
     /// SaveData, PlayerPrefs, Cloud가 함께 사용하는 저장 슬롯 이름 모음.

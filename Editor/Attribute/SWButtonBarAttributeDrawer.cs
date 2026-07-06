@@ -6,7 +6,11 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SWTools
+using SW.Attribute;
+
+using SW.Util;
+
+namespace SW.Editor.Attribute
 {
     /// <summary>
     /// <see cref="SWButtonBarAttribute"/>가 붙은 필드를 버튼 바로 렌더링하는 드로어입니다.
@@ -16,7 +20,7 @@ namespace SWTools
     {
         #region 필드
         /// <summary>
-        /// 메서드 캐싱
+        /// 메서드 캐싱.
         /// </summary>
         private MethodInfo[] eventMethodInfos = null;
         #endregion // 필드
@@ -67,7 +71,7 @@ namespace SWTools
                 }
                 else
                 {
-                    SWUtils.SWUtilsLog.LogWarning($"[SWButtonBar] '{eventOwnerType.Name}' 클래스에서 '{buttonBarAttribute.MethodNames[i]}' 메서드를 찾을 수 없습니다.");
+                    SWLog.LogWarning($"[SWButtonBar] '{eventOwnerType.Name}' 클래스에서 '{buttonBarAttribute.MethodNames[i]}' 메서드를 찾을 수 없습니다.");
                 }
 
                 if (buttonBarAttribute.OnlyWhenPlayMode[i] && !Application.isPlaying)

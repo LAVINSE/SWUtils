@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
-using SWTools;
 using UnityEngine;
 
 /// <summary>
 /// SWSubClassSelectorAttribute 사용 예시를 보여주는 샘플 컴포넌트입니다.
 /// </summary>
-namespace SWExample
+using SW.Attribute;
+
+using SW.Base;
+
+using SW.Util;
+
+namespace SW.Sample
 {
 /// <summary>
 /// SWSubClassSelectorAttribute 사용 예시를 보여주는 샘플 컴포넌트입니다.
@@ -121,7 +126,7 @@ public class SWSubClassSelectorExample : SWMonoBehaviour
         /// </summary>
         public override void Execute()
         {
-            SWUtils.SWUtilsLog.Log($"Heal {healAmount}");
+            SWLog.Log($"Heal {healAmount}");
         }
         #endregion // 함수
     }
@@ -146,7 +151,7 @@ public class SWSubClassSelectorExample : SWMonoBehaviour
         /// </summary>
         public override void Execute()
         {
-            SWUtils.SWUtilsLog.Log($"Damage {damageAmount}");
+            SWLog.Log($"Damage {damageAmount}");
         }
         #endregion // 함수
     }
@@ -164,7 +169,7 @@ public class SWSubClassSelectorExample : SWMonoBehaviour
         /// </summary>
         public override void Execute()
         {
-            SWUtils.SWUtilsLog.Log("Hidden Skill Action");
+            SWLog.Log("Hidden Skill Action");
         }
         #endregion // 함수
     }
@@ -189,7 +194,7 @@ public class SWSubClassSelectorExample : SWMonoBehaviour
         /// </summary>
         public void Reward()
         {
-            SWUtils.SWUtilsLog.Log($"Reward Gold {goldAmount}");
+            SWLog.Log($"Reward Gold {goldAmount}");
         }
 
         /// <summary>
@@ -223,7 +228,7 @@ public class SWSubClassSelectorExample : SWMonoBehaviour
         /// </summary>
         public void Reward()
         {
-            SWUtils.SWUtilsLog.Log($"Reward Item {itemId}");
+            SWLog.Log($"Reward Item {itemId}");
         }
 
         /// <summary>

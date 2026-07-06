@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SWUtils
+using SW.Util;
+
+namespace SW.Popup
 {
     /// <summary>
     /// 팝업 생성, 표시, 숨김, 등록, 캐시를 관리합니다.
@@ -114,14 +116,14 @@ namespace SWUtils
         {
             if (prefab == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 팝업 표시 실패: 프리팹이 null입니다.");
+                SWLog.LogWarning("[SWPopupManager] 팝업 표시 실패: 프리팹이 null입니다.");
                 return null;
             }
 
             Transform targetParent = ResolveParent(parent);
             if (targetParent == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 팝업 표시 실패: 배치할 부모 Transform을 찾을 수 없습니다.");
+                SWLog.LogWarning("[SWPopupManager] 팝업 표시 실패: 배치할 부모 Transform을 찾을 수 없습니다.");
                 return null;
             }
 
@@ -144,14 +146,14 @@ namespace SWUtils
         {
             if (popup == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 기존 팝업 표시 실패: 팝업 인스턴스가 null입니다.");
+                SWLog.LogWarning("[SWPopupManager] 기존 팝업 표시 실패: 팝업 인스턴스가 null입니다.");
                 return null;
             }
 
             Transform targetParent = ResolveParent(parent);
             if (targetParent == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 기존 팝업 표시 실패: 배치할 부모 Transform을 찾을 수 없습니다.");
+                SWLog.LogWarning("[SWPopupManager] 기존 팝업 표시 실패: 배치할 부모 Transform을 찾을 수 없습니다.");
                 return null;
             }
 
@@ -185,7 +187,7 @@ namespace SWUtils
             SWPopupBase popup = GetOrCreatePopup(key, entry, targetParent);
             if (popup is not T typedPopup)
             {
-                SWUtilsLog.LogWarning($"[SWPopupManager] 팝업 타입이 일치하지 않습니다. Key: {key}, 기대 타입: {typeof(T).Name}, 실제 타입: {popup.GetType().Name}");
+                SWLog.LogWarning($"[SWPopupManager] 팝업 타입이 일치하지 않습니다. Key: {key}, 기대 타입: {typeof(T).Name}, 실제 타입: {popup.GetType().Name}");
                 return null;
             }
 
@@ -291,7 +293,7 @@ namespace SWUtils
         {
             if (string.IsNullOrEmpty(key) || prefab == null)
             {
-                SWUtilsLog.LogWarning($"[SWPopupManager] 팝업 등록 실패: 키 또는 프리팹이 유효하지 않습니다. Key: {key}");
+                SWLog.LogWarning($"[SWPopupManager] 팝업 등록 실패: 키 또는 프리팹이 유효하지 않습니다. Key: {key}");
                 return;
             }
 
@@ -344,7 +346,7 @@ namespace SWUtils
         {
             if (parent == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 기본 부모 설정 실패: parent가 null입니다.");
+                SWLog.LogWarning("[SWPopupManager] 기본 부모 설정 실패: parent가 null입니다.");
                 return;
             }
 
@@ -361,7 +363,7 @@ namespace SWUtils
         {
             if (canvas == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 팝업 Canvas 설정 실패: canvas가 null입니다.");
+                SWLog.LogWarning("[SWPopupManager] 팝업 Canvas 설정 실패: canvas가 null입니다.");
                 return;
             }
 
@@ -540,7 +542,7 @@ namespace SWUtils
 
             if (popupCanvas == null)
             {
-                SWUtilsLog.LogWarning("[SWPopupManager] 팝업 Canvas가 null입니다. 전역 팝업 Canvas 또는 기본 부모를 지정하세요.");
+                SWLog.LogWarning("[SWPopupManager] 팝업 Canvas가 null입니다. 전역 팝업 Canvas 또는 기본 부모를 지정하세요.");
                 return null;
             }
 
@@ -576,7 +578,7 @@ namespace SWUtils
             if (string.IsNullOrEmpty(key)) return false;
             if (unregisteredKeys.Contains(key))
             {
-                SWUtilsLog.LogWarning($"[SWPopupManager] 등록 해제된 팝업 키입니다: {key}");
+                SWLog.LogWarning($"[SWPopupManager] 등록 해제된 팝업 키입니다: {key}");
                 return false;
             }
 
@@ -597,7 +599,7 @@ namespace SWUtils
             if (catalog != null && catalog.TryGetEntry(key, out entry))
                 return true;
 
-            SWUtilsLog.LogWarning($"[SWPopupManager] 팝업 키를 찾을 수 없습니다: {key}");
+            SWLog.LogWarning($"[SWPopupManager] 팝업 키를 찾을 수 없습니다: {key}");
             return false;
         }
 

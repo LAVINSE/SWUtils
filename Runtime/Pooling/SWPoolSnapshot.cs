@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SWPooling
+namespace SW.Pooling
 {
     /// <summary>
     /// SWPool에 등록된 프리팹 풀 하나의 현재 상태를 표시하기 위한 읽기 전용 스냅샷입니다.
