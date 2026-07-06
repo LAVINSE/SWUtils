@@ -24,6 +24,7 @@ namespace SW.Stat
 
         /// <summary>기본값 재정의를 사용할지 여부입니다.</summary>
         public bool IsUseOverride => isUseOverride;
+        public float OverrideDefaultValue => overrideDefaultValue;
         #endregion // 프로퍼티
 
         #region 생성자
