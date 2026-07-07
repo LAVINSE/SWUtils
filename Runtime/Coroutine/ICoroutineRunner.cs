@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace SW.Coroutine
+namespace SW.CoroutineUtil
 {
     /// <summary>
     /// 코루틴 실행, 중단, 지연 호출, 반복 실행을 추상화한 러너 인터페이스입니다.

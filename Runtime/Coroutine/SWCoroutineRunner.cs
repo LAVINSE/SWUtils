@@ -5,7 +5,7 @@ using UnityEngine;
 
 using SW.Base;
 
-namespace SW.Coroutine
+namespace SW.CoroutineUtil
 {
     /// <summary>
     /// 공통 코루틴 실행과 대기 객체 캐싱을 제공하는 코루틴 러너입니다.
