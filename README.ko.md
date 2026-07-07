@@ -14,7 +14,7 @@ Unity Package Manager에서 다음 순서로 설치합니다.
 4. 다음 주소를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.11
+https://github.com/LAVINSE/SWUtils.git#v1.0.12
 ```
 
 특정 브랜치나 태그를 설치하려면 주소 뒤에 `#브랜치이름` 또는 `#태그이름`을 붙입니다.

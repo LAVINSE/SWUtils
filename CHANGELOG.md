@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.12] - 2026-07-07
+
+### Changed
+- Renamed conflict-prone namespaces to clearer feature namespace names: `SW.Attributes`, `SW.Coroutines`, `SW.Debugging`, `SW.ScreenResolution`, and `SW.Editor.Attributes`.
+- Updated package metadata and README installation URLs to `v1.0.12`.
+
 ## [v1.0.11] - 2026-07-06
 
 ### Changed
