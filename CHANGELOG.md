@@ -4,6 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.14] - 2026-07-07
+
+### Added
+- Added `SWCondition` handling to `SWSubClassSelector` fields so conditional disabled and hidden states work on `SerializeReference` fields and collections.
+
+### Changed
+- Grouped inherited `SWIdentifiedObject` definition fields under a `데이터 정의` foldout using the existing `SWGroup` inspector design.
+- Updated package metadata and README installation URLs to `v1.0.14`.
+
 ## [v1.0.13] - 2026-07-07
 
 ### Changed

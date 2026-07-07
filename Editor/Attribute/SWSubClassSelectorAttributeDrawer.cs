@@ -6,6 +6,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 using SW.Attributes;
+using SW.Util;
 
 namespace SW.EditorTools.Attributes
 {
@@ -34,6 +35,40 @@ namespace SW.EditorTools.Attributes
         /// <param name="label">필드 라벨입니다.</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            SWConditionAttribute conditionAttribute = GetConditionAttribute();
+            if (conditionAttribute != null)
+            {
+                bool conditionResult = GetConditionAttributeResult(conditionAttribute, property);
+                if (!ShouldDisplay(conditionAttribute, conditionResult))
+                {
+                    return;
+                }
+
+                bool previousEnabled = GUI.enabled;
+                try
+                {
+                    GUI.enabled = previousEnabled && conditionResult;
+                    DrawProperty(position, property, label);
+                }
+                finally
+                {
+                    GUI.enabled = previousEnabled;
+                }
+
+                return;
+            }
+
+            DrawProperty(position, property, label);
+        }
+
+        /// <summary>
+        /// 조건 처리 이후 실제 프로퍼티를 그립니다.
+        /// </summary>
+        /// <param name="position">그려질 영역입니다.</param>
+        /// <param name="property">대상 프로퍼티입니다.</param>
+        /// <param name="label">프로퍼티 라벨입니다.</param>
+        private void DrawProperty(Rect position, SerializedProperty property, GUIContent label)
+        {
             if (IsCollectionProperty(property))
             {
                 DrawCollection(position, property, label);
@@ -58,6 +93,16 @@ namespace SW.EditorTools.Attributes
         /// <returns>Inspector 표시 높이입니다.</returns>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            SWConditionAttribute conditionAttribute = GetConditionAttribute();
+            if (conditionAttribute != null)
+            {
+                bool conditionResult = GetConditionAttributeResult(conditionAttribute, property);
+                if (!ShouldDisplay(conditionAttribute, conditionResult))
+                {
+                    return -EditorGUIUtility.standardVerticalSpacing;
+                }
+            }
+
             if (IsCollectionProperty(property))
             {
                 return GetCollectionHeight(property, label);
@@ -69,6 +114,73 @@ namespace SW.EditorTools.Attributes
             }
 
             return GetManagedReferenceHeight(property, label);
+        }
+
+        /// <summary>
+        /// 같은 필드에 선언된 SWConditionAttribute를 반환합니다.
+        /// </summary>
+        /// <returns>조건 어트리뷰트가 있으면 해당 인스턴스, 없으면 null입니다.</returns>
+        private SWConditionAttribute GetConditionAttribute()
+        {
+            return fieldInfo?.GetCustomAttributes(typeof(SWConditionAttribute), true)
+                .FirstOrDefault() as SWConditionAttribute;
+        }
+
+        /// <summary>
+        /// SWConditionAttribute가 가리키는 Boolean 필드 값을 읽습니다.
+        /// </summary>
+        /// <param name="conditionAttribute">조건 어트리뷰트입니다.</param>
+        /// <param name="property">현재 표시 중인 프로퍼티입니다.</param>
+        /// <returns>조건 충족 여부입니다.</returns>
+        private bool GetConditionAttributeResult(SWConditionAttribute conditionAttribute, SerializedProperty property)
+        {
+            bool conditionResult = true;
+
+            string conditionPath = GetConditionPath(property, conditionAttribute.ConditionBoolean);
+            SerializedProperty conditionProperty = property.serializedObject.FindProperty(conditionPath);
+            conditionProperty ??= property.serializedObject.FindProperty(conditionAttribute.ConditionBoolean);
+
+            if (conditionProperty != null)
+            {
+                conditionResult = conditionProperty.boolValue;
+            }
+            else
+            {
+                SWLog.LogError("지정한 Boolean 필드명을 찾을 수 없습니다 - " + conditionAttribute.ConditionBoolean);
+            }
+
+            if (conditionAttribute.Negative)
+            {
+                conditionResult = !conditionResult;
+            }
+
+            return conditionResult;
+        }
+
+        /// <summary>
+        /// 현재 프로퍼티와 같은 계층에 있는 조건 필드 경로를 계산합니다.
+        /// </summary>
+        /// <param name="property">현재 표시 중인 프로퍼티입니다.</param>
+        /// <param name="conditionFieldName">조건 Boolean 필드 이름입니다.</param>
+        /// <returns>조건 필드의 SerializedProperty 경로입니다.</returns>
+        private static string GetConditionPath(SerializedProperty property, string conditionFieldName)
+        {
+            string propertyPath = property.propertyPath;
+            int lastDotIndex = propertyPath.LastIndexOf('.');
+            return lastDotIndex < 0
+                ? conditionFieldName
+                : string.Concat(propertyPath.Substring(0, lastDotIndex + 1), conditionFieldName);
+        }
+
+        /// <summary>
+        /// 숨김 옵션과 조건 결과를 조합하여 필드를 표시할지 결정합니다.
+        /// </summary>
+        /// <param name="conditionAttribute">조건 어트리뷰트입니다.</param>
+        /// <param name="conditionResult">조건 충족 여부입니다.</param>
+        /// <returns>필드를 그려야 하면 true입니다.</returns>
+        private static bool ShouldDisplay(SWConditionAttribute conditionAttribute, bool conditionResult)
+        {
+            return !conditionAttribute.Hidden || conditionResult;
         }
 
         /// <summary>

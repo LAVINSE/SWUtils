@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+using SW.Attributes;
+
 namespace SW.Base
 {
     /// <summary>
@@ -14,6 +16,7 @@ namespace SW.Base
     public class SWIdentifiedObject : SWScriptableObject, ICloneable
     {
         #region 필드
+        [SWGroup("데이터 정의")]
         [SerializeField] private SWCategory[] categories;
         [SerializeField] private int id;
         [SerializeField] private string codeName;
