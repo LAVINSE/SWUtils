@@ -4,6 +4,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.13] - 2026-07-07
+
+### Changed
+- Updated package metadata and README installation URLs to `v1.0.13`.
+
 ## [v1.0.12] - 2026-07-07
 
 ### Changed
