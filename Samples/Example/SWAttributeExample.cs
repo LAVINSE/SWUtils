@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// SWTools 인스펙터 어트리뷰트 사용 예제를 보여주는 샘플 컴포넌트입니다.
 /// </summary>
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Base;
 

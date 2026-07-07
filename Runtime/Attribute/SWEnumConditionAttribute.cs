@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 특정 열거형 값에 따라 필드를 조건부로 표시하거나 숨기는 어트리뷰트입니다.

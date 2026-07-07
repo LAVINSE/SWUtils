@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Attribute;
+using SW.Attributes;
 
 namespace SW.Editor.Base
 {

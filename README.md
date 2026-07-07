@@ -46,9 +46,9 @@ Add the following define symbols when using external libraries for cloud saves:
 After installation:
 
 1. Import the package sample from the `Samples` tab in Unity Package Manager when you want working attribute and pooling examples.
-2. Add `using SW.Base;` for `SWMonoBehaviour` and `SWScriptableObject`, and add `using SW.Attribute;` for Inspector attributes.
-3. Import the namespace that owns the feature you use, such as `SW.Data`, `SW.Popup`, `SW.Resolution`, or `SW.Util`.
-4. Add `using SW.Coroutine;` when using `ICoroutineRunner` or `SWCoroutineRunner`.
+2. Add `using SW.Base;` for `SWMonoBehaviour` and `SWScriptableObject`, and add `using SW.Attributes;` for Inspector attributes.
+3. Import the namespace that owns the feature you use, such as `SW.Data`, `SW.Popup`, `SW.ScreenResolution`, or `SW.Util`.
+4. Add `using SW.Coroutines;` when using `ICoroutineRunner` or `SWCoroutineRunner`.
 5. If your project uses assembly definition files, add references to `SWUtils.Runtime` and any optional assemblies required by the feature.
 
 Most manager components are scene-owned. Add the required manager or registry to a bootstrap scene and keep that scene alive when the feature must persist between scene changes.
@@ -59,16 +59,17 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 
 | Folder | Namespace |
 | --- | --- |
-| `Runtime/Attribute` | `SW.Attribute` |
+| `Runtime/Attribute` | `SW.Attributes` |
 | `Runtime/Base` | `SW.Base` |
-| `Runtime/Coroutine` | `SW.Coroutine` |
+| `Runtime/Coroutine` | `SW.Coroutines` |
 | `Runtime/Data` | `SW.Data` |
-| `Runtime/Debug` | `SW.Debug` |
+| `Runtime/Debug` | `SW.Debugging` |
 | `Runtime/Pooling` | `SW.Pooling` |
 | `Runtime/Popup` | `SW.Popup` |
-| `Runtime/Resolution` | `SW.Resolution` |
+| `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/Util` | `SW.Util` |
+| `Editor/Attribute` | `SW.Editor.Attributes` |
 | `Editor/<Feature>` | `SW.Editor.<Feature>` |
 
 ## Runtime Features
@@ -93,7 +94,7 @@ Attributes that extend Inspector presentation and behavior.
 Example:
 
 ```csharp
-using SW.Attribute;
+using SW.Attributes;
 using SW.Base;
 using UnityEngine;
 
@@ -121,7 +122,7 @@ public class ExampleComponent : SWMonoBehaviour
 ```csharp
 using System;
 using System.Collections.Generic;
-using SW.Attribute;
+using SW.Attributes;
 using SW.Base;
 using UnityEngine;
 
@@ -176,7 +177,7 @@ Example:
 
 ```csharp
 using System.Collections;
-using SW.Coroutine;
+using SW.Coroutines;
 using UnityEngine;
 
 public class CoroutineExample : MonoBehaviour
@@ -227,7 +228,7 @@ Example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 
 SWPlayerPrefs.SetSlot("player_01");
@@ -261,7 +262,7 @@ Save manager example:
 using System;
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 
 [Serializable]
@@ -303,7 +304,7 @@ Provides the `SWMonoBehaviour` base class for use with the attribute-driven `SWT
 Example:
 
 ```csharp
-using SW.Attribute;
+using SW.Attributes;
 using SW.Base;
 using UnityEngine;
 
@@ -322,7 +323,7 @@ Fields and methods can use Inspector features such as `SWGroup`, `SWButton`, `SW
 Example:
 
 ```csharp
-using SW.Attribute;
+using SW.Attributes;
 using SW.Base;
 using UnityEngine;
 
@@ -431,7 +432,7 @@ Example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -458,7 +459,7 @@ Key-based example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 
 SWPopupManager.Instance.Register("option", optionPopupPrefab);
@@ -513,7 +514,7 @@ A collection of small, general-purpose game utilities.
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -544,7 +545,7 @@ Event bus example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 
 public readonly struct CoinChangedEvent
@@ -570,7 +571,7 @@ Cooldown example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 
 private readonly SWCooldown skillCooldown = new(3f);
@@ -588,7 +589,7 @@ Timer example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -616,7 +617,7 @@ Scene-loading example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -639,7 +640,7 @@ Number format preset example:
 ```csharp
 using SW.Data;
 using SW.Popup;
-using SW.Resolution;
+using SW.ScreenResolution;
 using SW.Util;
 using TMPro;
 using UnityEngine;

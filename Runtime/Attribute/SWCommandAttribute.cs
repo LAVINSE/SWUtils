@@ -1,8 +1,8 @@
 using System;
 
-using SW.Debug;
+using SW.Debugging;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 메서드를 SWDebugConsole 명령으로 노출하는 어트리뷰트입니다.

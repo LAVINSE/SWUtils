@@ -43,9 +43,9 @@ https://github.com/LAVINSE/SWUtils.git#v1.0.11
 
 1. 예제가 필요하면 Unity Package Manager의 `Samples` 탭에서 샘플을 가져옵니다.
 2. `SWMonoBehaviour`와 `SWScriptableObject`를 사용할 때 `using SW.Base;`를 추가합니다.
-3. 인스펙터 어트리뷰트를 사용할 때 `using SW.Attribute;`를 추가합니다.
-4. 데이터, 팝업, 해상도, 유틸리티 기능은 각각 `SW.Data`, `SW.Popup`, `SW.Resolution`, `SW.Util`을 사용합니다.
-5. 코루틴 실행기는 `using SW.Coroutine;`을 사용합니다.
+3. 인스펙터 어트리뷰트를 사용할 때 `using SW.Attributes;`를 추가합니다.
+4. 데이터, 팝업, 해상도, 유틸리티 기능은 각각 `SW.Data`, `SW.Popup`, `SW.ScreenResolution`, `SW.Util`을 사용합니다.
+5. 코루틴 실행기는 `using SW.Coroutines;`을 사용합니다.
 6. 조립체 정의 파일을 사용하는 프로젝트는 `SWUtils.Runtime` 참조를 추가합니다.
 
 관리자 컴포넌트는 기본적으로 씬이 소유합니다. 씬 전환 후에도 필요한 관리자는 시작 씬에 배치하고 유지되도록 구성합니다.
@@ -56,16 +56,17 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 
 | 폴더 | 네임스페이스 |
 | --- | --- |
-| `Runtime/Attribute` | `SW.Attribute` |
+| `Runtime/Attribute` | `SW.Attributes` |
 | `Runtime/Base` | `SW.Base` |
-| `Runtime/Coroutine` | `SW.Coroutine` |
+| `Runtime/Coroutine` | `SW.Coroutines` |
 | `Runtime/Data` | `SW.Data` |
-| `Runtime/Debug` | `SW.Debug` |
+| `Runtime/Debug` | `SW.Debugging` |
 | `Runtime/Pooling` | `SW.Pooling` |
 | `Runtime/Popup` | `SW.Popup` |
-| `Runtime/Resolution` | `SW.Resolution` |
+| `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/Util` | `SW.Util` |
+| `Editor/Attribute` | `SW.Editor.Attributes` |
 | `Editor/<기능>` | `SW.Editor.<기능>` |
 
 ## 런타임 기능
@@ -97,7 +98,7 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 - `SWCoroutineRunner`: 지연 호출, 다음 프레임 호출, 조건 대기와 반복 실행을 제공합니다.
 
 ```csharp
-using SW.Coroutine;
+using SW.Coroutines;
 using UnityEngine;
 
 public class DelayExample : MonoBehaviour

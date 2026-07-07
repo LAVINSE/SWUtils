@@ -1,6 +1,6 @@
 using System;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 에디터 + PlayMode에서 매 프레임 다시 그립니다.

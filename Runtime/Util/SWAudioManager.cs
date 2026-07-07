@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Data;
 

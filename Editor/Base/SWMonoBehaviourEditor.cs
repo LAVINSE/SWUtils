@@ -7,7 +7,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Base;
 

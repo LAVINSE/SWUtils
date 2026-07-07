@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Util;
 

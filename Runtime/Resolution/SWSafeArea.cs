@@ -4,13 +4,13 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Base;
 
 using SW.Util;
 
-namespace SW.Resolution
+namespace SW.ScreenResolution
 {
     /// <summary>
     /// 노치/다이나믹 아일랜드/펀치홀 등을 피해 UI를 SafeArea 영역에 자동 배치합니다.

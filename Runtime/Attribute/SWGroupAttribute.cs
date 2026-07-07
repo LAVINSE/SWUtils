@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 인스펙터 필드를 접을 수 있는 그룹으로 묶는 어트리뷰트입니다.

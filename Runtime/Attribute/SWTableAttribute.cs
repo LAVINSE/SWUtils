@@ -1,6 +1,6 @@
 using System;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 엑셀/TSV 컬럼명을 데이터 필드에 매핑하기 위한 어트리뷰트.

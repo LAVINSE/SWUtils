@@ -3,7 +3,7 @@ using UnityEngine;
 
 using SW.Util;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// 인스펙터에 버튼 바를 표시하는 커스텀 어트리뷰트입니다.

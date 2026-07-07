@@ -5,9 +5,9 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-using SW.Attribute;
+using SW.Attributes;
 
-namespace SW.Editor.Attribute
+namespace SW.Editor.Attributes
 {
     /// <summary>
     /// SWSubClassSelectorAttribute가 붙은 SerializeReference 필드의 하위 타입 선택 사용자 인터페이스를 그립니다.

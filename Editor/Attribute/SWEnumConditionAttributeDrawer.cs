@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attribute
+namespace SW.Editor.Attributes
 {
     /// <summary>
     /// Inspector에서 렌더링하는 커스텀 PropertyDrawer입니다.

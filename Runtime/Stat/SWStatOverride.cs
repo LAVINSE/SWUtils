@@ -1,6 +1,6 @@
 using UnityEngine;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Util;
 

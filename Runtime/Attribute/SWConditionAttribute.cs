@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// Inspector에서 필드를 조건부로 표시/숨김/비활성화하기 위한 커스텀 어트리뷰트입니다.

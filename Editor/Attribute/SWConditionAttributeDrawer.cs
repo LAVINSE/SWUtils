@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attribute
+namespace SW.Editor.Attributes
 {
     /// <summary>
     /// Boolean 필드 값에 따라 프로퍼티를 표시하거나 숨기고 비활성화하는 서랍입니다.

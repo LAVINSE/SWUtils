@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// SerializeReference 필드에서 하위 클래스를 선택할 수 있도록 표시하는 어트리뷰트입니다.

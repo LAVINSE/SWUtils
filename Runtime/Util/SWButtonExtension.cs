@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using SW.Attribute;
+using SW.Attributes;
 
 namespace SW.Util
 {

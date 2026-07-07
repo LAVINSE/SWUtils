@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SW.Attribute
+namespace SW.Attributes
 {
     /// <summary>
     /// Inspector에서 드롭다운 메뉴로 값을 선택할 수 있게 해주는 커스텀 속성입니다.

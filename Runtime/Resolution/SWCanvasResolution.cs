@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Base;
 
 using SW.Util;
 
-namespace SW.Resolution
+namespace SW.ScreenResolution
 {
     /// <summary>
     /// 화면 비율 구간별 CanvasScaler의 matchWidthOrHeight 값 설정.

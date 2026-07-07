@@ -12,9 +12,9 @@ using UnityEngine.InputSystem;
 #endif
 #endif
 
-using SW.Attribute;
+using SW.Attributes;
 
-namespace SW.Debug
+namespace SW.Debugging
 {
     /// <summary>
     /// 빌드에서 로그 확인, [SWCommand] 명령 실행, 상태 HUD를 제공하는 인게임 디버그 콘솔입니다.

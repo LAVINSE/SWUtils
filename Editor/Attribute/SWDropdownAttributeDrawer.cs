@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-using SW.Attribute;
+using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attribute
+namespace SW.Editor.Attributes
 {
     /// <summary>
     /// Inspector에서 드롭다운으로 렌더링하는 PropertyDrawer입니다.
