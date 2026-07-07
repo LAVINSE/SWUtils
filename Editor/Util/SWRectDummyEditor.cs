@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 using SW.Util;
 
-namespace SW.Editor.Util
+namespace SW.EditorTools.Util
 {
     /// <summary>
     /// SWRectDummy 인스펙터와 생성 메뉴입니다.

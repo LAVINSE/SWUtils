@@ -6,7 +6,7 @@ using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attributes
+namespace SW.EditorTools.Attributes
 {
     /// <summary>
     /// Inspector에서 드롭다운으로 렌더링하는 PropertyDrawer입니다.

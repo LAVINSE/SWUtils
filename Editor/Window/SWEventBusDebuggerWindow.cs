@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWEventBus의 이벤트 타입별 리스너 수와 발행 기록을 확인하는 에디터 디버깅 창입니다.

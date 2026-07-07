@@ -10,7 +10,7 @@ using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attributes
+namespace SW.EditorTools.Attributes
 {
     /// <summary>
     /// <see cref="SWButtonBarAttribute"/>가 붙은 필드를 버튼 바로 렌더링하는 드로어입니다.

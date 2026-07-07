@@ -3,7 +3,7 @@ using UnityEngine;
 
 using SW.Attributes;
 
-namespace SW.Editor.Attributes
+namespace SW.EditorTools.Attributes
 {
     /// <summary>
     /// <see cref="SWButtonAttribute"/>가 붙은 메서드를 인스펙터 버튼으로 그리는 드로어입니다.

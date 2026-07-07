@@ -8,7 +8,7 @@ using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Data
+namespace SW.EditorTools.Data
 {
     /// <summary>
     /// 엑셀에서 복사한 TSV 데이터를 ScriptableObject 필드에 매핑하는 파서.

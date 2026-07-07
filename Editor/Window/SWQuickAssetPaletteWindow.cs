@@ -3,11 +3,11 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 자주 쓰는 에셋을 즐겨찾기처럼 등록해두고 원클릭으로

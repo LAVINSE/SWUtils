@@ -2,11 +2,11 @@
 using UnityEditor;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWResolution 기능을 시각적으로 확인하고 테스트할 수 있는 에디터 윈도우.

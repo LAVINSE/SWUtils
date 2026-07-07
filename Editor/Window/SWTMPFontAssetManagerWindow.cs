@@ -10,11 +10,11 @@ using UnityEngine.Profiling;
 using TMPro;
 #endif
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// TMP 폰트 통합 매니저.

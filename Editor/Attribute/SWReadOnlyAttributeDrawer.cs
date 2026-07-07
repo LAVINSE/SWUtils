@@ -5,7 +5,7 @@ using UnityEngine;
 
 using SW.Attributes;
 
-namespace SW.Editor.Attributes
+namespace SW.EditorTools.Attributes
 {
     /// <summary>
     /// <see cref="SWReadOnlyAttribute"/>가 붙은 필드를 읽기 전용으로 그리는 드로어입니다.

@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Editor.Hierarchy;
+using SW.EditorTools.Hierarchy;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 하이어라키 행 스타일, 아이콘, 표시 옵션을 설정하는 에디터 창입니다.

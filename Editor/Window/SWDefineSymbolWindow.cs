@@ -8,11 +8,11 @@ using UnityEngine;
 using UnityEditor.Build;
 #endif
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 빌드 타겟 그룹별 Scripting Define Symbol을 확인하고 편집하는 에디터 창.

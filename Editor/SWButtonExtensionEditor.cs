@@ -6,7 +6,7 @@ using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Util
+namespace SW.EditorTools.Util
 {
     /// <summary>
     /// SWButtonExtension의 커스텀 인스펙터입니다.

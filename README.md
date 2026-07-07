@@ -69,8 +69,8 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 | `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/Util` | `SW.Util` |
-| `Editor/Attribute` | `SW.Editor.Attributes` |
-| `Editor/<Feature>` | `SW.Editor.<Feature>` |
+| `Editor/Attribute` | `SW.EditorTools.Attributes` |
+| `Editor/<Feature>` | `SW.EditorTools.<Feature>` |
 
 ## Runtime Features
 

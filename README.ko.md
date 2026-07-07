@@ -66,8 +66,8 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 | `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/Util` | `SW.Util` |
-| `Editor/Attribute` | `SW.Editor.Attributes` |
-| `Editor/<기능>` | `SW.Editor.<기능>` |
+| `Editor/Attribute` | `SW.EditorTools.Attributes` |
+| `Editor/<기능>` | `SW.EditorTools.<기능>` |
 
 ## 런타임 기능
 

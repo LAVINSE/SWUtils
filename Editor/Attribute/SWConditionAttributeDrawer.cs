@@ -6,7 +6,7 @@ using SW.Attributes;
 
 using SW.Util;
 
-namespace SW.Editor.Attributes
+namespace SW.EditorTools.Attributes
 {
     /// <summary>
     /// Boolean 필드 값에 따라 프로퍼티를 표시하거나 숨기고 비활성화하는 서랍입니다.

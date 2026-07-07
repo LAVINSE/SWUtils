@@ -9,9 +9,9 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 #endif
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 플레이 중에 EventSystem 선택 오브젝트, 마우스/터치, UI Raycast 결과,

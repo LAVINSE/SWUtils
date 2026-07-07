@@ -9,11 +9,11 @@ using UnityEngine.SceneManagement;
 
 using SW.Data;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 플레이 중 타임스케일 조절, FPS 모니터링, 씬 등록/로드, 유틸리티 등

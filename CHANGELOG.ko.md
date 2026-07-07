@@ -7,7 +7,7 @@
 ## [v1.0.12] - 2026-07-07
 
 ### 변경
-- Unity 및 .NET 타입 이름과 충돌하기 쉬운 네임스페이스를 `SW.Attributes`, `SW.Coroutines`, `SW.Debugging`, `SW.ScreenResolution`, `SW.Editor.Attributes`로 변경했습니다.
+- Unity 및 .NET 타입 이름과 충돌하기 쉬운 네임스페이스를 `SW.Attributes`, `SW.Coroutines`, `SW.Debugging`, `SW.ScreenResolution`, `SW.EditorTools.Attributes`로 변경했습니다.
 - 패키지 메타데이터와 README 설치 주소를 `v1.0.12`로 변경했습니다.
 
 ## [v1.0.11] - 2026-07-06

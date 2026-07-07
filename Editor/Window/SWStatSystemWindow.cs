@@ -6,13 +6,13 @@ using UnityEngine;
 
 using SW.Base;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Stat;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWCategory, SWStat 데이터 에셋을 한 화면에서 생성/삭제/편집하는 에디터 윈도우입니다.

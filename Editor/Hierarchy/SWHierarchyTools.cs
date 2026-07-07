@@ -5,9 +5,9 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
-namespace SW.Editor.Hierarchy
+namespace SW.EditorTools.Hierarchy
 {
     /// <summary>
     /// Unity 하이어라키 행의 배경, 아이콘, 보조 도구 표시를 관리하는 에디터 유틸리티입니다.

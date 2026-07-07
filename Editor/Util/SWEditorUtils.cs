@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 using SW.Util;
 
-namespace SW.Editor.Util
+namespace SW.EditorTools.Util
 {
     /// <summary>
     /// SWTools 에디터 UI에서 공통으로 사용하는 GUI, 아이콘, 스타일, EditorPrefs 헬퍼 모음입니다.

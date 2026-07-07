@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Pooling;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWPool의 프리팹별 생성량, 활성 수, 대기 수, 반환 예약을 확인하는 에디터 모니터 창입니다.

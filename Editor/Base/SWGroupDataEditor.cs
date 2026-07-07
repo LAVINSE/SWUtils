@@ -4,7 +4,7 @@ using UnityEngine;
 
 using SW.Attributes;
 
-namespace SW.Editor.Base
+namespace SW.EditorTools.Base
 {
     /// <summary>
     /// 인스펙터 그룹의 데이터를 저장하는 클래스.

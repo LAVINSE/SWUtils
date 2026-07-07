@@ -5,13 +5,13 @@ using UnityEngine;
 
 using SW.Attributes;
 
-using SW.Editor.Data;
+using SW.EditorTools.Data;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 엑셀에서 복사한 TSV 데이터를 ScriptableObject의 [SWTableSheet] 필드에 적용하는 에디터 창.

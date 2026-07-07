@@ -13,7 +13,7 @@ using SW.Base;
 
 using SW.Util;
 
-namespace SW.Editor.Base
+namespace SW.EditorTools.Base
 {
     /// <summary>
     /// SWMonoBehaviour를 상속받은 모든 컴포넌트에 대한 커스텀 에디터.

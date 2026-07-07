@@ -8,11 +8,11 @@ using Microsoft.Win32;
 
 using SW.Data;
 
-using SW.Editor.Hierarchy;
+using SW.EditorTools.Hierarchy;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWPlayerPrefs와 기본 PlayerPrefs 데이터를 조회, 수정, 삭제, JSON 입출력하는 에디터 창.

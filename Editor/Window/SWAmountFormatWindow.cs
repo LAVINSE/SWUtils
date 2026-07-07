@@ -5,11 +5,11 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
 using SW.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWAmountFormatProfile을 생성하고 편집하는 에디터 윈도우입니다.

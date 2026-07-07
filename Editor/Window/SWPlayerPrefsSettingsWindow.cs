@@ -5,9 +5,9 @@ using UnityEngine;
 
 using SW.Data;
 
-using SW.Editor.Util;
+using SW.EditorTools.Util;
 
-namespace SW.Editor.Window
+namespace SW.EditorTools.Window
 {
     /// <summary>
     /// SWPlayerPrefs 암호화 salt 설정 에셋을 생성하고 수정하는 에디터 창입니다.

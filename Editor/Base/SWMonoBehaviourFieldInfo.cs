@@ -6,7 +6,7 @@ using UnityEngine;
 
 using Object = UnityEngine.Object;
 
-namespace SW.Editor.Base
+namespace SW.EditorTools.Base
 {
     /// <summary>
     /// Unity 개체의 직렬화 대상 필드 정보를 수집하고 캐시합니다.
