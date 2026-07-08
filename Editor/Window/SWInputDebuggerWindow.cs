@@ -5,17 +5,13 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
-
 using SW.EditorTools.Util;
 
 namespace SW.EditorTools.Window
 {
     /// <summary>
     /// 플레이 중에 EventSystem 선택 오브젝트, 마우스/터치, UI Raycast 결과,
-    /// InputSystem의 활성 Action Map 등을 실시간으로 보여주는 디버거 창입니다.
+    /// 입력 상태와 UI Raycast 결과를 실시간으로 보여주는 디버거 창입니다.
     /// </summary>
     public class SWInputDebuggerWindow : EditorWindow
     {
@@ -218,7 +214,7 @@ namespace SW.EditorTools.Window
         }
         #endregion
 
-        #region Input 탭 (Keyboard/Mouse + Input System 통합)
+        #region Input 탭
         private void DrawInputTab()
         {
             SWEditorUtils.DrawHeader("Keyboard / Mouse");
@@ -244,10 +240,6 @@ namespace SW.EditorTools.Window
                 if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) modifiers += "Alt ";
                 EditorGUILayout.LabelField("Modifiers", string.IsNullOrEmpty(modifiers) ? "(없음)" : modifiers);
             }
-
-            EditorGUILayout.Space(10);
-            SWEditorUtils.DrawHeader("Input System");
-            DrawInputSystemInfo();
         }
 
         private void DrawMouseButton(string label, int button)
@@ -258,58 +250,6 @@ namespace SW.EditorTools.Window
             GUI.backgroundColor = Color.white;
         }
 
-        private void DrawInputSystemInfo()
-        {
-#if ENABLE_INPUT_SYSTEM
-            if (SWEditorUtils.DrawPlayModeOnlyNotice()) return;
-
-            // 연결된 디바이스
-            var devices = InputSystem.devices;
-            EditorGUILayout.LabelField("Devices", devices.Count.ToString());
-            foreach (var device in devices)
-            {
-                EditorGUILayout.LabelField($"  • {device.displayName}", $"{device.layout} ({(device.enabled ? "on" : "off")})");
-            }
-
-            // 활성 Action Map
-            var playerInputs = Object.FindObjectsByType<PlayerInput>(FindObjectsSortMode.None);
-            if (playerInputs != null && playerInputs.Length > 0)
-            {
-                EditorGUILayout.Space(3);
-                EditorGUILayout.LabelField("PlayerInput", EditorStyles.miniBoldLabel);
-                foreach (var pi in playerInputs)
-                {
-                    if (pi == null) continue;
-                    using (new EditorGUI.DisabledScope(true))
-                    {
-                        EditorGUILayout.ObjectField("Object", pi.gameObject, typeof(GameObject), true);
-                    }
-                    EditorGUILayout.LabelField("  Current Map", pi.currentActionMap != null ? pi.currentActionMap.name : "(none)");
-                    EditorGUILayout.LabelField("  Control Scheme", string.IsNullOrEmpty(pi.currentControlScheme) ? "(none)" : pi.currentControlScheme);
-                }
-            }
-            else
-            {
-                SWEditorUtils.DrawEmptyNotice("활성 PlayerInput 컴포넌트가 없습니다.", MessageType.None);
-            }
-
-            // Pointer / Keyboard 현재값
-            if (Mouse.current != null)
-            {
-                EditorGUILayout.Space(3);
-                EditorGUILayout.LabelField("Mouse.current", Mouse.current.position.ReadValue().ToString("F0"));
-            }
-            if (Keyboard.current != null)
-            {
-                EditorGUILayout.LabelField("Keyboard.anyKey",
-                    Keyboard.current.anyKey.isPressed ? "● 눌림" : "○");
-            }
-#else
-            SWEditorUtils.DrawEmptyNotice(
-                "Input System 패키지가 설치되어 있지 않거나 활성화되지 않았습니다.\n" +
-                "(Project Settings > Player > Active Input Handling)");
-#endif
-        }
         #endregion
     }
 }

@@ -59,7 +59,7 @@ namespace SW.EditorTools.Base
 
         /// <summary>
         /// 플레이 모드에서만 상시 다시 그려져야 하는지 여부
-        /// SWRequiresConstantRepaintOnlyWhenPlaing가 있으면 true.
+        /// SWRequiresConstantRepaintOnlyWhenPlaying이 있으면 true.
         /// </summary>
         private bool requiresConstantRepaintOnlyWhenPlaying;
 
@@ -82,6 +82,11 @@ namespace SW.EditorTools.Base
         /// 숨겨야 할 SWHidden 프로퍼티가 있는지 여부.
         /// </summary>
         private bool hasHiddenProperties = false;
+
+        /// <summary>
+        /// 필드 이름별 조건 표시 어트리뷰트 목록입니다.
+        /// </summary>
+        private Dictionary<string, SWConditionAttribute> conditionAttributeDict;
 
         /// <summary>
         /// 기본 인스펙터를 그려야 하는지 여부
@@ -157,13 +162,14 @@ namespace SW.EditorTools.Base
             shouldDrawBase = true;
             GroupDataDict = new();
             PropertiesList = new();
+            conditionAttributeDict = new();
             buttonMethodList = new();
             targetTypeName = target.GetType().Name;
 
             targetBehaviour = target as Behaviour;
             targetObjectIsNotNull = target != null;
 
-            //리페인트 관련 어트리뷰트 확인
+            // 리페인트 관련 어트리뷰트 확인
             requiresConstantRepaint = serializedObject.targetObject
                 .GetType()
                 .GetCustomAttribute<SWRequiresConstantRepaintAttribute>() != null;
@@ -182,6 +188,13 @@ namespace SW.EditorTools.Base
 
             for (int i = 0; i < fieldInfoLength; ++i)
             {
+                SWConditionAttribute condition = Attribute.GetCustomAttribute(fieldInfoList[i], typeof(SWConditionAttribute)) as SWConditionAttribute;
+                if (condition != null)
+                {
+                    shouldDrawBase = false;
+                    conditionAttributeDict[fieldInfoList[i].Name] = condition;
+                }
+
                 SWGroupAttribute group = Attribute.GetCustomAttribute(fieldInfoList[i], typeof(SWGroupAttribute)) as SWGroupAttribute;
                 SWGroupDataEditor groupData;
 
@@ -375,9 +388,7 @@ namespace SW.EditorTools.Base
                 if (property.name == "m_Script")
                     continue;
 
-                PropertyField field = new PropertyField(property);
-                field.label = ObjectNames.NicifyVariableName(property.name);
-                field.tooltip = property.tooltip;
+                VisualElement field = CreatePropertyField(property);
                 root.Add(field);
             }
 
@@ -509,18 +520,122 @@ namespace SW.EditorTools.Base
                     return;  // 숨겨야 할 프로퍼티면 그리지 않음
                 }
 
-                // PropertyField 생성
-                PropertyField field = new PropertyField(groupData.PropertiesList[i]);
-
-                // 라벨을 읽기 좋게 변환 (예: "moveSpeed" → "Move Speed")
-                field.label = ObjectNames.NicifyVariableName(groupData.PropertiesList[i].name);
-
-                // 툴팁 설정
-                field.tooltip = groupData.PropertiesList[i].tooltip;
-
-                // 폴드아웃에 추가
+                VisualElement field = CreatePropertyField(groupData.PropertiesList[i]);
                 foldout.Add(field);
             }
+        }
+
+        /// <summary>
+        /// SWConditionAttribute를 포함한 공통 규칙을 적용한 프로퍼티 필드를 생성합니다.
+        /// </summary>
+        /// <param name="property">표시할 프로퍼티입니다.</param>
+        /// <returns>인스펙터에 추가할 VisualElement입니다.</returns>
+        private VisualElement CreatePropertyField(SerializedProperty property)
+        {
+            PropertyField field = new PropertyField(property)
+            {
+                label = ObjectNames.NicifyVariableName(property.name),
+                tooltip = property.tooltip
+            };
+
+            if (conditionAttributeDict == null ||
+                !conditionAttributeDict.TryGetValue(property.name, out SWConditionAttribute conditionAttribute))
+            {
+                return field;
+            }
+
+            VisualElement container = new VisualElement();
+            container.Add(field);
+            ApplyCondition(container, field, conditionAttribute, property);
+
+            SerializedProperty conditionProperty = FindConditionProperty(property, conditionAttribute.ConditionBoolean);
+            if (conditionProperty != null)
+            {
+                container.TrackPropertyValue(conditionProperty, _ =>
+                {
+                    ApplyCondition(container, field, conditionAttribute, property);
+                });
+            }
+
+            return container;
+        }
+
+        /// <summary>
+        /// 조건 결과에 따라 필드 표시 상태를 갱신합니다.
+        /// </summary>
+        /// <param name="container">필드를 감싸는 컨테이너입니다.</param>
+        /// <param name="field">실제 프로퍼티 필드입니다.</param>
+        /// <param name="conditionAttribute">조건 어트리뷰트입니다.</param>
+        /// <param name="property">조건을 적용할 프로퍼티입니다.</param>
+        private void ApplyCondition(VisualElement container, VisualElement field, SWConditionAttribute conditionAttribute, SerializedProperty property)
+        {
+            bool conditionResult = GetConditionAttributeResult(conditionAttribute, property);
+
+            if (conditionAttribute.Hidden)
+            {
+                container.style.display = conditionResult ? DisplayStyle.Flex : DisplayStyle.None;
+                field.SetEnabled(true);
+                return;
+            }
+
+            container.style.display = DisplayStyle.Flex;
+            field.SetEnabled(conditionResult);
+        }
+
+        /// <summary>
+        /// SWConditionAttribute가 가리키는 Boolean 필드 값을 읽습니다.
+        /// </summary>
+        /// <param name="conditionAttribute">조건 어트리뷰트입니다.</param>
+        /// <param name="property">현재 표시 중인 프로퍼티입니다.</param>
+        /// <returns>조건 충족 여부입니다.</returns>
+        private bool GetConditionAttributeResult(SWConditionAttribute conditionAttribute, SerializedProperty property)
+        {
+            bool conditionResult = true;
+            SerializedProperty conditionProperty = FindConditionProperty(property, conditionAttribute.ConditionBoolean);
+
+            if (conditionProperty != null)
+            {
+                conditionResult = conditionProperty.boolValue;
+            }
+            else
+            {
+                SWLog.LogError("지정한 Boolean 필드명을 찾을 수 없습니다 - " + conditionAttribute.ConditionBoolean);
+            }
+
+            if (conditionAttribute.Negative)
+            {
+                conditionResult = !conditionResult;
+            }
+
+            return conditionResult;
+        }
+
+        /// <summary>
+        /// 현재 프로퍼티와 같은 계층에 있는 조건 필드를 찾습니다.
+        /// </summary>
+        /// <param name="property">현재 표시 중인 프로퍼티입니다.</param>
+        /// <param name="conditionFieldName">조건 Boolean 필드 이름입니다.</param>
+        /// <returns>조건 필드 프로퍼티입니다.</returns>
+        private SerializedProperty FindConditionProperty(SerializedProperty property, string conditionFieldName)
+        {
+            string conditionPath = GetConditionPath(property, conditionFieldName);
+            SerializedProperty conditionProperty = property.serializedObject.FindProperty(conditionPath);
+            return conditionProperty ?? property.serializedObject.FindProperty(conditionFieldName);
+        }
+
+        /// <summary>
+        /// 현재 프로퍼티와 같은 계층에 있는 조건 필드 경로를 계산합니다.
+        /// </summary>
+        /// <param name="property">현재 표시 중인 프로퍼티입니다.</param>
+        /// <param name="conditionFieldName">조건 Boolean 필드 이름입니다.</param>
+        /// <returns>조건 필드의 SerializedProperty 경로입니다.</returns>
+        private static string GetConditionPath(SerializedProperty property, string conditionFieldName)
+        {
+            string propertyPath = property.propertyPath;
+            int lastDotIndex = propertyPath.LastIndexOf('.');
+            return lastDotIndex < 0
+                ? conditionFieldName
+                : string.Concat(propertyPath.Substring(0, lastDotIndex + 1), conditionFieldName);
         }
     }
 }

@@ -7,9 +7,6 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Profiling;
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 #endif
 
 using SW.Attributes;
@@ -17,14 +14,14 @@ using SW.Attributes;
 namespace SW.Debugging
 {
     /// <summary>
-    /// 빌드에서 로그 확인, [SWCommand] 명령 실행, 상태 HUD를 제공하는 인게임 디버그 콘솔입니다.
+    /// 빌드에서 로그 확인, [SWCommand] 명령 실행, 상태 표시를 제공하는 인게임 디버그 콘솔입니다.
     /// </summary>
     /// <remarks>
     /// - SW_DEBUG_MODE 심볼이 있을 때만 동작하며, 없으면 이 클래스의 호출 코드 자체가
     ///   Conditional 어트리뷰트로 컴파일에서 제거됩니다. (SWLog와 동일한 방식)
     /// - UI는 IMGUI(OnGUI)로 코드가 직접 그리므로 프리팹, Canvas, 폰트 등 별도 에셋 제작이 필요 없습니다.
-    /// - 열기: PC/에디터는 백쿼트(`) 키, 모바일은 3손가락 동시 터치.
-    /// - SW_DEBUG_MODE가 정의되면 씬 로드 후 자동으로 생성되므로 별도 배치도 필요 없습니다.
+    /// - 열기 키와 동시 터치 개수는 SWDebugConsoleSettings에서 설정합니다.
+    /// - SW_DEBUG_MODE가 정의되고 자동 생성 설정이 켜져 있으면 씬 로드 후 자동으로 생성됩니다.
     /// </remarks>
     public static class SWDebugConsole
     {
@@ -36,6 +33,19 @@ namespace SW.Debugging
             {
 #if SW_DEBUG_MODE
                 return SWDebugConsoleBehaviour.HasInstance && SWDebugConsoleBehaviour.Instance.IsOpen;
+#else
+                return false;
+#endif
+            }
+        }
+
+        /// <summary>성능 오버레이가 현재 표시 중인지 여부입니다. 심볼이 없으면 항상 false입니다.</summary>
+        public static bool IsOverlayVisible
+        {
+            get
+            {
+#if SW_DEBUG_MODE
+                return SWDebugConsoleBehaviour.HasInstance && SWDebugConsoleBehaviour.Instance.IsOverlayVisible;
 #else
                 return false;
 #endif
@@ -146,6 +156,72 @@ namespace SW.Debugging
             SWDebugConsoleBehaviour.EnsureCreated();
             SWDebugConsoleBehaviour.Instance.ExecuteCommandLine(commandLine);
 #endif
+        }
+
+        /// <summary>
+        /// 성능 오버레이를 표시합니다.
+        /// </summary>
+        [Conditional("SW_DEBUG_MODE")]
+        public static void ShowOverlay()
+        {
+#if SW_DEBUG_MODE
+            SWDebugConsoleBehaviour.EnsureCreated();
+            SWDebugConsoleBehaviour.Instance.SetOverlayVisible(true);
+#endif
+        }
+
+        /// <summary>
+        /// 성능 오버레이를 숨깁니다.
+        /// </summary>
+        [Conditional("SW_DEBUG_MODE")]
+        public static void HideOverlay()
+        {
+#if SW_DEBUG_MODE
+            if (SWDebugConsoleBehaviour.HasInstance)
+                SWDebugConsoleBehaviour.Instance.SetOverlayVisible(false);
+#endif
+        }
+
+        /// <summary>
+        /// 성능 오버레이 표시 상태를 토글합니다.
+        /// </summary>
+        [Conditional("SW_DEBUG_MODE")]
+        public static void ToggleOverlay()
+        {
+#if SW_DEBUG_MODE
+            SWDebugConsoleBehaviour.EnsureCreated();
+            SWDebugConsoleBehaviour.Instance.SetOverlayVisible(!SWDebugConsoleBehaviour.Instance.IsOverlayVisible);
+#endif
+        }
+
+        /// <summary>
+        /// 성능 오버레이의 최소/최대 FPS 기록을 초기화합니다.
+        /// </summary>
+        [Conditional("SW_DEBUG_MODE")]
+        public static void ResetOverlayStats()
+        {
+#if SW_DEBUG_MODE
+            if (SWDebugConsoleBehaviour.HasInstance)
+                SWDebugConsoleBehaviour.Instance.ResetOverlayMinMax();
+#endif
+        }
+
+        /// <summary>
+        /// 콘솔 명령: 성능 오버레이 표시를 토글합니다.
+        /// </summary>
+        [SWCommand("overlay", "성능 오버레이 표시를 토글합니다", "Debug")]
+        private static void OverlayCommand()
+        {
+            ToggleOverlay();
+        }
+
+        /// <summary>
+        /// 콘솔 명령: 성능 오버레이 최소/최대 기록을 초기화합니다.
+        /// </summary>
+        [SWCommand("overlay_reset", "성능 오버레이 최소/최대 기록을 초기화합니다", "Debug")]
+        private static void OverlayResetCommand()
+        {
+            ResetOverlayStats();
         }
         #endregion // 함수
     }
@@ -272,11 +348,14 @@ namespace SW.Debugging
         }
 
         /// <summary>
-        /// 씬 로드 후 콘솔을 자동 생성합니다. 배치 없이 열기 제스처가 동작하게 합니다.
+        /// 씬 로드 후 콘솔을 자동 생성합니다. 자동 생성과 오버레이 자동 표시가 모두 꺼져 있으면 생성하지 않습니다.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoCreate()
         {
+            SWDebugConsoleSettings settings = SWDebugConsoleSettings.Load();
+            if (!settings.AutoCreateOnLoad && !settings.OverlayEnabledOnStart) return;
+
             EnsureCreated();
         }
 
@@ -304,10 +383,14 @@ namespace SW.Debugging
 
             instance = this;
             Application.logMessageReceivedThreaded += HandleLogMessage;
+            overlayVisible = SWDebugConsoleSettings.Load().OverlayEnabledOnStart;
         }
 
         private void OnDestroy()
         {
+            if (overlayBackgroundTexture != null)
+                Destroy(overlayBackgroundTexture);
+
             Application.logMessageReceivedThreaded -= HandleLogMessage;
             if (instance == this)
                 instance = null;
@@ -332,64 +415,302 @@ namespace SW.Debugging
         {
             smoothedDeltaTime = Mathf.Lerp(smoothedDeltaTime, Time.unscaledDeltaTime, 0.1f);
             CheckOpenGesture();
+            UpdateOverlay();
         }
 
         /// <summary>
-        /// 백쿼트 키 또는 3손가락 터치로 콘솔을 토글합니다.
+        /// 설정된 키 또는 동시 터치로 콘솔을 토글합니다. 키와 터치 개수는 SWDebugConsoleSettings에서 설정합니다.
         /// </summary>
         private void CheckOpenGesture()
         {
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null && Keyboard.current.backquoteKey.wasPressedThisFrame)
+            SWDebugConsoleSettings settings = SWDebugConsoleSettings.Load();
+
+            if (settings.EnableInputSystem && CheckInputSystemOpenGesture(settings))
+                return;
+
+            CheckLegacyOpenGesture(settings);
+        }
+
+        /// <summary>
+        /// Input System 패키지가 있을 때 리플렉션으로 열기 입력을 확인합니다.
+        /// </summary>
+        /// <param name="settings">콘솔 설정입니다.</param>
+        /// <returns>입력이 처리되었으면 true입니다.</returns>
+        private bool CheckInputSystemOpenGesture(SWDebugConsoleSettings settings)
+        {
+            if (settings.OpenKey != SWConsoleOpenKey.None
+                && AreInputSystemRequiredModifiersPressed(settings)
+                && SWInputSystemReflectionCache.WasKeyboardKeyPressed(settings.GetInputSystemKeyPropertyName()))
             {
                 SetOpen(!isOpen);
-                return;
+                return true;
             }
 
-            if (Touchscreen.current != null)
+            int touchCount = SWInputSystemReflectionCache.GetPressedTouchCount();
+            if (touchCount < 0) return false;
+
+            return HandleTouchCount(touchCount, settings.TouchCountToOpen);
+        }
+
+        /// <summary>
+        /// 기본 Unity 입력 API로 열기 입력을 확인합니다.
+        /// </summary>
+        /// <param name="settings">콘솔 설정입니다.</param>
+        private void CheckLegacyOpenGesture(SWDebugConsoleSettings settings)
+        {
+            try
             {
-                int touchCount = 0;
-                foreach (var touch in Touchscreen.current.touches)
+                if (settings.OpenKey != SWConsoleOpenKey.None
+                    && AreLegacyRequiredModifiersPressed(settings)
+                    && Input.GetKeyDown(settings.GetLegacyKeyCode()))
                 {
-                    if (touch.press.isPressed)
-                        touchCount++;
+                    SetOpen(!isOpen);
+                    return;
                 }
 
-                if (touchCount >= 3)
-                {
-                    if (!gestureLatched)
-                    {
-                        gestureLatched = true;
-                        SetOpen(!isOpen);
-                    }
-                }
-                else
-                {
-                    gestureLatched = false;
-                }
+                HandleTouchCount(Input.touchCount, settings.TouchCountToOpen);
             }
-#else
-            if (Input.GetKeyDown(KeyCode.BackQuote))
+            catch (InvalidOperationException)
             {
-                SetOpen(!isOpen);
-                return;
+                gestureLatched = false;
             }
+        }
 
-            if (Input.touchCount >= 3)
+        /// <summary>
+        /// 동시 터치 개수로 콘솔 열기 입력을 처리합니다.
+        /// </summary>
+        /// <param name="touchCount">현재 눌린 터치 개수입니다.</param>
+        /// <param name="requiredTouchCount">콘솔을 여는 데 필요한 터치 개수입니다.</param>
+        /// <returns>터치 입력이 처리되었으면 true입니다.</returns>
+        private bool HandleTouchCount(int touchCount, int requiredTouchCount)
+        {
+            if (touchCount >= requiredTouchCount)
             {
                 if (!gestureLatched)
                 {
                     gestureLatched = true;
                     SetOpen(!isOpen);
                 }
+
+                return true;
             }
-            else
-            {
-                gestureLatched = false;
-            }
-#endif
+
+            gestureLatched = false;
+            return false;
+        }
+
+        /// <summary>
+        /// Input System에서 요구 조합키가 눌렸는지 확인합니다.
+        /// </summary>
+        /// <param name="settings">콘솔 설정입니다.</param>
+        /// <returns>필요한 조합키가 모두 눌렸으면 true입니다.</returns>
+        private static bool AreInputSystemRequiredModifiersPressed(SWDebugConsoleSettings settings)
+        {
+            if (settings.RequireControlKey
+                && !SWInputSystemReflectionCache.IsAnyKeyboardKeyPressed(SWInputSystemReflectionCache.ControlKeyPropertyNames))
+                return false;
+
+            if (settings.RequireShiftKey
+                && !SWInputSystemReflectionCache.IsAnyKeyboardKeyPressed(SWInputSystemReflectionCache.ShiftKeyPropertyNames))
+                return false;
+
+            if (settings.RequireAltKey
+                && !SWInputSystemReflectionCache.IsAnyKeyboardKeyPressed(SWInputSystemReflectionCache.AltKeyPropertyNames))
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 기본 Unity 입력 API에서 요구 조합키가 눌렸는지 확인합니다.
+        /// </summary>
+        /// <param name="settings">콘솔 설정입니다.</param>
+        /// <returns>필요한 조합키가 모두 눌렸으면 true입니다.</returns>
+        private static bool AreLegacyRequiredModifiersPressed(SWDebugConsoleSettings settings)
+        {
+            if (settings.RequireControlKey
+                && !Input.GetKey(KeyCode.LeftControl)
+                && !Input.GetKey(KeyCode.RightControl))
+                return false;
+
+            if (settings.RequireShiftKey
+                && !Input.GetKey(KeyCode.LeftShift)
+                && !Input.GetKey(KeyCode.RightShift))
+                return false;
+
+            if (settings.RequireAltKey
+                && !Input.GetKey(KeyCode.LeftAlt)
+                && !Input.GetKey(KeyCode.RightAlt))
+                return false;
+
+            return true;
         }
         #endregion // 열기/닫기
+
+        #region Input System 리플렉션 캐시
+        /// <summary>
+        /// Input System 패키지를 필수 의존으로 만들지 않고 필요한 멤버만 캐시해 사용하는 헬퍼입니다.
+        /// </summary>
+        private static class SWInputSystemReflectionCache
+        {
+            #region 상수
+            private const string KeyboardTypeName = "UnityEngine.InputSystem.Keyboard, Unity.InputSystem";
+            private const string TouchscreenTypeName = "UnityEngine.InputSystem.Touchscreen, Unity.InputSystem";
+            #endregion // 상수
+
+            #region 필드
+            public static readonly string[] ControlKeyPropertyNames = { "leftCtrlKey", "rightCtrlKey" };
+            public static readonly string[] ShiftKeyPropertyNames = { "leftShiftKey", "rightShiftKey" };
+            public static readonly string[] AltKeyPropertyNames = { "leftAltKey", "rightAltKey" };
+
+            private static readonly Dictionary<string, PropertyInfo> keyboardKeyPropertyDict = new();
+            private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> instancePropertyDict = new();
+            private static readonly Dictionary<Type, MethodInfo> indexerGetterDict = new();
+            private static readonly object[] indexArgumentCache = new object[1];
+
+            private static bool initialized;
+            private static Type keyboardType;
+            private static Type touchscreenType;
+            private static PropertyInfo keyboardCurrentProperty;
+            private static PropertyInfo touchscreenCurrentProperty;
+            #endregion // 필드
+
+            #region 함수
+            /// <summary>
+            /// Keyboard 키가 이번 프레임에 눌렸는지 확인합니다.
+            /// </summary>
+            /// <param name="keyPropertyName">Keyboard의 키 프로퍼티 이름입니다.</param>
+            /// <returns>눌렸으면 true입니다.</returns>
+            public static bool WasKeyboardKeyPressed(string keyPropertyName)
+            {
+                if (string.IsNullOrEmpty(keyPropertyName)) return false;
+
+                object keyControl = GetKeyboardKeyControl(keyPropertyName);
+                object wasPressedThisFrame = GetInstancePropertyValue(keyControl, "wasPressedThisFrame");
+                return wasPressedThisFrame is bool pressed && pressed;
+            }
+
+            /// <summary>
+            /// Keyboard 키 목록 중 하나라도 눌려 있는지 확인합니다.
+            /// </summary>
+            /// <param name="keyPropertyNames">Keyboard의 키 프로퍼티 이름 목록입니다.</param>
+            /// <returns>하나라도 눌려 있으면 true입니다.</returns>
+            public static bool IsAnyKeyboardKeyPressed(string[] keyPropertyNames)
+            {
+                for (int index = 0; index < keyPropertyNames.Length; index++)
+                {
+                    object keyControl = GetKeyboardKeyControl(keyPropertyNames[index]);
+                    object isPressed = GetInstancePropertyValue(keyControl, "isPressed");
+                    if (isPressed is bool pressed && pressed)
+                        return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// Input System에서 현재 눌린 터치 개수를 가져옵니다.
+            /// </summary>
+            /// <returns>가져오면 터치 개수, 사용할 수 없으면 -1입니다.</returns>
+            public static int GetPressedTouchCount()
+            {
+                EnsureInitialized();
+                object touchscreen = touchscreenCurrentProperty?.GetValue(null);
+                if (touchscreen == null) return -1;
+
+                object touches = GetInstancePropertyValue(touchscreen, "touches");
+                if (touches == null) return -1;
+
+                object countValue = GetInstancePropertyValue(touches, "Count");
+                if (countValue is not int count) return -1;
+
+                MethodInfo getItemMethod = GetIndexerGetter(touches.GetType());
+                if (getItemMethod == null) return -1;
+
+                int pressedCount = 0;
+                for (int index = 0; index < count; index++)
+                {
+                    indexArgumentCache[0] = index;
+                    object touch = getItemMethod.Invoke(touches, indexArgumentCache);
+                    object pressControl = GetInstancePropertyValue(touch, "press");
+                    object isPressed = GetInstancePropertyValue(pressControl, "isPressed");
+                    if (isPressed is bool pressed && pressed)
+                        pressedCount++;
+                }
+
+                return pressedCount;
+            }
+
+            private static object GetKeyboardKeyControl(string keyPropertyName)
+            {
+                EnsureInitialized();
+                object keyboard = keyboardCurrentProperty?.GetValue(null);
+                if (keyboard == null) return null;
+
+                PropertyInfo keyProperty = GetKeyboardKeyProperty(keyPropertyName);
+                return keyProperty?.GetValue(keyboard);
+            }
+
+            private static void EnsureInitialized()
+            {
+                if (initialized) return;
+
+                keyboardType = Type.GetType(KeyboardTypeName);
+                touchscreenType = Type.GetType(TouchscreenTypeName);
+                keyboardCurrentProperty = keyboardType?.GetProperty("current", BindingFlags.Public | BindingFlags.Static);
+                touchscreenCurrentProperty = touchscreenType?.GetProperty("current", BindingFlags.Public | BindingFlags.Static);
+                initialized = true;
+            }
+
+            private static PropertyInfo GetKeyboardKeyProperty(string keyPropertyName)
+            {
+                EnsureInitialized();
+                if (keyboardType == null) return null;
+
+                if (keyboardKeyPropertyDict.TryGetValue(keyPropertyName, out PropertyInfo cachedProperty))
+                    return cachedProperty;
+
+                PropertyInfo property = keyboardType.GetProperty(keyPropertyName, BindingFlags.Public | BindingFlags.Instance);
+                keyboardKeyPropertyDict[keyPropertyName] = property;
+                return property;
+            }
+
+            private static object GetInstancePropertyValue(object target, string propertyName)
+            {
+                if (target == null) return null;
+
+                PropertyInfo property = GetInstanceProperty(target.GetType(), propertyName);
+                return property?.GetValue(target);
+            }
+
+            private static PropertyInfo GetInstanceProperty(Type type, string propertyName)
+            {
+                if (!instancePropertyDict.TryGetValue(type, out Dictionary<string, PropertyInfo> propertyDict))
+                {
+                    propertyDict = new Dictionary<string, PropertyInfo>();
+                    instancePropertyDict[type] = propertyDict;
+                }
+
+                if (propertyDict.TryGetValue(propertyName, out PropertyInfo cachedProperty))
+                    return cachedProperty;
+
+                PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+                propertyDict[propertyName] = property;
+                return property;
+            }
+
+            private static MethodInfo GetIndexerGetter(Type type)
+            {
+                if (indexerGetterDict.TryGetValue(type, out MethodInfo cachedMethod))
+                    return cachedMethod;
+
+                MethodInfo method = type.GetMethod("get_Item");
+                indexerGetterDict[type] = method;
+                return method;
+            }
+            #endregion // 함수
+        }
+        #endregion // Input System 리플렉션 캐시
 
         #region 로그 수집
         /// <summary>
@@ -755,9 +1076,203 @@ namespace SW.Debugging
         }
         #endregion // 감시
 
+        #region 성능 오버레이
+        /// <summary>플레이 시작 직후 최소/최대 기록 오염을 막는 준비 시간(초)입니다.</summary>
+        private const float OverlayWarmupSeconds = 2f;
+        /// <summary>오버레이의 화면 가장자리 여백(픽셀)입니다.</summary>
+        private const float OverlayScreenMargin = 10f;
+
+        private readonly StringBuilder overlayBuilder = new();
+
+        private bool overlayVisible;
+        private float overlayWarmupRemaining = OverlayWarmupSeconds;
+        private float overlayUpdateTimer;
+        private float overlayMinFps = float.MaxValue;
+        private float overlayMaxFps;
+        private string overlayText = string.Empty;
+        private Color overlayColor = Color.white;
+
+        private GUIStyle overlayStyle;
+        private Texture2D overlayBackgroundTexture;
+
+        /// <summary>오버레이가 표시 중인지 여부입니다.</summary>
+        internal bool IsOverlayVisible => overlayVisible;
+
+        /// <summary>
+        /// 오버레이 표시 상태를 설정합니다.
+        /// </summary>
+        /// <param name="visible">표시 여부입니다.</param>
+        internal void SetOverlayVisible(bool visible)
+        {
+            if (overlayVisible == visible) return;
+
+            overlayVisible = visible;
+            if (overlayVisible)
+            {
+                ResetOverlayMinMax();
+                overlayUpdateTimer = 0f;
+            }
+        }
+
+        /// <summary>
+        /// 최소/최대 FPS 기록을 초기화하고 준비 시간을 다시 시작합니다.
+        /// </summary>
+        internal void ResetOverlayMinMax()
+        {
+            overlayMinFps = float.MaxValue;
+            overlayMaxFps = 0f;
+            overlayWarmupRemaining = OverlayWarmupSeconds;
+        }
+
+        /// <summary>
+        /// 오버레이 측정값을 갱신합니다. Update에서 매 프레임 호출합니다.
+        /// </summary>
+        private void UpdateOverlay()
+        {
+            if (!overlayVisible) return;
+
+            float instantFps = Time.unscaledDeltaTime > 0f ? 1f / Time.unscaledDeltaTime : 0f;
+
+            if (overlayWarmupRemaining > 0f)
+            {
+                overlayWarmupRemaining -= Time.unscaledDeltaTime;
+            }
+            else
+            {
+                if (instantFps < overlayMinFps) overlayMinFps = instantFps;
+                if (instantFps > overlayMaxFps) overlayMaxFps = instantFps;
+            }
+
+            SWDebugConsoleSettings settings = SWDebugConsoleSettings.Load();
+            overlayUpdateTimer += Time.unscaledDeltaTime;
+            if (overlayUpdateTimer >= settings.OverlayUpdateInterval)
+            {
+                overlayUpdateTimer = 0f;
+                RebuildOverlayText(settings);
+            }
+        }
+
+        /// <summary>
+        /// 오버레이 표시 문자열과 색상을 갱신합니다. 갱신 간격마다 한 번만 수행합니다.
+        /// </summary>
+        /// <param name="settings">현재 설정입니다.</param>
+        private void RebuildOverlayText(SWDebugConsoleSettings settings)
+        {
+            float fps = smoothedDeltaTime > 0f ? 1f / smoothedDeltaTime : 0f;
+            float frameMilliseconds = smoothedDeltaTime * 1000f;
+
+            overlayBuilder.Clear();
+
+            if (settings.ShowFps)
+                overlayBuilder.Append("FPS ").Append(fps.ToString("F1"))
+                    .Append("  (").Append(frameMilliseconds.ToString("F1")).Append("ms)");
+
+            if (settings.ShowMinMax && overlayMaxFps > 0f)
+            {
+                if (overlayBuilder.Length > 0) overlayBuilder.AppendLine();
+                overlayBuilder.Append("MIN ").Append(overlayMinFps.ToString("F0"))
+                    .Append("  MAX ").Append(overlayMaxFps.ToString("F0"));
+            }
+
+            if (settings.ShowMemory)
+            {
+                if (overlayBuilder.Length > 0) overlayBuilder.AppendLine();
+                float monoMegabytes = Profiler.GetMonoUsedSizeLong() / (1024f * 1024f);
+                float allocatedMegabytes = Profiler.GetTotalAllocatedMemoryLong() / (1024f * 1024f);
+                overlayBuilder.Append("MONO ").Append(monoMegabytes.ToString("F1")).Append("MB")
+                    .AppendLine()
+                    .Append("ALLOC ").Append(allocatedMegabytes.ToString("F1")).Append("MB");
+            }
+
+            overlayText = overlayBuilder.ToString();
+            overlayColor = GetOverlayColor(fps, settings);
+        }
+
+        /// <summary>
+        /// FPS 경계값에 따라 오버레이 표시 색상을 반환합니다.
+        /// </summary>
+        private static Color GetOverlayColor(float fps, SWDebugConsoleSettings settings)
+        {
+            if (fps < settings.FpsDangerThreshold) return new Color(1f, 0.45f, 0.45f);
+            if (fps < settings.FpsWarningThreshold) return Color.yellow;
+            return new Color(0.55f, 1f, 0.55f);
+        }
+
+        /// <summary>
+        /// 오버레이를 그립니다. OnGUI 첫 줄에서 호출합니다. 콘솔이 열려 있으면 그리지 않습니다.
+        /// </summary>
+        private void DrawOverlay()
+        {
+            if (!overlayVisible) return;
+            if (isOpen) return;
+            if (string.IsNullOrEmpty(overlayText)) return;
+
+            SWDebugConsoleSettings settings = SWDebugConsoleSettings.Load();
+            EnsureOverlayStyle(settings);
+
+            GUIContent content = new(overlayText);
+            Vector2 size = overlayStyle.CalcSize(content);
+            Rect rect = GetOverlayRect(size, settings.OverlayAnchor);
+
+            GUI.color = new Color(1f, 1f, 1f, 0.9f);
+            GUI.DrawTexture(rect, overlayBackgroundTexture);
+
+            GUI.color = overlayColor;
+            GUI.Label(rect, content, overlayStyle);
+            GUI.color = Color.white;
+        }
+
+        /// <summary>
+        /// 오버레이 스타일과 배경 텍스처를 준비합니다. 크기 배율이 바뀌면 글자 크기를 갱신합니다.
+        /// </summary>
+        /// <param name="settings">현재 설정입니다.</param>
+        private void EnsureOverlayStyle(SWDebugConsoleSettings settings)
+        {
+            if (overlayStyle == null)
+            {
+                overlayStyle = new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.UpperLeft,
+                    padding = new RectOffset(8, 8, 6, 6),
+                };
+            }
+
+            int fontSize = Mathf.RoundToInt(14f * settings.OverlayScale);
+            if (overlayStyle.fontSize != fontSize)
+                overlayStyle.fontSize = fontSize;
+
+            if (overlayBackgroundTexture == null)
+            {
+                overlayBackgroundTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                overlayBackgroundTexture.SetPixel(0, 0, new Color(0f, 0f, 0f, 0.6f));
+                overlayBackgroundTexture.Apply();
+            }
+        }
+
+        /// <summary>
+        /// 표시 크기와 앵커에 맞는 화면 사각형을 계산합니다.
+        /// </summary>
+        /// <param name="size">표시 문자열 크기입니다.</param>
+        /// <param name="anchor">표시할 화면 모서리입니다.</param>
+        private static Rect GetOverlayRect(Vector2 size, SWOverlayAnchor anchor)
+        {
+            float x = anchor is SWOverlayAnchor.TopLeft or SWOverlayAnchor.BottomLeft
+                ? OverlayScreenMargin
+                : Screen.width - size.x - OverlayScreenMargin;
+
+            float y = anchor is SWOverlayAnchor.TopLeft or SWOverlayAnchor.TopRight
+                ? OverlayScreenMargin
+                : Screen.height - size.y - OverlayScreenMargin;
+
+            return new Rect(x, y, size.x, size.y);
+        }
+        #endregion // 성능 오버레이
+
         #region GUI
         private void OnGUI()
         {
+            DrawOverlay();
+
             if (!isOpen) return;
 
             // DPI 기반 스케일: 모바일 고해상도에서도 읽을 수 있는 크기로 확대합니다.

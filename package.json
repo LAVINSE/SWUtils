@@ -1,6 +1,6 @@
 {
   "name": "com.swtools.swutils",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "displayName": "SWUtils",
   "description": "Unity 프로젝트에서 공통으로 사용하는 SWUtils 런타임 및 에디터 유틸리티 패키지입니다.",
   "unity": "2021.3",
@@ -8,7 +8,6 @@
     "name": "SWTools"
   },
   "dependencies": {
-    "com.unity.inputsystem": "1.7.0",
     "com.unity.localization": "1.5.0",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.ugui": "1.0.0"

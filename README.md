@@ -2,7 +2,30 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-SWUtils is a collection of commonly used runtime features and editor tools for Unity projects.
+![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222)
+![Package 1.0.15](https://img.shields.io/badge/package-1.0.15-2f80ed)
+![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
+
+SWUtils is a compact Unity utility package for runtime systems, inspector workflows, debugging tools, and editor productivity windows.
+
+## Overview
+
+| Area | What it provides |
+| --- | --- |
+| Runtime foundations | `SWMonoBehaviour`, `SWScriptableObject`, coroutine runners, pooling, popup flow, resolution helpers, stat data, and reusable utilities. |
+| Data and persistence | Encrypted PlayerPrefs, save slots, file saves, cloud-save entry points, and JSON import/export helpers. |
+| Inspector tooling | Grouped fields, buttons, conditions, dropdowns, read-only fields, `SerializeReference` type selection, and table import attributes. |
+| Debugging | Runtime debug console, command registration, watch values, optional Input System support, and a lightweight performance overlay. |
+| Editor workflow | Debug windows, PlayerPrefs inspection, pool and event monitoring, table importing, hierarchy styling, font checks, and reference search. |
+
+Quick links:
+
+- [Install from a Git URL](#install-from-a-git-url)
+- [Quick Start](#quick-start)
+- [Namespace Layout](#namespace-layout)
+- [Runtime Features](#runtime-features)
+- [Editor Features](#editor-features)
+- [Assembly Definitions](#assembly-definitions)
 
 ## Install from a Git URL
 
@@ -16,17 +39,18 @@ Add the package through Unity Package Manager:
 Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.14
+https://github.com/LAVINSE/SWUtils.git#v1.0.15
 ```
 
 ## Dependencies
 
 The following Unity packages are installed automatically through `package.json`:
 
-- Input System
 - Localization
 - TextMeshPro
 - Unity UI
+
+Unity Input System is not installed automatically. The debug console can use it when it already exists in the project, but SWUtils keeps it optional to avoid a mandatory package dependency.
 
 The following external libraries may not be available directly through Unity Package Manager. Install them before using the related features:
 
@@ -296,6 +320,58 @@ await SWSaveDataManager.SaveAllAsync();
 ```
 
 `ListSaves`, `CopySlot`, `Delete`, and `GetSaveInfo` provide save-slot management. `SaveAll` writes the registered data and the current SWUtils PlayerPrefs slot together; changing the save-manager slot also aligns the PlayerPrefs slot.
+
+### `Runtime/Debug`
+
+Provides a runtime debug console, command registration, watch values, logging helpers, and a lightweight performance overlay.
+
+- `SWDebugConsole`: Shows runtime logs, executes registered commands, manages watch values, and draws the performance overlay.
+- `SWDebugConsoleSettings`: Stores console open input, optional Input System handling, and overlay display settings.
+- `SWCommand`: Registers static or instance methods as console commands.
+- `SWLog`: Writes logs only when `SW_DEBUG_MODE` is enabled.
+
+Add `SW_DEBUG_MODE` from `SWTools/Debug/Debug Console Settings` before using the console in a build. When the symbol is missing, console calls are compiled out through conditional methods.
+
+Debug console setup:
+
+1. Open `SWTools/Debug/Debug Console Settings`.
+2. Select `상태` and add `SW_DEBUG_MODE` for the current build target.
+3. Select `입력` and create the settings asset if you want project-specific input values.
+4. Choose the open key and optional `Control`, `Shift`, or `Alt` modifiers.
+5. Set the mobile touch count used to open the console on touch devices.
+
+The package no longer requires the Unity Input System package. If `Input System 확인` is enabled and the Input System package exists in the project, SWUtils checks it through cached reflection first. If the package is missing, the console falls back to Unity's built-in `Input` API without compile errors.
+
+Performance overlay setup:
+
+1. Open `SWTools/Debug/Debug Console Settings`.
+2. Select `오버레이`.
+3. Enable `시작 시 표시` if the overlay should appear automatically after scene load.
+4. Choose the screen corner, scale, update interval, visible metrics, and FPS warning thresholds.
+
+Runtime control:
+
+```csharp
+using SW.Debugging;
+
+SWDebugConsole.Show();
+SWDebugConsole.ToggleOverlay();
+SWDebugConsole.ResetOverlayStats();
+```
+
+Register a command:
+
+```csharp
+using SW.Attributes;
+
+public class DebugCommands
+{
+    [SWCommand("give_gold", "Adds gold for testing", "Test")]
+    private static void GiveGold(int amount)
+    {
+    }
+}
+```
 
 ### `Runtime/Base` - `SWMonoBehaviour`
 
@@ -681,8 +757,9 @@ A collection of PropertyDrawers that render the Inspector features defined in `R
 Editor windows available from the `SWTools` menu. Debugging tools are under `SWTools/Debug`, while general utilities are under `SWTools/Utils`.
 
 - `SWTools/Debug/Build Report Viewer`: Inspects build reports and included asset sizes.
+- `SWTools/Debug/Debug Console Settings`: Configures the runtime debug console, performance overlay, debug define symbol, and play-mode controls.
 - `SWTools/Debug/EventBus Debugger Window`: Inspects registered `SWEventBus` event types, listener counts, publication counts, and the latest published data.
-- `SWTools/Debug/Input Debugger Window`: Inspects Input System devices and input states.
+- `SWTools/Debug/Input Debugger Window`: Inspects EventSystem, pointer, raycast, and input states.
 - `SWTools/Debug/PlayerPrefs Viewer`: Views, edits, and deletes SWUtils PlayerPrefs and standard Unity PlayerPrefs data in separate tabs.
 - `SWTools/Debug/Pool Monitor Window`: Inspects created, active, inactive, spawned, returned, and delayed-return counts for each `SWPool` prefab.
 - `SWTools/Debug/Test Tools Window`: Assists with play-mode testing and scene navigation.
@@ -696,6 +773,15 @@ Editor windows available from the `SWTools` menu. Debugging tools are under `SWT
 - `SWTools/Utils/Reference Finder`: Finds project references to the selected asset.
 - `SWTools/Utils/TMP Font Asset Manager`: Manages TextMeshPro font asset assignment and performance inspection.
 - `SWTools/Utils/Resolution Window`: Displays resolution test values.
+
+#### `SWTools/Debug/Debug Console Settings`
+
+Uses focused tabs to keep debug console configuration compact:
+
+- `상태`: Connects or creates the Resources settings asset and adds or removes `SW_DEBUG_MODE` for the active build target.
+- `입력`: Sets auto creation, open key, optional modifier keys, touch count, and optional Input System checking.
+- `오버레이`: Sets startup visibility, anchor, scale, refresh interval, shown metrics, and FPS threshold colors.
+- `플레이`: Opens, closes, toggles the overlay, and resets overlay statistics while the Editor is in play mode.
 
 #### `SWTools/Debug/EventBus Debugger Window`
 

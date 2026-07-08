@@ -2,7 +2,30 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 기능과 에디터 도구를 모은 패키지입니다.
+![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222)
+![Package 1.0.15](https://img.shields.io/badge/package-1.0.15-2f80ed)
+![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
+
+SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시스템, 인스펙터 워크플로, 디버깅 도구, 에디터 생산성 창을 모은 유틸리티 패키지입니다.
+
+## 개요
+
+| 영역 | 제공 기능 |
+| --- | --- |
+| 런타임 기반 | `SWMonoBehaviour`, `SWScriptableObject`, 코루틴 실행기, 풀링, 팝업 흐름, 해상도 보정, 능력치 데이터, 공통 유틸리티를 제공합니다. |
+| 데이터와 저장 | 암호화 PlayerPrefs, 저장 슬롯, 파일 저장, 클라우드 저장 진입점, JSON 가져오기와 내보내기 헬퍼를 제공합니다. |
+| 인스펙터 도구 | 그룹, 버튼, 조건 표시, 드롭다운, 읽기 전용 필드, `SerializeReference` 타입 선택, 표 가져오기 어트리뷰트를 제공합니다. |
+| 디버깅 | 런타임 디버그 콘솔, 명령 등록, 감시 값, 선택적 Input System 지원, 가벼운 성능 오버레이를 제공합니다. |
+| 에디터 워크플로 | 디버그 창, PlayerPrefs 조회, 풀과 이벤트 모니터링, 표 가져오기, 하이어라키 스타일, 폰트 점검, 참조 검색을 제공합니다. |
+
+빠른 링크:
+
+- [Git 주소로 설치](#git-주소로-설치)
+- [빠른 시작](#빠른-시작)
+- [네임스페이스 구조](#네임스페이스-구조)
+- [런타임 기능](#런타임-기능)
+- [에디터 기능](#에디터-기능)
+- [조립체 정의](#조립체-정의)
 
 ## Git 주소로 설치
 
@@ -14,7 +37,7 @@ Unity Package Manager에서 다음 순서로 설치합니다.
 4. 다음 주소를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.14
+https://github.com/LAVINSE/SWUtils.git#v1.0.15
 ```
 
 특정 브랜치나 태그를 설치하려면 주소 뒤에 `#브랜치이름` 또는 `#태그이름`을 붙입니다.
@@ -23,10 +46,11 @@ https://github.com/LAVINSE/SWUtils.git#v1.0.14
 
 다음 Unity 패키지는 `package.json`을 통해 자동으로 설치됩니다.
 
-- Input System
 - Localization
 - TextMeshPro
 - Unity UI
+
+Unity Input System은 자동 설치하지 않습니다. 디버그 콘솔은 프로젝트에 Input System이 이미 있으면 사용할 수 있지만, 필수 패키지 의존성이 생기지 않도록 선택 기능으로 유지합니다.
 
 다음 외부 라이브러리는 사용하는 기능에 따라 별도로 설치해야 합니다.
 
@@ -134,8 +158,51 @@ SWPlayerPrefs.Save();
 ### 디버그
 
 - `SWDebugConsole`: 로그 확인, 명령 실행과 상태 감시를 제공하는 런타임 콘솔입니다.
+- `SWDebugConsoleSettings`: 콘솔 열기 입력, 선택적 Input System 확인, 성능 오버레이 표시값을 저장하는 설정 에셋입니다.
 - `SWCommand`: 콘솔에서 실행할 메서드를 등록합니다.
 - `SWLog`: `SW_DEBUG_MODE` 정의 심볼이 있을 때 로그를 출력합니다.
+
+`SWTools/Debug/Debug Console Settings`에서 현재 빌드 타겟에 `SW_DEBUG_MODE`를 추가한 뒤 사용합니다. 심볼이 없으면 콘솔 호출은 조건부 메서드로 컴파일에서 제거됩니다.
+
+디버그 콘솔 설정 순서:
+
+1. `SWTools/Debug/Debug Console Settings`를 엽니다.
+2. `상태` 탭에서 현재 빌드 타겟에 `SW_DEBUG_MODE`를 추가합니다.
+3. 프로젝트별 값을 저장하려면 설정 에셋을 생성합니다.
+4. `입력` 탭에서 열기 키와 `Control`, `Shift`, `Alt` 조합키를 선택합니다.
+5. 모바일에서 콘솔을 여는 동시 터치 개수를 지정합니다.
+
+Input System 패키지는 필수 의존성이 아닙니다. `Input System 확인`을 켜고 프로젝트에 Input System 패키지가 있으면 캐시된 리플렉션으로 먼저 입력을 확인합니다. 패키지가 없으면 Unity 기본 `Input` API로 처리하므로 컴파일 오류가 발생하지 않습니다.
+
+성능 오버레이 설정 순서:
+
+1. `SWTools/Debug/Debug Console Settings`를 엽니다.
+2. `오버레이` 탭에서 시작 시 표시 여부, 표시 위치, 크기 배율, 갱신 간격을 설정합니다.
+3. FPS, 최소/최대 FPS, 메모리 표시 여부와 FPS 경고 기준을 선택합니다.
+
+런타임 제어 예시:
+
+```csharp
+using SW.Debugging;
+
+SWDebugConsole.Show();
+SWDebugConsole.ToggleOverlay();
+SWDebugConsole.ResetOverlayStats();
+```
+
+명령 등록 예시:
+
+```csharp
+using SW.Attributes;
+
+public class DebugCommands
+{
+    [SWCommand("give_gold", "테스트 골드를 추가합니다", "Test")]
+    private static void GiveGold(int amount)
+    {
+    }
+}
+```
 
 ### 오브젝트 풀
 
@@ -193,6 +260,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 디버깅 도구는 `SWTools/Debug`, 일반 도구는 `SWTools/Utils` 메뉴에서 엽니다.
 
 - Build Report Viewer
+- Debug Console Settings
 - EventBus Debugger Window
 - Input Debugger Window
 - PlayerPrefs Viewer
@@ -210,6 +278,15 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - Stat System Window
 - TextMeshPro Font Asset Manager
 - Resolution Window
+
+#### `SWTools/Debug/Debug Console Settings`
+
+디버그 콘솔 설정 창은 탭으로 필요한 항목만 보여줍니다.
+
+- `상태`: Resources 설정 에셋을 연결하거나 생성하고 현재 빌드 타겟의 `SW_DEBUG_MODE`를 추가 또는 제거합니다.
+- `입력`: 자동 생성, 열기 키, 조합키, 터치 개수, 선택적 Input System 확인을 설정합니다.
+- `오버레이`: 시작 시 표시, 표시 위치, 크기 배율, 갱신 간격, 표시 항목, FPS 경고 색상을 설정합니다.
+- `플레이`: 플레이 중 콘솔 열기와 닫기, 오버레이 토글, 오버레이 기록 초기화를 실행합니다.
 
 ### 엑셀 표 가져오기
 

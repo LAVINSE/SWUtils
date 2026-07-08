@@ -4,6 +4,22 @@
 
 All notable changes to this project will be documented in this file.
 
+Release notes are grouped by version and date. The latest release is summarized first for package-manager checks and Git tag verification.
+
+| Latest | Date | Focus |
+| --- | --- | --- |
+| `v1.0.15` | 2026-07-08 | Debug console settings, optional Input System support, performance overlay controls, and documentation polish. |
+
+## [v1.0.15] - 2026-07-08
+
+### Added
+- Added debug console settings for open-key modifiers, startup overlay display, overlay metrics, and optional Input System input.
+
+### Changed
+- Reworked the debug console settings window into focused tabs for status, input, overlay, and play-mode controls.
+- Removed the mandatory Input System package dependency while keeping optional Input System console input through cached reflection.
+- Updated package metadata and README installation URLs to `v1.0.15`.
+
 ## [v1.0.14] - 2026-07-07
 
 ### Added

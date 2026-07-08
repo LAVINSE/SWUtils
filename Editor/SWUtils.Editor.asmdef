@@ -5,7 +5,6 @@
         "SWUtils.Runtime",
         "Unity.TextMeshPro",
         "Unity.ugui",
-        "Unity.InputSystem",
         "Unity.Localization",
         "Unity.Localization.Editor"
     ],
