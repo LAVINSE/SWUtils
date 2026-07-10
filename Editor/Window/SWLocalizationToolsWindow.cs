@@ -119,7 +119,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Localization Tools 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Localization Tools %#l")]
+        [MenuItem("SWTools/Utils/Data/Localization Tools %#l")]
         public static void ShowWindow()
         {
             SWLocalizationToolsWindow window = GetWindow<SWLocalizationToolsWindow>();

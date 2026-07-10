@@ -3,7 +3,7 @@
 [English](README.md) | [한국어](README.ko.md)
 
 ![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222)
-![Package 1.0.15](https://img.shields.io/badge/package-1.0.15-2f80ed)
+![Package 1.0.16](https://img.shields.io/badge/package-1.0.16-2f80ed)
 ![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
 
 SWUtils is a compact Unity utility package for runtime systems, inspector workflows, debugging tools, and editor productivity windows.
@@ -39,7 +39,7 @@ Add the package through Unity Package Manager:
 Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.15
+https://github.com/LAVINSE/SWUtils.git#v1.0.16
 ```
 
 ## Dependencies
@@ -278,7 +278,7 @@ bool imported = SWPlayerPrefs.ImportFromJson(exportedJson);
 
 `ImportFromJson` replaces the imported keys, while `MergeFromJson` merges incoming entries into the current slot. Use `HasKey`, `DeleteKey`, and `DeleteAll` for key-level or slot-level cleanup.
 
-Create and edit salt settings from `SWTools/Utils/PlayerPrefs Salt Settings`. The settings asset is created at `Assets/Resources/SWPlayerPrefsSettings.asset` and loaded automatically through Resources at runtime. Data saved with a previous salt cannot be read after the salt changes, so delete or migrate existing data first.
+Create and edit salt settings from `SWTools/Utils/Project/PlayerPrefs Salt Settings`. The settings asset is created at `Assets/Resources/SWPlayerPrefsSettings.asset` and loaded automatically through Resources at runtime. Data saved with a previous salt cannot be read after the salt changes, so delete or migrate existing data first.
 
 Save manager example:
 
@@ -330,11 +330,11 @@ Provides a runtime debug console, command registration, watch values, logging he
 - `SWCommand`: Registers static or instance methods as console commands.
 - `SWLog`: Writes logs only when `SW_DEBUG_MODE` is enabled.
 
-Add `SW_DEBUG_MODE` from `SWTools/Debug/Debug Console Settings` before using the console in a build. When the symbol is missing, console calls are compiled out through conditional methods.
+Add `SW_DEBUG_MODE` from `SWTools/Debug/Console/Debug Console Settings` before using the console in a build. When the symbol is missing, console calls are compiled out through conditional methods.
 
 Debug console setup:
 
-1. Open `SWTools/Debug/Debug Console Settings`.
+1. Open `SWTools/Debug/Console/Debug Console Settings`.
 2. Select `상태` and add `SW_DEBUG_MODE` for the current build target.
 3. Select `입력` and create the settings asset if you want project-specific input values.
 4. Choose the open key and optional `Control`, `Shift`, or `Alt` modifiers.
@@ -344,7 +344,7 @@ The package no longer requires the Unity Input System package. If `Input System 
 
 Performance overlay setup:
 
-1. Open `SWTools/Debug/Debug Console Settings`.
+1. Open `SWTools/Debug/Console/Debug Console Settings`.
 2. Select `오버레이`.
 3. Enable `시작 시 표시` if the overlay should appear automatically after scene load.
 4. Choose the screen corner, scale, update interval, visible metrics, and FPS warning thresholds.
@@ -433,7 +433,7 @@ Provides GameObject pooling and group-based spawning.
 - `SWPoolCatalog`: A ScriptableObject containing pool registrations.
 - `SWPoolRegistry`: Registers pools and groups when a scene starts.
 - `SWPoolGroupSelectionMode`: Defines how an object is selected from a group.
-- `SWPoolSnapshot`: A read-only pool state snapshot for `SWTools/Debug/Pool Monitor Window`.
+- `SWPoolSnapshot`: A read-only pool state snapshot for `SWTools/Debug/Pool/Pool Monitor Window`.
 
 Example:
 
@@ -563,7 +563,7 @@ A collection of small, general-purpose game utilities.
 - `SWAudioLibrary`, `SWAudioManager`: Manage key-based music and sound-effect playback.
 - `SWCooldown`: Calculates cooldown progress, remaining time, and availability.
 - `SWEventBus`: Handles type-based event subscription, publication, and unsubscription.
-- `SWEventBusEventSnapshot`: A read-only event state snapshot for `SWTools/Debug/EventBus Debugger Window`.
+- `SWEventBusEventSnapshot`: A read-only event state snapshot for `SWTools/Debug/Event/EventBus Debugger Window`.
 - `SWSceneLoader`: Handles scene loading, additive loading, unloading, and reloading.
 - `SWSingleton`, `SWSingletonScene`: Singleton MonoBehaviour base classes.
 - `SWTimer`, `SWRefillTimer`: Provide elapsed-time and refill timer behavior.
@@ -737,7 +737,7 @@ public class GoldTextExample : MonoBehaviour
 }
 ```
 
-Create and edit the default number format preset from `SWTools/Utils/Amount Format Window`. The settings asset is created at `Assets/Resources/SWAmountFormatProfile.asset` and can be loaded through Resources at runtime.
+Create and edit the default number format preset from `SWTools/Utils/Data/Amount Format Window`. The settings asset is created at `Assets/Resources/SWAmountFormatProfile.asset` and can be loaded through Resources at runtime.
 
 Rect Dummy usage:
 
@@ -756,25 +756,27 @@ A collection of PropertyDrawers that render the Inspector features defined in `R
 
 Editor windows available from the `SWTools` menu. Debugging tools are under `SWTools/Debug`, while general utilities are under `SWTools/Utils`.
 
-- `SWTools/Debug/Build Report Viewer`: Inspects build reports and included asset sizes.
-- `SWTools/Debug/Debug Console Settings`: Configures the runtime debug console, performance overlay, debug define symbol, and play-mode controls.
-- `SWTools/Debug/EventBus Debugger Window`: Inspects registered `SWEventBus` event types, listener counts, publication counts, and the latest published data.
-- `SWTools/Debug/Input Debugger Window`: Inspects EventSystem, pointer, raycast, and input states.
-- `SWTools/Debug/PlayerPrefs Viewer`: Views, edits, and deletes SWUtils PlayerPrefs and standard Unity PlayerPrefs data in separate tabs.
-- `SWTools/Debug/Pool Monitor Window`: Inspects created, active, inactive, spawned, returned, and delayed-return counts for each `SWPool` prefab.
-- `SWTools/Debug/Test Tools Window`: Assists with play-mode testing and scene navigation.
-- `SWTools/Utils/Define Symbol Window`: Manages Scripting Define Symbols.
-- `SWTools/Utils/Excel Table Importer`: Applies tabular text to ScriptableObject data.
-- `SWTools/Utils/Hierarchy Tools`: Configures Hierarchy object colors, icons, and styles.
-- `SWTools/Utils/Localization Tools`: Assists with Localization table workflows.
-- `SWTools/Utils/Amount Format Window`: Creates and edits number format presets.
-- `SWTools/Utils/PlayerPrefs Salt Settings`: Creates and edits the SWPlayerPrefs encryption salt asset.
-- `SWTools/Utils/Quick Asset Palette`: Provides quick access to frequently used assets.
-- `SWTools/Utils/Reference Finder`: Finds project references to the selected asset.
-- `SWTools/Utils/TMP Font Asset Manager`: Manages TextMeshPro font asset assignment and performance inspection.
-- `SWTools/Utils/Resolution Window`: Displays resolution test values.
+- `SWTools/Debug/Build/Build Report Viewer`: Inspects build reports and included asset sizes.
+- `SWTools/Debug/Console/Debug Console Settings`: Configures the runtime debug console, performance overlay, debug define symbol, and play-mode controls.
+- `SWTools/Debug/Event/EventBus Debugger Window`: Inspects registered `SWEventBus` event types, listener counts, publication counts, and the latest published data.
+- `SWTools/Debug/Input/Input Debugger Window`: Inspects EventSystem, pointer, raycast, and input states.
+- `SWTools/Debug/PlayerPrefs/PlayerPrefs Viewer`: Views, edits, and deletes SWUtils PlayerPrefs and standard Unity PlayerPrefs data in separate tabs.
+- `SWTools/Debug/Pool/Pool Monitor Window`: Inspects created, active, inactive, spawned, returned, and delayed-return counts for each `SWPool` prefab.
+- `SWTools/Debug/Test/Test Tools Window`: Assists with play-mode testing and scene navigation.
+- `SWTools/Utils/Asset/Quick Asset Palette`: Provides quick access to frequently used assets.
+- `SWTools/Utils/Asset/Reference Finder`: Finds project references to the selected asset.
+- `SWTools/Utils/Asset/TMP Font Asset Manager`: Manages TextMeshPro font asset assignment and performance inspection.
+- `SWTools/Utils/Data/Amount Format Window`: Creates and edits number format presets.
+- `SWTools/Utils/Data/Excel Table Importer`: Applies tabular text to ScriptableObject data.
+- `SWTools/Utils/Data/Localization Tools`: Assists with Localization table workflows.
+- `SWTools/Utils/Data/Stat System Editor`: Creates, edits, sorts, renames, previews icons, and adjusts list display sizes for `SWIdentifiedObject` assets such as categories and stats.
+- `SWTools/Utils/Hierarchy/Hierarchy Tools`: Configures Hierarchy object colors, icons, and styles.
+- `SWTools/Utils/Project/Define Symbol Window`: Manages Scripting Define Symbols.
+- `SWTools/Utils/Project/PlayerPrefs Salt Settings`: Creates and edits the SWPlayerPrefs encryption salt asset.
+- `SWTools/Utils/Screen/Resolution Window`: Displays resolution test values.
+- `SWTools/Utils/Simulation/Random Simulator`: Simulates weighted and shuffled random selection.
 
-#### `SWTools/Debug/Debug Console Settings`
+#### `SWTools/Debug/Console/Debug Console Settings`
 
 Uses focused tabs to keep debug console configuration compact:
 
@@ -783,7 +785,7 @@ Uses focused tabs to keep debug console configuration compact:
 - `오버레이`: Sets startup visibility, anchor, scale, refresh interval, shown metrics, and FPS threshold colors.
 - `플레이`: Opens, closes, toggles the overlay, and resets overlay statistics while the Editor is in play mode.
 
-#### `SWTools/Debug/EventBus Debugger Window`
+#### `SWTools/Debug/Event/EventBus Debugger Window`
 
 Displays the current `SWEventBus` state in play mode or edit mode.
 
@@ -797,7 +799,7 @@ Displayed information:
 
 Use `Clear Publish History` to reset publication counts and latest publication records without removing listeners.
 
-#### `SWTools/Debug/Pool Monitor Window`
+#### `SWTools/Debug/Pool/Pool Monitor Window`
 
 Displays the state of each prefab managed by `SWPool`.
 
@@ -811,23 +813,23 @@ Displayed information:
 
 The window uses the `SWPool` in the scene. Registered prefabs whose underlying ObjectPool has not been created yet are also shown with zero counts.
 
-#### `SWTools/Debug/PlayerPrefs Viewer`
+#### `SWTools/Debug/PlayerPrefs/PlayerPrefs Viewer`
 
 Use the `SWUtils PlayerPrefs` tab to inspect decrypted logical keys for the selected slot. Use the `Unity PlayerPrefs` tab to inspect ordinary Unity PlayerPrefs entries that are not internal SWUtils storage keys.
 
 Values can be edited and saved from the entries list. Deleting all Unity PlayerPrefs also deletes the encrypted backend used by SWUtils, so reserve that action for development and testing.
 
-#### `SWTools/Utils/Reference Finder`
+#### `SWTools/Utils/Asset/Reference Finder`
 
-Select an asset and open `Assets > SWTools > Find References In Project`, or open the window from `SWTools > Utils > Reference Finder`. The search scans project assets for references to the selected object and lets you select or ping each result.
+Select an asset and open `Assets > SWTools > Find References In Project`, or open the window from `SWTools > Utils > Asset > Reference Finder`. The search scans project assets for references to the selected object and lets you select or ping each result.
 
-#### `SWTools/Utils/TMP Font Asset Manager` Performance Tab
+#### `SWTools/Utils/Asset/TMP Font Asset Manager` Performance Tab
 
 Inspects atlas memory, glyphs, characters, fallback chains, and material preset costs for a TextMeshPro font asset.
 
 Usage:
 
-1. Open `SWTools > Utils > TMP Font Asset Manager` from the Unity menu.
+1. Open `SWTools > Utils > Asset > TMP Font Asset Manager` from the Unity menu.
 2. Select the `Performance` tab.
 3. Drag a `TMP_FontAsset` into the window or assign it through the Object Field.
 4. Select `Use Selected Asset` to inspect the selected font asset or the font used by a selected TextMeshPro object.
@@ -856,7 +858,7 @@ Usage:
 
 1. Derive the target asset from `SWScriptableObject` or another ScriptableObject type.
 2. Apply `SWTable` or `SWTableSheet` to the destination field.
-3. Open `SWTools > Utils > Excel Table Importer`.
+3. Open `SWTools > Utils > Data > Excel Table Importer`.
 4. Assign the target asset and paste tab-separated spreadsheet data.
 5. Select the table layout that matches the pasted data.
 6. Preview parsing errors, then apply the imported values and save the asset.

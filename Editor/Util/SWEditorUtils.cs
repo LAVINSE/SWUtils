@@ -7,6 +7,8 @@ using UnityEngine.UIElements;
 
 using Object = UnityEngine.Object;
 
+using SW.Base;
+
 using SW.Util;
 
 namespace SW.EditorTools.Util
@@ -378,6 +380,51 @@ namespace SW.EditorTools.Util
         public static Texture GetAssetIcon(Object asset)
         {
             return asset != null ? AssetPreview.GetMiniThumbnail(asset) : null;
+        }
+
+        /// <summary>
+        /// 식별 데이터 에셋의 에디터 전용 스프라이트 아이콘을 우선 표시하고, 없으면 에셋 기본 아이콘을 표시합니다.
+        /// </summary>
+        /// <param name="rect">아이콘을 그릴 영역입니다.</param>
+        /// <param name="data">아이콘을 표시할 식별 데이터 에셋입니다.</param>
+        public static void DrawIdentifiedObjectIcon(Rect rect, SWIdentifiedObject data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            if (data.SpriteIcon != null)
+            {
+                DrawSpriteIcon(rect, data.SpriteIcon);
+                return;
+            }
+
+            Texture icon = GetAssetIcon(data);
+            if (icon != null)
+                GUI.DrawTexture(rect, icon, ScaleMode.ScaleToFit);
+        }
+
+        /// <summary>
+        /// 스프라이트의 실제 영역만 잘라서 아이콘으로 표시합니다.
+        /// </summary>
+        /// <param name="rect">스프라이트를 그릴 영역입니다.</param>
+        /// <param name="sprite">표시할 스프라이트입니다.</param>
+        public static void DrawSpriteIcon(Rect rect, Sprite sprite)
+        {
+            if (sprite == null || sprite.texture == null)
+            {
+                return;
+            }
+
+            Rect textureRectangle = sprite.textureRect;
+            Rect textureCoordinate = new(
+                textureRectangle.x / sprite.texture.width,
+                textureRectangle.y / sprite.texture.height,
+                textureRectangle.width / sprite.texture.width,
+                textureRectangle.height / sprite.texture.height);
+
+            GUI.DrawTextureWithTexCoords(rect, sprite.texture, textureCoordinate, true);
         }
 
         /// <summary>

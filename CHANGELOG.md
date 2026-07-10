@@ -8,7 +8,23 @@ Release notes are grouped by version and date. The latest release is summarized 
 
 | Latest | Date | Focus |
 | --- | --- | --- |
-| `v1.0.15` | 2026-07-08 | Debug console settings, optional Input System support, performance overlay controls, and documentation polish. |
+| `v1.0.16` | 2026-07-10 | Stat System Editor list display and asset icon editing improvements. |
+
+## [Unreleased]
+
+No pending changes.
+
+## [v1.0.16] - 2026-07-10
+
+### Added
+- Added an editor-only sprite icon field to `SWIdentifiedObject` and displayed it in inherited object lists such as the Stat System Editor.
+- Added quick sort buttons and selected asset renaming to `SWTools/Utils/Data/Stat System Editor`.
+- Added Stat System Editor display options and a preview for list row height, icon size, delete button size, and text size.
+
+### Changed
+- Split `SWTools/Debug` and `SWTools/Utils` editor windows into more specific submenu groups.
+- Reworked the Stat System Editor list rows so the delete button keeps a fixed visible area.
+- Updated package metadata and README installation URLs to `v1.0.16`.
 
 ## [v1.0.15] - 2026-07-08
 

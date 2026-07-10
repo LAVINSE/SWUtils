@@ -22,6 +22,9 @@ namespace SW.Base
         [SerializeField] private string codeName;
         [SerializeField] private string displayName;
         [SerializeField, TextArea] private string description;
+#if UNITY_EDITOR
+        [SerializeField] private Sprite spriteIcon;
+#endif
         #endregion // 필드
 
         #region 프로퍼티
@@ -37,6 +40,11 @@ namespace SW.Base
 
         /// <summary>카테고리 목록</summary>
         public IReadOnlyList<SWCategory> Categories => categories ?? Array.Empty<SWCategory>();
+
+#if UNITY_EDITOR
+        /// <summary>에디터 목록에서 표시할 스프라이트 아이콘입니다.</summary>
+        public Sprite SpriteIcon => spriteIcon;
+#endif
         #endregion // 프로퍼티
 
         #region 복사

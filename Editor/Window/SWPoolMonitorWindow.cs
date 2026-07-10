@@ -41,7 +41,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Pool Monitor 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Debug/Pool Monitor Window")]
+        [MenuItem("SWTools/Debug/Pool/Pool Monitor Window")]
         public static void ShowWindow()
         {
             SWPoolMonitorWindow window = GetWindow<SWPoolMonitorWindow>();

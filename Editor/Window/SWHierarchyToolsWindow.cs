@@ -67,7 +67,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Hierarchy Tools 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Hierarchy Tools")]
+        [MenuItem("SWTools/Utils/Hierarchy/Hierarchy Tools")]
         public static void ShowWindow()
         {
             SWHierarchyToolsWindow window = GetWindow<SWHierarchyToolsWindow>();

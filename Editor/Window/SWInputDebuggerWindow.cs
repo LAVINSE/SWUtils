@@ -39,7 +39,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Input Debugger 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Debug/Input Debugger Window")]
+        [MenuItem("SWTools/Debug/Input/Input Debugger Window")]
         public static void ShowWindow()
         {
             SWInputDebuggerWindow window = GetWindow<SWInputDebuggerWindow>();

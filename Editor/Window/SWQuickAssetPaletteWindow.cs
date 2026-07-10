@@ -52,7 +52,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Quick Asset Palette 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Quick Asset Palette")]
+        [MenuItem("SWTools/Utils/Asset/Quick Asset Palette")]
         public static void ShowWindow()
         {
             SWQuickAssetPaletteWindow window = GetWindow<SWQuickAssetPaletteWindow>();

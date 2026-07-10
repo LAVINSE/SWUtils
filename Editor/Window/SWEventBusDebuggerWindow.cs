@@ -45,7 +45,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// EventBus Debugger 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Debug/EventBus Debugger Window")]
+        [MenuItem("SWTools/Debug/Event/EventBus Debugger Window")]
         public static void ShowWindow()
         {
             SWEventBusDebuggerWindow window = GetWindow<SWEventBusDebuggerWindow>();

@@ -32,6 +32,13 @@ namespace SW.EditorTools.Window
 
         private static readonly string[] SortModeNames = { "코드명순", "표시명순", "ID순" };
         private static readonly string[] LabelModeNames = { "코드명", "표시명", "에셋 이름" };
+        private const float DefaultListRowHeight = 24f;
+        private const float ListRowPadding = 2f;
+        private const float DefaultListIconSize = 20f;
+        private const float DefaultDeleteButtonWidth = 22f;
+        private const float DefaultDeleteButtonHeight = 18f;
+        private const int DefaultListLabelFontSize = 12;
+        private const float ListRowRightSafePadding = 18f;
         #endregion // 상수
 
         #region 필드
@@ -56,6 +63,11 @@ namespace SW.EditorTools.Window
         private bool useAutoId = true;
         private bool autoSaveAssets = true;
         private float listWidth = 300f;
+        private float listRowHeight = DefaultListRowHeight;
+        private float listIconSize = DefaultListIconSize;
+        private float deleteButtonWidth = DefaultDeleteButtonWidth;
+        private float deleteButtonHeight = DefaultDeleteButtonHeight;
+        private int listLabelFontSize = DefaultListLabelFontSize;
         private int sortMode;
         private int labelMode;
         #endregion // 필드
@@ -63,7 +75,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Stat System 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Stat System Editor")]
+        [MenuItem("SWTools/Utils/Data/Stat System Editor")]
         public static void ShowWindow()
         {
             SWStatSystemWindow window = GetWindow<SWStatSystemWindow>();
@@ -135,6 +147,11 @@ namespace SW.EditorTools.Window
             useAutoId = SWEditorUtils.LoadPref($"{PrefPrefix}UseAutoId", true);
             autoSaveAssets = SWEditorUtils.LoadPref($"{PrefPrefix}AutoSave", true);
             listWidth = SWEditorUtils.LoadPref($"{PrefPrefix}ListWidth", 300f);
+            listRowHeight = SWEditorUtils.LoadPref($"{PrefPrefix}ListRowHeight", DefaultListRowHeight);
+            listIconSize = SWEditorUtils.LoadPref($"{PrefPrefix}ListIconSize", DefaultListIconSize);
+            deleteButtonWidth = SWEditorUtils.LoadPref($"{PrefPrefix}DeleteButtonWidth", DefaultDeleteButtonWidth);
+            deleteButtonHeight = SWEditorUtils.LoadPref($"{PrefPrefix}DeleteButtonHeight", DefaultDeleteButtonHeight);
+            listLabelFontSize = SWEditorUtils.LoadPref($"{PrefPrefix}ListLabelFontSize", DefaultListLabelFontSize);
             sortMode = SWEditorUtils.LoadPref($"{PrefPrefix}SortMode", 0);
             labelMode = SWEditorUtils.LoadPref($"{PrefPrefix}LabelMode", 0);
         }
@@ -154,6 +171,11 @@ namespace SW.EditorTools.Window
             SWEditorUtils.SavePref($"{PrefPrefix}UseAutoId", useAutoId);
             SWEditorUtils.SavePref($"{PrefPrefix}AutoSave", autoSaveAssets);
             SWEditorUtils.SavePref($"{PrefPrefix}ListWidth", listWidth);
+            SWEditorUtils.SavePref($"{PrefPrefix}ListRowHeight", listRowHeight);
+            SWEditorUtils.SavePref($"{PrefPrefix}ListIconSize", listIconSize);
+            SWEditorUtils.SavePref($"{PrefPrefix}DeleteButtonWidth", deleteButtonWidth);
+            SWEditorUtils.SavePref($"{PrefPrefix}DeleteButtonHeight", deleteButtonHeight);
+            SWEditorUtils.SavePref($"{PrefPrefix}ListLabelFontSize", listLabelFontSize);
             SWEditorUtils.SavePref($"{PrefPrefix}SortMode", sortMode);
             SWEditorUtils.SavePref($"{PrefPrefix}LabelMode", labelMode);
         }
@@ -172,6 +194,11 @@ namespace SW.EditorTools.Window
             useAutoId = true;
             autoSaveAssets = true;
             listWidth = 300f;
+            listRowHeight = DefaultListRowHeight;
+            listIconSize = DefaultListIconSize;
+            deleteButtonWidth = DefaultDeleteButtonWidth;
+            deleteButtonHeight = DefaultDeleteButtonHeight;
+            listLabelFontSize = DefaultListLabelFontSize;
             sortMode = 0;
             labelMode = 0;
             SaveSettings();
@@ -229,6 +256,7 @@ namespace SW.EditorTools.Window
                     drawingEditorScrollPosition = EditorGUILayout.BeginScrollView(drawingEditorScrollPosition);
                     {
                         EditorGUILayout.Space(2f);
+                        DrawSelectedObjectHeader(dataType, selected);
                         Editor.CreateCachedEditor(selected, null, ref cachedEditor);
                         cachedEditor.OnInspectorGUI();
                     }
@@ -269,6 +297,48 @@ namespace SW.EditorTools.Window
                 RefreshAssets(dataType);
 
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            GUILayout.Label("정렬", GUILayout.Width(30f));
+            DrawSortShortcutButton("코드명", 0);
+            DrawSortShortcutButton("표시명", 1);
+            DrawSortShortcutButton("ID", 2);
+            EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 선택한 에셋의 이름 변경과 위치 확인 도구를 그립니다.
+        /// </summary>
+        private void DrawSelectedObjectHeader(Type dataType, SWIdentifiedObject selectedObject)
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUI.BeginChangeCheck();
+            string changedName = EditorGUILayout.DelayedTextField("에셋 이름", selectedObject.name);
+            if (EditorGUI.EndChangeCheck())
+            {
+                RenameAsset(dataType, selectedObject, changedName);
+            }
+
+            if (GUILayout.Button("Ping", GUILayout.Width(45f)))
+                SWEditorUtils.PingAndSelect(selectedObject);
+
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 목록 정렬 기준을 바로 바꾸는 단축 버튼을 그립니다.
+        /// </summary>
+        private void DrawSortShortcutButton(string label, int targetSortMode)
+        {
+            bool isSelected = sortMode == targetSortMode;
+            using (new SWEditorUtils.GUIBgColorScope(isSelected ? new Color(0.55f, 0.75f, 1f) : Color.white))
+            {
+                if (GUILayout.Button(label, EditorStyles.toolbarButton))
+                    SetSortMode(targetSortMode);
+            }
         }
 
         /// <summary>
@@ -284,6 +354,7 @@ namespace SW.EditorTools.Window
 
             string searchText = searchTextsByType[dataType];
             bool anyDeleted = false;
+            float drawRowHeight = GetListDrawRowHeight();
 
             for (int index = 0; index < assets.Count; index++)
             {
@@ -298,36 +369,27 @@ namespace SW.EditorTools.Window
                     continue;
                 }
 
-                GUIStyle style = selectedObjectsByType[dataType] == data ? selectedBoxStyle : GUIStyle.none;
-
-                EditorGUILayout.BeginHorizontal(style, GUILayout.Height(24f));
+                Rect rowRectangle = GUILayoutUtility.GetRect(0f, drawRowHeight, GUILayout.ExpandWidth(true));
+                bool isSelected = selectedObjectsByType[dataType] == data;
+                string idText = data.ID != 0 ? $"[{data.ID}] " : string.Empty;
+                bool isDeleteClicked = DrawListRow(
+                    rowRectangle,
+                    $"{idText}{label}",
+                    isSelected,
+                    iconRectangle => SWEditorUtils.DrawIdentifiedObjectIcon(iconRectangle, data),
+                    out Rect deleteButtonRectangle);
+                if (isDeleteClicked)
                 {
-                    // 에셋 아이콘
-                    Texture icon = AssetPreview.GetMiniThumbnail(data);
-                    if (icon != null)
-                        GUILayout.Label(icon, GUILayout.Width(20f), GUILayout.Height(20f));
-
-                    string idText = data.ID != 0 ? $"[{data.ID}] " : string.Empty;
-                    EditorGUILayout.LabelField($"{idText}{label}", GUILayout.Height(20f));
-
-                    GUILayout.FlexibleSpace();
-
-                    using (new SWEditorUtils.GUIBgColorScope(new Color(1f, 0.6f, 0.6f)))
-                    {
-                        if (GUILayout.Button("x", GUILayout.Width(20f)))
-                        {
-                            DeleteAsset(dataType, data);
-                            anyDeleted = true;
-                        }
-                    }
+                    DeleteAsset(dataType, data);
+                    anyDeleted = true;
                 }
-                EditorGUILayout.EndHorizontal();
 
                 if (anyDeleted) break;
 
                 // 행 클릭으로 선택
-                Rect lastRect = GUILayoutUtility.GetLastRect();
-                if (Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition))
+                if (Event.current.type == EventType.MouseDown
+                    && rowRectangle.Contains(Event.current.mousePosition)
+                    && !deleteButtonRectangle.Contains(Event.current.mousePosition))
                 {
                     selectedObjectsByType[dataType] = data;
                     drawingEditorScrollPosition = Vector2.zero;
@@ -378,14 +440,19 @@ namespace SW.EditorTools.Window
             SWEditorUtils.DrawHeader("표시 설정");
 
             listWidth = EditorGUILayout.Slider("목록 넓이", listWidth, 200f, 450f);
+            listRowHeight = EditorGUILayout.Slider("목록 행 높이", listRowHeight, 20f, 48f);
+            listIconSize = EditorGUILayout.Slider("목록 아이콘 크기", listIconSize, 16f, 40f);
+            deleteButtonWidth = EditorGUILayout.Slider("삭제 버튼 넓이", deleteButtonWidth, 20f, 44f);
+            deleteButtonHeight = EditorGUILayout.Slider("삭제 버튼 높이", deleteButtonHeight, 16f, 40f);
+            listLabelFontSize = EditorGUILayout.IntSlider("목록 글자 크기", listLabelFontSize, 10, 18);
             labelMode = EditorGUILayout.Popup("목록 표시 이름", labelMode, LabelModeNames);
+
+            DrawListDisplayPreview();
 
             int newSortMode = EditorGUILayout.Popup("정렬 기준", sortMode, SortModeNames);
             if (newSortMode != sortMode)
             {
-                sortMode = newSortMode;
-                for (int index = 0; index < ManagedTypes.Length; index++)
-                    SortAssets(assetsByType[ManagedTypes[index]]);
+                SetSortMode(newSortMode);
             }
 
             EditorGUILayout.Space(10f);
@@ -407,6 +474,89 @@ namespace SW.EditorTools.Window
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndScrollView();
+        }
+
+        /// <summary>
+        /// 표시 설정 값이 적용된 목록 행을 미리보기로 그립니다.
+        /// </summary>
+        private void DrawListDisplayPreview()
+        {
+            EditorGUILayout.Space(4f);
+            EditorGUILayout.LabelField("미리보기", EditorStyles.boldLabel);
+
+            Rect previewAreaRectangle = EditorGUILayout.GetControlRect(
+                false,
+                GetListDrawRowHeight() + 8f,
+                GUILayout.MaxWidth(listWidth));
+            GUI.Box(previewAreaRectangle, GUIContent.none, EditorStyles.helpBox);
+
+            Rect rowRectangle = new(
+                previewAreaRectangle.x + 4f,
+                previewAreaRectangle.y + 4f,
+                previewAreaRectangle.width - 8f,
+                GetListDrawRowHeight());
+            Texture previewIcon = EditorGUIUtility.IconContent("d_ScriptableObject Icon").image;
+            DrawListRow(
+                rowRectangle,
+                "[1] CATEGORY_preview",
+                true,
+                iconRectangle =>
+                {
+                    if (previewIcon != null)
+                        GUI.DrawTexture(iconRectangle, previewIcon, ScaleMode.ScaleToFit);
+                },
+                out _);
+        }
+
+        /// <summary>
+        /// 현재 표시 설정에서 실제로 필요한 목록 행 높이를 반환합니다.
+        /// </summary>
+        private float GetListDrawRowHeight()
+        {
+            return Mathf.Max(listRowHeight, listIconSize + ListRowPadding * 2f, deleteButtonHeight + ListRowPadding * 2f);
+        }
+
+        /// <summary>
+        /// 목록 행 하나를 현재 표시 설정으로 그립니다.
+        /// </summary>
+        private bool DrawListRow(Rect rowRectangle, string label, bool isSelected, Action<Rect> drawIcon, out Rect deleteButtonRectangle)
+        {
+            if (isSelected)
+                GUI.Box(rowRectangle, GUIContent.none, selectedBoxStyle);
+
+            Rect iconRectangle = new(
+                rowRectangle.x + ListRowPadding,
+                rowRectangle.y + (rowRectangle.height - listIconSize) * 0.5f,
+                listIconSize,
+                listIconSize);
+            drawIcon?.Invoke(iconRectangle);
+
+            deleteButtonRectangle = new(
+                rowRectangle.xMax - ListRowRightSafePadding - deleteButtonWidth - ListRowPadding,
+                rowRectangle.y + (rowRectangle.height - deleteButtonHeight) * 0.5f,
+                deleteButtonWidth,
+                deleteButtonHeight);
+
+            Rect labelRectangle = new(
+                iconRectangle.xMax + 4f,
+                rowRectangle.y + ListRowPadding,
+                Mathf.Max(1f, deleteButtonRectangle.x - iconRectangle.xMax - 8f),
+                rowRectangle.height - ListRowPadding * 2f);
+            GUIStyle listLabelStyle = new(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = listLabelFontSize
+            };
+            EditorGUI.LabelField(labelRectangle, label, listLabelStyle);
+
+            using (new SWEditorUtils.GUIBgColorScope(new Color(1f, 0.6f, 0.6f)))
+            {
+                GUIStyle deleteButtonStyle = new(GUI.skin.button)
+                {
+                    fontSize = listLabelFontSize
+                };
+                return GUI.Button(deleteButtonRectangle, "x", deleteButtonStyle);
+            }
         }
         #endregion // GUI
 
@@ -454,6 +604,23 @@ namespace SW.EditorTools.Window
                     assets.Sort((left, right) => string.Compare(left.CodeName, right.CodeName, StringComparison.Ordinal));
                     break;
             }
+        }
+
+        /// <summary>
+        /// 정렬 기준을 변경하고 모든 관리 목록을 다시 정렬합니다.
+        /// </summary>
+        private void SetSortMode(int newSortMode)
+        {
+            if (sortMode == newSortMode)
+            {
+                return;
+            }
+
+            sortMode = newSortMode;
+            for (int index = 0; index < ManagedTypes.Length; index++)
+                SortAssets(assetsByType[ManagedTypes[index]]);
+
+            SaveSettings();
         }
 
         /// <summary>
@@ -535,6 +702,49 @@ namespace SW.EditorTools.Window
 
             RefreshAssets(dataType);
             SWLog.Log($"[SWStatSystemWindow] 삭제 완료: {assetPath}");
+        }
+
+        /// <summary>
+        /// 선택한 에셋의 객체 이름과 파일 이름을 함께 변경합니다.
+        /// </summary>
+        private void RenameAsset(Type dataType, SWIdentifiedObject data, string newName)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            newName = string.IsNullOrWhiteSpace(newName) ? data.name : newName.Trim();
+            if (newName == data.name)
+            {
+                return;
+            }
+
+            if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Contains("/") || newName.Contains("\\"))
+            {
+                EditorUtility.DisplayDialog("이름 변경 실패", "파일 이름으로 사용할 수 없는 문자가 포함되어 있습니다.", "확인");
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(data);
+            Undo.RecordObject(data, "Rename Identified Object");
+
+            string error = AssetDatabase.RenameAsset(assetPath, newName);
+            if (!string.IsNullOrEmpty(error))
+            {
+                EditorUtility.DisplayDialog("이름 변경 실패", error, "확인");
+                return;
+            }
+
+            data.name = newName;
+            EditorUtility.SetDirty(data);
+
+            if (autoSaveAssets)
+                AssetDatabase.SaveAssets();
+
+            RefreshAssets(dataType);
+            selectedObjectsByType[dataType] = data;
+            SWLog.Log($"[SWStatSystemWindow] 이름 변경 완료: {assetPath} -> {newName}");
         }
 
         /// <summary>

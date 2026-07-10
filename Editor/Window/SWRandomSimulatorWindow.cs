@@ -66,7 +66,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Random Simulator 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Random Simulator")]
+        [MenuItem("SWTools/Utils/Simulation/Random Simulator")]
         public static void ShowWindow()
         {
             SWRandomSimulatorWindow window = GetWindow<SWRandomSimulatorWindow>();

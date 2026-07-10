@@ -43,7 +43,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Define Symbol Window 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Define Symbol Window")]
+        [MenuItem("SWTools/Utils/Project/Define Symbol Window")]
         public static void ShowWindow()
         {
             SWDefineSymbolWindow window = GetWindow<SWDefineSymbolWindow>();

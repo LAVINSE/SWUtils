@@ -3,7 +3,7 @@
 [English](README.md) | [한국어](README.ko.md)
 
 ![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222)
-![Package 1.0.15](https://img.shields.io/badge/package-1.0.15-2f80ed)
+![Package 1.0.16](https://img.shields.io/badge/package-1.0.16-2f80ed)
 ![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
 
 SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시스템, 인스펙터 워크플로, 디버깅 도구, 에디터 생산성 창을 모은 유틸리티 패키지입니다.
@@ -37,7 +37,7 @@ Unity Package Manager에서 다음 순서로 설치합니다.
 4. 다음 주소를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.15
+https://github.com/LAVINSE/SWUtils.git#v1.0.16
 ```
 
 특정 브랜치나 태그를 설치하려면 주소 뒤에 `#브랜치이름` 또는 `#태그이름`을 붙입니다.
@@ -112,7 +112,7 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 
 - `SWMonoBehaviour`: SWUtils 인스펙터 기능을 사용하는 컴포넌트 기본 클래스입니다.
 - `SWScriptableObject`: 같은 인스펙터 기능을 사용하는 데이터 에셋 기본 클래스입니다.
-- `SWIdentifiedObject`: 식별자, 코드명, 표시명, 설명과 카테고리를 가진 데이터 에셋입니다.
+- `SWIdentifiedObject`: 식별자, 코드명, 표시명, 설명, 카테고리와 에디터 전용 스프라이트 아이콘을 가진 데이터 에셋입니다.
 - `SWIODatabase`: `SWIdentifiedObject` 목록을 관리하고 빠르게 조회합니다.
 - `SWCategory`: 데이터 에셋 분류에 사용합니다.
 
@@ -162,11 +162,11 @@ SWPlayerPrefs.Save();
 - `SWCommand`: 콘솔에서 실행할 메서드를 등록합니다.
 - `SWLog`: `SW_DEBUG_MODE` 정의 심볼이 있을 때 로그를 출력합니다.
 
-`SWTools/Debug/Debug Console Settings`에서 현재 빌드 타겟에 `SW_DEBUG_MODE`를 추가한 뒤 사용합니다. 심볼이 없으면 콘솔 호출은 조건부 메서드로 컴파일에서 제거됩니다.
+`SWTools/Debug/Console/Debug Console Settings`에서 현재 빌드 타겟에 `SW_DEBUG_MODE`를 추가한 뒤 사용합니다. 심볼이 없으면 콘솔 호출은 조건부 메서드로 컴파일에서 제거됩니다.
 
 디버그 콘솔 설정 순서:
 
-1. `SWTools/Debug/Debug Console Settings`를 엽니다.
+1. `SWTools/Debug/Console/Debug Console Settings`를 엽니다.
 2. `상태` 탭에서 현재 빌드 타겟에 `SW_DEBUG_MODE`를 추가합니다.
 3. 프로젝트별 값을 저장하려면 설정 에셋을 생성합니다.
 4. `입력` 탭에서 열기 키와 `Control`, `Shift`, `Alt` 조합키를 선택합니다.
@@ -176,7 +176,7 @@ Input System 패키지는 필수 의존성이 아닙니다. `Input System 확인
 
 성능 오버레이 설정 순서:
 
-1. `SWTools/Debug/Debug Console Settings`를 엽니다.
+1. `SWTools/Debug/Console/Debug Console Settings`를 엽니다.
 2. `오버레이` 탭에서 시작 시 표시 여부, 표시 위치, 크기 배율, 갱신 간격을 설정합니다.
 3. FPS, 최소/최대 FPS, 메모리 표시 여부와 FPS 경고 기준을 선택합니다.
 
@@ -259,27 +259,27 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 
 디버깅 도구는 `SWTools/Debug`, 일반 도구는 `SWTools/Utils` 메뉴에서 엽니다.
 
-- Build Report Viewer
-- Debug Console Settings
-- EventBus Debugger Window
-- Input Debugger Window
-- PlayerPrefs Viewer
-- Pool Monitor Window
-- Test Tools Window
-- Define Symbol Window
-- Excel Table Importer
-- Hierarchy Tools
-- Localization Tools
-- Amount Format Window
-- PlayerPrefs Salt Settings
-- Quick Asset Palette
-- Random Simulator
-- Reference Finder
-- Stat System Window
-- TextMeshPro Font Asset Manager
-- Resolution Window
+- `SWTools/Debug/Build/Build Report Viewer`
+- `SWTools/Debug/Console/Debug Console Settings`
+- `SWTools/Debug/Event/EventBus Debugger Window`
+- `SWTools/Debug/Input/Input Debugger Window`
+- `SWTools/Debug/PlayerPrefs/PlayerPrefs Viewer`
+- `SWTools/Debug/Pool/Pool Monitor Window`
+- `SWTools/Debug/Test/Test Tools Window`
+- `SWTools/Utils/Asset/Quick Asset Palette`
+- `SWTools/Utils/Asset/Reference Finder`
+- `SWTools/Utils/Asset/TMP Font Asset Manager`
+- `SWTools/Utils/Data/Amount Format Window`
+- `SWTools/Utils/Data/Excel Table Importer`
+- `SWTools/Utils/Data/Localization Tools`
+- `SWTools/Utils/Data/Stat System Editor`: `SWCategory`, `SWStat` 같은 `SWIdentifiedObject` 에셋을 생성, 편집, 정렬, 이름 변경하고 목록 아이콘과 표시 크기를 조정합니다.
+- `SWTools/Utils/Hierarchy/Hierarchy Tools`
+- `SWTools/Utils/Project/Define Symbol Window`
+- `SWTools/Utils/Project/PlayerPrefs Salt Settings`
+- `SWTools/Utils/Screen/Resolution Window`
+- `SWTools/Utils/Simulation/Random Simulator`
 
-#### `SWTools/Debug/Debug Console Settings`
+#### `SWTools/Debug/Console/Debug Console Settings`
 
 디버그 콘솔 설정 창은 탭으로 필요한 항목만 보여줍니다.
 
@@ -294,7 +294,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 
 1. 대상 `ScriptableObject` 필드에 `SWTableSheet`를 추가합니다.
 2. 행 데이터 타입의 필드에 `SWTable`을 추가합니다.
-3. `SWTools > Utils > Excel Table Importer`를 엽니다.
+3. `SWTools > Utils > Data > Excel Table Importer`를 엽니다.
 4. 표 데이터를 붙여 넣고 미리보기 후 적용합니다.
 
 ### 하이어라키 도구

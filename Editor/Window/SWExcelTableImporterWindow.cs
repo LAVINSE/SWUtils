@@ -67,7 +67,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Excel Table Importer 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Excel Table Importer")]
+        [MenuItem("SWTools/Utils/Data/Excel Table Importer")]
         public static void ShowWindow()
         {
             SWExcelTableImporterWindow window = GetWindow<SWExcelTableImporterWindow>();

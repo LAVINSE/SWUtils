@@ -96,7 +96,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Reference Finder 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Reference Finder %#r")]
+        [MenuItem("SWTools/Utils/Asset/Reference Finder %#r")]
         public static void ShowWindow()
         {
             SWReferenceFinderWindow window = GetWindow<SWReferenceFinderWindow>();

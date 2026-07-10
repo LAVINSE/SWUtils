@@ -35,7 +35,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Amount Format 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/Amount Format Window")]
+        [MenuItem("SWTools/Utils/Data/Amount Format Window")]
         public static void OpenWindow()
         {
             var window = GetWindow<SWAmountFormatWindow>();

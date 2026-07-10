@@ -37,7 +37,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Debug Console Settings 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Debug/Debug Console Settings")]
+        [MenuItem("SWTools/Debug/Console/Debug Console Settings")]
         public static void ShowWindow()
         {
             var window = GetWindow<SWDebugConsoleSettingsWindow>();

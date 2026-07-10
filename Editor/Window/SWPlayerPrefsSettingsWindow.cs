@@ -25,7 +25,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// SWPlayerPrefs 설정 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Utils/PlayerPrefs Salt Settings")]
+        [MenuItem("SWTools/Utils/Project/PlayerPrefs Salt Settings")]
         public static void ShowWindow()
         {
             SWPlayerPrefsSettingsWindow window = GetWindow<SWPlayerPrefsSettingsWindow>();

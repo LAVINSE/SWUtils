@@ -129,7 +129,7 @@ namespace SW.EditorTools.Window
         /// <summary>
         /// Test Tools 창을 엽니다.
         /// </summary>
-        [MenuItem("SWTools/Debug/Test Tools Window %#t")]
+        [MenuItem("SWTools/Debug/Test/Test Tools Window %#t")]
         public static void ShowWindow()
         {
             SWTestToolsWindow window = GetWindow<SWTestToolsWindow>();
