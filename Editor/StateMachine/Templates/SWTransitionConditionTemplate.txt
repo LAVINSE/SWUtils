@@ -1,0 +1,13 @@
+using UnityEngine;
+using SW.StateMachine;
+
+/// <summary>사용자 정의 상태 전이 조건입니다.</summary>
+[SWStateMachineNodeCategory("Custom/Conditions")]
+public sealed class #SCRIPTNAME# : SWStateMachineGraphCondition<GameObject>
+{
+    /// <summary>현재 문맥이 전이 조건을 만족하는지 평가합니다.</summary>
+    public override bool Evaluate(GameObject context)
+    {
+        return true;
+    }
+}

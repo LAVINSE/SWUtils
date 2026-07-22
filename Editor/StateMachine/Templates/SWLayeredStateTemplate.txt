@@ -1,0 +1,22 @@
+using UnityEngine;
+using SW.StateMachine;
+
+/// <summary>사용자 정의 다중 계층 상태입니다.</summary>
+[SWStateMachineNodeCategory("Custom/Layered States")]
+public sealed class #SCRIPTNAME# : SWState<GameObject>
+{
+    /// <summary>상태에 진입할 때 호출됩니다.</summary>
+    protected override void OnEnter()
+    {
+    }
+
+    /// <summary>상태가 실행 중일 때 호출됩니다.</summary>
+    protected override void OnTick(float deltaTime)
+    {
+    }
+
+    /// <summary>상태에서 나갈 때 호출됩니다.</summary>
+    protected override void OnExit()
+    {
+    }
+}

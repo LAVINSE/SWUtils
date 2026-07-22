@@ -1,0 +1,84 @@
+.sw-behaviour-window {
+    background-color: rgb(19, 20, 23);
+}
+
+.sw-behaviour-toolbar {
+    height: 34px;
+    background-color: rgb(38, 40, 44);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(66, 69, 74);
+}
+
+.sw-behaviour-panel {
+    background-color: rgba(29, 31, 34, 0.98);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(72, 76, 82);
+    border-right-color: rgb(72, 76, 82);
+    border-top-color: rgb(72, 76, 82);
+    border-bottom-color: rgb(72, 76, 82);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.sw-behaviour-node {
+    min-width: 180px;
+    background-color: rgb(40, 42, 46);
+}
+
+.sw-behaviour-node--action { border-top-color: rgb(64, 191, 122); }
+.sw-behaviour-node--composite { border-top-color: rgb(64, 140, 242); }
+.sw-behaviour-node--decorator { border-top-color: rgb(173, 97, 230); }
+.sw-behaviour-node--running { border-color: rgb(255, 184, 46); }
+.sw-behaviour-node--success { border-color: rgb(64, 217, 107); }
+.sw-behaviour-node--failure { border-color: rgb(242, 76, 76); }
+.sw-behaviour-node--aborted { border-color: rgb(145, 149, 158); }
+
+.sw-behaviour-welcome-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(19, 20, 23, 0.82);
+}
+
+.sw-behaviour-welcome-card {
+    width: 360px;
+    padding: 22px;
+    background-color: rgb(39, 41, 45);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(75, 79, 86);
+    border-right-color: rgb(75, 79, 86);
+    border-top-color: rgb(75, 79, 86);
+    border-bottom-color: rgb(75, 79, 86);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.sw-graph-welcome-title {
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 7px;
+}
+
+.sw-behaviour-welcome-description {
+    color: rgb(166, 170, 177);
+    margin-bottom: 16px;
+}
+
+.sw-behaviour-welcome-card > Button {
+    height: 30px;
+    margin-top: 4px;
+}

@@ -66,7 +66,7 @@ namespace SW.EditorTools.Base
         /// <summary>
         /// 활성화 상태를 확인할 수 있는 타겟 Behaviour.
         /// </summary>
-        private Behaviour targetBehaviour;
+        private UnityEngine.Behaviour targetBehaviour;
 
         /// <summary>
         /// 타겟 오브젝트가 존재하는지 여부.
@@ -166,7 +166,7 @@ namespace SW.EditorTools.Base
             buttonMethodList = new();
             targetTypeName = target.GetType().Name;
 
-            targetBehaviour = target as Behaviour;
+            targetBehaviour = target as UnityEngine.Behaviour;
             targetObjectIsNotNull = target != null;
 
             // 리페인트 관련 어트리뷰트 확인

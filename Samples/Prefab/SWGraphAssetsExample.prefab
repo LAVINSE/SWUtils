@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7906054850776987921
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2843742828198295028}
+  - component: {fileID: 4692994265189727279}
+  - component: {fileID: 8283254264546828578}
+  m_Layer: 0
+  m_Name: SWGraphAssetsExample
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2843742828198295028
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7906054850776987921}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4692994265189727279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7906054850776987921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11111111111141118111111111111109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SWUtils.Runtime::SW.BehaviourTree.SWBehaviourTreeRunner
+  treeAsset: {fileID: 11400000, guid: 7d6a9dbd47f99544da82037b6a84dee4, type: 2}
+  runOnEnable: 1
+  blackboardOverrides: []
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &8283254264546828578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7906054850776987921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a0bcb0752ad4ee5adb8bf9d74c23a3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SWUtils.Samples::SW.Example.SWGraphAssetsExample
+  layeredStateMachineGraphAsset: {fileID: 11400000, guid: 13d691ee907053d46b203fd9f454677f, type: 2}
+  stackStateMachineGraphAsset: {fileID: 11400000, guid: af38b76ad2fb4f2c9525825d7d612218, type: 2}
+  behaviourTreeRunner: {fileID: 4692994265189727279}
+  isMoving: 0
+  isPaused: 0

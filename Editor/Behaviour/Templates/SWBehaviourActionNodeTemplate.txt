@@ -1,0 +1,14 @@
+using SW.BehaviourTree;
+
+/// <summary>사용자 정의 Behaviour Tree Action 노드입니다.</summary>
+[SWBehaviourNodeCategory("Custom/Actions")]
+public sealed class #SCRIPTNAME# : SWBehaviourActionNode
+{
+    /// <summary>Action 작업을 실행하고 현재 상태를 반환합니다.</summary>
+    protected override SWBehaviourStatus OnUpdate(
+        SWBehaviourContext context,
+        SWBehaviourTreeAsset tree)
+    {
+        return SWBehaviourStatus.Success;
+    }
+}

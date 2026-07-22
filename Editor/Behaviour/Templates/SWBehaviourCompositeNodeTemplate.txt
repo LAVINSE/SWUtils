@@ -1,0 +1,17 @@
+using SW.BehaviourTree;
+
+/// <summary>사용자 정의 Behaviour Tree Composite 노드입니다.</summary>
+[SWBehaviourNodeCategory("Custom/Composites")]
+public sealed class #SCRIPTNAME# : SWBehaviourCompositeNode
+{
+    /// <summary>자식 노드를 실행하고 현재 상태를 반환합니다.</summary>
+    protected override SWBehaviourStatus OnUpdate(
+        SWBehaviourContext context,
+        SWBehaviourTreeAsset tree)
+    {
+        if (ChildIdentifiers.Count == 0 ||
+            !tree.TryGetNode(ChildIdentifiers[0], out SWBehaviourNode child))
+            return SWBehaviourStatus.Failure;
+        return child.Tick(context, tree);
+    }
+}

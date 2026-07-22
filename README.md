@@ -2,8 +2,8 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
-![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222)
-![Package 1.0.16](https://img.shields.io/badge/package-1.0.16-2f80ed)
+![Unity 6.0+](https://img.shields.io/badge/Unity-6.0%2B-222222)
+![Package 1.1.0](https://img.shields.io/badge/package-1.1.0-2f80ed)
 ![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
 
 SWUtils is a compact Unity utility package for runtime systems, inspector workflows, debugging tools, and editor productivity windows.
@@ -13,10 +13,11 @@ SWUtils is a compact Unity utility package for runtime systems, inspector workfl
 | Area | What it provides |
 | --- | --- |
 | Runtime foundations | `SWMonoBehaviour`, `SWScriptableObject`, coroutine runners, pooling, popup flow, resolution helpers, stat data, and reusable utilities. |
+| Graph runtimes | Layered and stack State Machines, Behaviour Trees, Blackboards, graph-asset factories, and Runtime Debug. |
 | Data and persistence | Encrypted PlayerPrefs, save slots, file saves, cloud-save entry points, and JSON import/export helpers. |
 | Inspector tooling | Grouped fields, buttons, conditions, dropdowns, read-only fields, `SerializeReference` type selection, and table import attributes. |
 | Debugging | Runtime debug console, command registration, watch values, optional Input System support, and a lightweight performance overlay. |
-| Editor workflow | Debug windows, PlayerPrefs inspection, pool and event monitoring, table importing, hierarchy styling, font checks, and reference search. |
+| Editor workflow | Shader Graph-inspired graph editors, Graph Lists, custom node categories, debug windows, PlayerPrefs inspection, pool and event monitoring, table importing, and reference search. |
 
 Quick links:
 
@@ -39,7 +40,7 @@ Add the package through Unity Package Manager:
 Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.0.16
+https://github.com/LAVINSE/SWUtils.git#v1.1.0
 ```
 
 ## Dependencies
@@ -92,6 +93,7 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 | `Runtime/Popup` | `SW.Popup` |
 | `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
+| `Runtime/StateMachine` | `SW.StateMachine` |
 | `Runtime/Util` | `SW.Util` |
 | `Editor/Attribute` | `SW.EditorTools.Attributes` |
 | `Editor/<Feature>` | `SW.EditorTools.<Feature>` |
@@ -556,6 +558,117 @@ Usage:
 2. Add `SWCanvasResolution` to a Canvas that requires CanvasScaler adjustment.
 3. Configure the directions and ratios in the Inspector.
 
+### `Runtime/StateMachine`
+
+Provides a general-purpose finite state machine that supports independent layers without depending on a Unity component.
+
+- `SWStateMachine<TContext>`: Owns states, transitions, layers, commands, and messages.
+- `SWState<TContext>`: Defines initialization, enter, tick, exit, and message callbacks.
+- `SWMonoStateMachine<TContext>`: Drives a state machine from regular, physics, or manual Unity updates.
+- `SWStackStateMachine<TContext>`: Pushes and removes states while preserving the states below them.
+- `SWStackState<TContext>`: Defines enter, pause, resume, tick, exit, and message callbacks for stack states.
+- `SWMonoStackStateMachine<TContext>`: Drives a stack state machine from the Unity update lifecycle.
+
+Each layer owns one current state and runs independently in ascending layer order. Any-state transitions are evaluated before transitions from the current state. Within the same priority, transitions use registration order.
+
+```csharp
+using SW.StateMachine;
+
+SWStateMachine<Player> stateMachine = new SWStateMachine<Player>(player);
+stateMachine.AddState<IdleState>(0);
+stateMachine.AddState<MovingState>(0);
+stateMachine.SetInitialState<IdleState>(0);
+
+stateMachine.AddTransition<IdleState, MovingState>(
+    state => state.Context.IsMoving,
+    0);
+stateMachine.AddAnyTransition<IdleState>(PlayerStateCommand.ReturnToIdle, layer: 0);
+
+stateMachine.Start();
+stateMachine.Tick(deltaTime);
+```
+
+See `Samples/Example/SWGraphAssetsExample.cs` for the consolidated graph-based layered state example.
+
+Only the top stack state receives ticks. Pushing a state pauses the previous top state, and popping it resumes the state below without re-entering it.
+
+```csharp
+SWStackStateMachine<GameFlow> stackStateMachine =
+    new SWStackStateMachine<GameFlow>(gameFlow);
+
+stackStateMachine.AddState<GameplayState>();
+stackStateMachine.AddState<PauseState>();
+stackStateMachine.AddState<SettingsState>();
+stackStateMachine.Start<GameplayState>();
+
+stackStateMachine.Push<PauseState>();
+stackStateMachine.Push<SettingsState>();
+stackStateMachine.Pop();
+```
+
+The same `SWGraphAssetsExample` file also contains graph-compatible stack states and runtime control.
+
+#### State Machine Graph Editor
+
+The Unity 6-only graph editor stores state nodes and connections in a `ScriptableObject` asset. Its Shader Graph-inspired layout uses a full-window canvas with a collapsible Graph List, floating Blackboard and Graph Inspector panels, and a bottom validation console.
+
+1. Create an asset from `Assets > Create > SWTools > State Machine Graph`.
+2. Double-click the asset or select `Edit State Machine Graph` in its Inspector.
+3. You can also open `SWTools > Utils > State Machine > Graph Editor`.
+4. Choose `Layered` or `Stack` from `Graph Type` in the Blackboard.
+5. Right-click empty canvas space and choose `Create Node...`. The toolbar action and `Space` key open the same searchable finder.
+6. Select an implementation of `SWState<TContext>` or `SWStackState<TContext>` from States. Flow Control contains Any State and Return nodes. Nodes are created at the graph position where the finder was opened.
+7. Drag from a node's `Out` connector to another node's `In` connector. The edge badge shows its operation, command, and priority directly on the canvas.
+8. Select a node to edit its name, initial-state flag, and layer. Select an edge to edit its operation, command, condition, reentry, and priority.
+9. Press `Delete` to remove selected elements. The searchable States and Transitions lists in the Blackboard support selection, creation, deletion, and independent folding.
+10. Check the bottom status bar or select `Validate`, then save the asset.
+
+Keyboard shortcuts are `Ctrl+C` to copy, `Ctrl+V` to paste, `Ctrl+D` to duplicate, `A` to frame all, `O` to frame the origin, and `Space` to open node search. Connections and transition settings between copied nodes are preserved and can be pasted into another asset with the same Graph Type.
+
+`Auto Layout` arranges nodes by layer and initial-state priority, while the canvas position and zoom are restored per graph asset. `New Script` creates Layered State, Stack State, and Transition Condition scripts from editable templates. Shared options are also available under `Project Settings > SWUtils > State Machine Graph`.
+
+Layered graphs connect states in the same layer and support an Any State node. Stack graphs support push and replace connections, while a connection to the Return node represents popping the current state and resuming the covered state.
+
+Regular states use green cards, Any State uses violet, and Return State uses cyan. The Graph List collapses to the left, while the Blackboard lists and focuses States and Transitions and Graph Validation expands into a console-like issue list. Blackboard and Graph Inspector can be resized independently from their lower corners. Transition summaries continue to follow their nodes; hold `Alt` and drag a summary to save a custom offset in the graph asset. Return State is an input-only Pop target in Stack graphs. The Settings tab configures transition summaries, node and panel sizes, grid snapping, and grid spacing. Editor layout preferences are saved per Unity Editor user.
+
+State machines created by the graph factory register automatically with the Play Mode debugger. Select the context GameObject to inspect active states, active duration, and recent transition history in the Runtime tab. Active nodes display a yellow LIVE badge and the latest transition is highlighted.
+
+Create runtime state machines directly from graph assets:
+
+```csharp
+SWStateMachine<Player> stateMachine =
+    SWStateMachineGraphFactory.CreateLayered(graphAsset, player);
+
+SWStackStateMachineGraphController<GameFlow> stackController =
+    SWStateMachineGraphFactory.CreateStack(graphAsset, gameFlow);
+```
+
+Implement `SWStateMachineGraphCondition<TContext>` for a project condition and select it from `Select Condition Type` in the edge details panel.
+
+```csharp
+public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
+{
+    public override bool Evaluate(Player context)
+    {
+        return context.IsMoving;
+    }
+}
+```
+
+The layered graph factory returns a configured and started `SWStateMachine<TContext>`. The stack graph controller provides `Tick`, `ExecuteCommand`, `SendMessage`, and `Stop`, and executes graph-authored push, replace, and pop connections.
+
+### Behaviour Tree
+
+`SWBehaviourTreeAsset` in the `SW.BehaviourTree` namespace provides a Behaviour Tree runtime based on `Running`, `Success`, `Failure`, and `Aborted`. It includes Composite, Decorator, Action, SubTree, typed Blackboard, NodeProperty, and per-Runner override support. Project-defined node and custom Blackboard entry types appear automatically in the editor.
+
+Create an asset from `Assets > Create > SWTools > Behaviour Tree`, then open `SWTools > Utils > Behaviour > Tree Editor`. Connect a parent's `Out` port to a child's `In` port. Composite nodes accept multiple children, Decorators accept one, and Actions accept none. Children execute from left to right and are reordered automatically when moved. The floating Blackboard edits shared typed values, while Node Inspector edits descriptions and node-specific fields. Add `SWBehaviourTreeRunner` to execute an isolated runtime clone. In Play Mode, select its GameObject to see Running, Success, and Failure colors in the graph.
+
+The graph supports copy, paste, duplicate, SubTree selection, keyboard navigation, automatic layout, quick asset switching, node script generation, per-asset view persistence, and colored runtime paths. Configure node and panel layout under `Project Settings > SWUtils > Behaviour Tree`.
+
+Both graph editors provide a collapsible shared Graph List and Runtime Debug. Use slash-delimited attributes such as `SWStateMachineNodeCategory("Combat/Movement")` and `SWBehaviourNodeCategory("Combat/Actions")` to organize custom states, conditions, and Behaviour nodes in creation menus.
+
+Generic Set Property and Compare Property nodes support built-in and custom Blackboard values. `SWBehaviourTreeRunner` exposes external get, set, and cached key APIs, and custom keys can be overridden per Runner. Node scripts are generated from editable text templates under `Editor/Behaviour/Templates`.
+
 ### `Runtime/Util`
 
 A collection of small, general-purpose game utilities.
@@ -775,6 +888,7 @@ Editor windows available from the `SWTools` menu. Debugging tools are under `SWT
 - `SWTools/Utils/Project/PlayerPrefs Salt Settings`: Creates and edits the SWPlayerPrefs encryption salt asset.
 - `SWTools/Utils/Screen/Resolution Window`: Displays resolution test values.
 - `SWTools/Utils/Simulation/Random Simulator`: Simulates weighted and shuffled random selection.
+- `SWTools/Utils/State Machine/Graph Editor`: Creates and edits layered and stack state machine graph assets.
 
 #### `SWTools/Debug/Console/Debug Console Settings`
 
@@ -891,6 +1005,10 @@ Provides sample prefabs and example scripts.
 
 - `Samples/Example/SWAttributeExample.cs`: Attribute examples.
 - `Samples/Example/SWSubClassSelectorExample.cs`: Examples for `SWSubClassSelector`, `SWAddTypeMenu`, and `SWHideInTypeMenu`.
+- `Samples/Example/SWGraphAssetsExample.cs`: Consolidated Behaviour Tree, layered state machine, stack state machine, and custom node-category example.
+- `Samples/Example/SWExampleBehaviourTree.asset`: Ready-to-run Behaviour Tree graph.
+- `Samples/Example/SWExampleStateMachine.asset`: Ready-to-run layered State Machine graph.
+- `Samples/Example/SWExampleStackStateMachine.asset`: Ready-to-run Stack State Machine graph using Gameplay, Pause, and Return State.
 - `Samples/Prefab/AtrributeExample.prefab`: Attribute example prefab.
 - `Samples/Prefab/SWPool.prefab`: Pool manager prefab.
 - `Samples/Prefab/SWPoolRegistry.prefab`: Pool registry prefab.

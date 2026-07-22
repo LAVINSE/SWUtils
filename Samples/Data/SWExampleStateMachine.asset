@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b9e178520a34c558c317972b0e7a7ad, type: 3}
+  m_Name: SWExampleStateMachine
+  m_EditorClassIdentifier: SWUtils.Runtime::SW.StateMachine.SWStateMachineGraphAsset
+  graphType: 0
+  nodes:
+  - identifier: 9bf7f2ee434a46a1b1144c763f676656
+    displayName: Idle
+    description: "\uC774\uB3D9 \uC785\uB825\uC744 \uAE30\uB2E4\uB9AC\uB294 \uC2DC\uC791
+      \uC0C1\uD0DC\uC785\uB2C8\uB2E4."
+    stateTypeName: SW.Example.SWGraphAssetsExample+IdleState, SWUtils.Samples
+    position:
+      serializedVersion: 2
+      x: 40
+      y: 80
+      width: 220
+      height: 110
+    layer: 0
+    isInitialState: 1
+    kind: 0
+  - identifier: 867a6ed7eb5243df84e1e64ec975e80b
+    displayName: Moving
+    description: "\uC774\uB3D9 \uC870\uAC74\uC774 \uD65C\uC131\uD654\uB41C \uC0C1\uD0DC\uC785\uB2C8\uB2E4."
+    stateTypeName: SW.Example.SWGraphAssetsExample+MovingState, SWUtils.Samples
+    position:
+      serializedVersion: 2
+      x: 444
+      y: 86
+      width: 220
+      height: 134
+    layer: 0
+    isInitialState: 0
+    kind: 0
+  transitions:
+  - identifier: 7096c44e918540c2a8c774bca8b5e92e
+    fromNodeIdentifier: 9bf7f2ee434a46a1b1144c763f676656
+    toNodeIdentifier: 867a6ed7eb5243df84e1e64ec975e80b
+    operation: 0
+    usesCommand: 0
+    command: 0
+    conditionTypeName: SW.Example.SWGraphAssetsExample+IsMovingCondition, SWUtils.Samples
+    canReenter: 0
+    priority: 0
+    summaryOffset: {x: 0, y: 0}
+  - identifier: 0845ed26395c4ff6aa03ae21cebb0642
+    fromNodeIdentifier: 867a6ed7eb5243df84e1e64ec975e80b
+    toNodeIdentifier: 9bf7f2ee434a46a1b1144c763f676656
+    operation: 0
+    usesCommand: 0
+    command: 0
+    conditionTypeName: SW.Example.SWGraphAssetsExample+IsNotMovingCondition, SWUtils.Samples
+    canReenter: 0
+    priority: 0
+    summaryOffset: {x: 0, y: 0}

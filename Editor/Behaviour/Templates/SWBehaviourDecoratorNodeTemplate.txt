@@ -1,0 +1,14 @@
+using SW.BehaviourTree;
+
+/// <summary>사용자 정의 Behaviour Tree Decorator 노드입니다.</summary>
+[SWBehaviourNodeCategory("Custom/Decorators")]
+public sealed class #SCRIPTNAME# : SWBehaviourDecoratorNode
+{
+    /// <summary>자식 노드를 실행하고 현재 상태를 반환합니다.</summary>
+    protected override SWBehaviourStatus OnUpdate(
+        SWBehaviourContext context,
+        SWBehaviourTreeAsset tree)
+    {
+        return TickChild(context, tree);
+    }
+}
