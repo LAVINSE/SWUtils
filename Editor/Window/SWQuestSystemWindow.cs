@@ -20,7 +20,7 @@ namespace SW.EditorTools.Window
     /// <remarks>
     /// 프로젝트에서 구현한 파생 조건, 보상, 대상과 진행 계산 타입도 자동으로 찾아 생성 목록에 표시합니다.
     /// </remarks>
-    public sealed class SWQuestSystemWindow : EditorWindow
+    public sealed partial class SWQuestSystemWindow : EditorWindow
     {
         #region 타입
         /// <summary>
@@ -69,7 +69,7 @@ namespace SW.EditorTools.Window
             ManagedAssetKind.AchievementDatabase
         };
 
-        private static readonly string[] ToolbarNames =
+        private static readonly string[] AssetKindNames =
         {
             "퀘스트",
             "업적",
@@ -80,8 +80,7 @@ namespace SW.EditorTools.Window
             "진행 계산",
             "시작 진행값",
             "퀘스트 데이터베이스",
-            "업적 데이터베이스",
-            "설정"
+            "업적 데이터베이스"
         };
 
         private static readonly string[] SortModeNames =
@@ -130,7 +129,7 @@ namespace SW.EditorTools.Window
 
         private string[] createPaths;
         private string[] namePrefixes;
-        private int toolbarIndex;
+        private int navigationIndex;
         private AssetSortMode sortMode;
         private bool saveAssetsAutomatically = true;
         private float listWidth = DefaultListWidth;
@@ -180,286 +179,6 @@ namespace SW.EditorTools.Window
             Repaint();
         }
         #endregion // 생명주기
-
-        #region 화면
-        private void OnGUI()
-        {
-            toolbarIndex = SWEditorUtils.DrawTabBar(toolbarIndex, ToolbarNames);
-            if (toolbarIndex >= ManagedAssetKinds.Length)
-            {
-                DrawSettings();
-                return;
-            }
-
-            DrawAssetManagement(ManagedAssetKinds[toolbarIndex]);
-        }
-
-        /// <summary>
-        /// 선택한 분류의 에셋 목록과 인스펙터를 그립니다.
-        /// </summary>
-        private void DrawAssetManagement(ManagedAssetKind kind)
-        {
-            EditorGUILayout.BeginHorizontal();
-            {
-                DrawAssetListPanel(kind);
-                DrawInspectorPanel(kind);
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// 에셋 검색, 생성과 목록 영역을 그립니다.
-        /// </summary>
-        private void DrawAssetListPanel(ManagedAssetKind kind)
-        {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Width(listWidth));
-            {
-                SWEditorUtils.DrawHeader($"{GetKindLabel(kind)} 목록 ({assetsByKind[kind].Count})");
-                DrawCreationControls(kind);
-
-                EditorGUILayout.BeginHorizontal();
-                {
-                    searchTextsByKind[kind] = GUILayout.TextField(
-                        searchTextsByKind[kind], EditorStyles.toolbarSearchField);
-
-                    sortMode = (AssetSortMode)EditorGUILayout.Popup(
-                        (int)sortMode, SortModeNames, GUILayout.Width(104f));
-
-                    if (GUILayout.Button("새로 고침", EditorStyles.miniButton, GUILayout.Width(70f)))
-                    {
-                        RefreshAssets(kind);
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-
-                listScrollPositionsByKind[kind] = EditorGUILayout.BeginScrollView(
-                    listScrollPositionsByKind[kind]);
-                DrawAssetRows(kind);
-                EditorGUILayout.EndScrollView();
-            }
-            EditorGUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// 생성 타입 선택과 주요 관리 버튼을 그립니다.
-        /// </summary>
-        private void DrawCreationControls(ManagedAssetKind kind)
-        {
-            Type[] creationTypes = creationTypesByKind[kind];
-            string[] creationTypeNames = GetCreationTypeNames(creationTypes);
-
-            EditorGUILayout.BeginHorizontal();
-            {
-                if (creationTypeNames.Length > 0)
-                {
-                    creationTypeIndexesByKind[kind] = EditorGUILayout.Popup(
-                        creationTypeIndexesByKind[kind], creationTypeNames);
-                }
-
-                using (new EditorGUI.DisabledScope(creationTypes.Length == 0))
-                {
-                    if (GUILayout.Button("생성", GUILayout.Width(48f)))
-                    {
-                        CreateAsset(kind);
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-
-            ScriptableObject selectedAsset = selectedAssetsByKind[kind];
-            EditorGUILayout.BeginHorizontal();
-            {
-                using (new EditorGUI.DisabledScope(selectedAsset == null))
-                {
-                    if (GUILayout.Button("복제"))
-                    {
-                        DuplicateAsset(kind, selectedAsset);
-                    }
-
-                    if (GUILayout.Button("위치 표시"))
-                    {
-                        SWEditorUtils.PingAndSelect(selectedAsset);
-                    }
-
-                    if (GUILayout.Button("삭제"))
-                    {
-                        DeleteAsset(kind, selectedAsset);
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// 검색과 정렬을 반영한 에셋 행을 그립니다.
-        /// </summary>
-        private void DrawAssetRows(ManagedAssetKind kind)
-        {
-            List<ScriptableObject> visibleAssets = new(assetsByKind[kind]);
-            visibleAssets.Sort(CompareAssets);
-            string searchText = searchTextsByKind[kind];
-            int visibleCount = 0;
-
-            for (int index = 0; index < visibleAssets.Count; index++)
-            {
-                ScriptableObject asset = visibleAssets[index];
-                if (asset == null || !MatchesSearch(asset, searchText))
-                {
-                    continue;
-                }
-
-                visibleCount++;
-                bool selected = selectedAssetsByKind[kind] == asset;
-                Color originalBackgroundColor = GUI.backgroundColor;
-                if (selected)
-                {
-                    GUI.backgroundColor = SWEditorUtils.HighlightColor;
-                }
-
-                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                GUI.backgroundColor = originalBackgroundColor;
-                {
-                    Texture icon = AssetPreview.GetMiniThumbnail(asset);
-                    GUIContent label = new(GetAssetLabel(asset), icon, asset.GetType().FullName);
-                    if (GUILayout.Button(label, EditorStyles.label, GUILayout.Height(22f)))
-                    {
-                        SelectAsset(kind, asset);
-                    }
-
-                    if (GUILayout.Button("×", EditorStyles.miniButton, GUILayout.Width(22f)))
-                    {
-                        DeleteAsset(kind, asset);
-                        EditorGUILayout.EndHorizontal();
-                        return;
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-
-            if (visibleCount == 0)
-            {
-                SWEditorUtils.DrawEmptyNotice(string.IsNullOrWhiteSpace(searchText)
-                    ? "등록된 에셋이 없습니다."
-                    : "검색 조건에 맞는 에셋이 없습니다.");
-            }
-        }
-
-        /// <summary>
-        /// 선택한 에셋의 관리 도구와 기본 인스펙터를 그립니다.
-        /// </summary>
-        private void DrawInspectorPanel(ManagedAssetKind kind)
-        {
-            ScriptableObject selectedAsset = selectedAssetsByKind[kind];
-            EditorGUILayout.BeginVertical();
-            {
-                if (selectedAsset == null)
-                {
-                    SWEditorUtils.DrawEmptyNotice("왼쪽 목록에서 편집할 에셋을 선택하세요.");
-                    EditorGUILayout.EndVertical();
-                    return;
-                }
-
-                SWEditorUtils.DrawHeader($"{selectedAsset.name} ({selectedAsset.GetType().Name})");
-                DrawRenameControls(kind, selectedAsset);
-                DrawDatabaseControls(selectedAsset);
-
-                inspectorScrollPosition = EditorGUILayout.BeginScrollView(inspectorScrollPosition);
-                Editor.CreateCachedEditor(selectedAsset, null, ref cachedEditor);
-                if (cachedEditor != null)
-                {
-                    cachedEditor.OnInspectorGUI();
-                }
-                EditorGUILayout.EndScrollView();
-            }
-            EditorGUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// 선택 에셋의 파일 이름을 변경하는 영역을 그립니다.
-        /// </summary>
-        private void DrawRenameControls(ManagedAssetKind kind, ScriptableObject selectedAsset)
-        {
-            EditorGUILayout.BeginHorizontal();
-            string requestedName = EditorGUILayout.DelayedTextField("에셋 이름", selectedAsset.name);
-            if (!string.Equals(requestedName, selectedAsset.name, StringComparison.Ordinal)
-                && !string.IsNullOrWhiteSpace(requestedName))
-            {
-                string assetPath = AssetDatabase.GetAssetPath(selectedAsset);
-                string errorMessage = AssetDatabase.RenameAsset(assetPath, requestedName.Trim());
-                if (string.IsNullOrEmpty(errorMessage))
-                {
-                    RefreshAssets(kind, selectedAsset);
-                }
-                else
-                {
-                    ShowNotification(new GUIContent(errorMessage));
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// 데이터베이스 에셋에만 동기화와 검증 도구를 표시합니다.
-        /// </summary>
-        private void DrawDatabaseControls(ScriptableObject selectedAsset)
-        {
-            if (selectedAsset is not SWQuestDatabase
-                && selectedAsset is not SWAchievementDatabase)
-            {
-                return;
-            }
-
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-            {
-                if (GUILayout.Button("프로젝트 정의 동기화"))
-                {
-                    SynchronizeDatabase(selectedAsset);
-                }
-
-                if (GUILayout.Button("구성 검증"))
-                {
-                    ValidateDatabase(selectedAsset);
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// 생성 경로, 접두사와 공통 동작 설정을 그립니다.
-        /// </summary>
-        private void DrawSettings()
-        {
-            settingsScrollPosition = EditorGUILayout.BeginScrollView(settingsScrollPosition);
-            SWEditorUtils.DrawHeader("생성 경로와 이름 접두사");
-
-            for (int index = 0; index < ManagedAssetKinds.Length; index++)
-            {
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                EditorGUILayout.LabelField(GetKindLabel(ManagedAssetKinds[index]), EditorStyles.boldLabel);
-                createPaths[index] = EditorGUILayout.TextField("생성 경로", createPaths[index]);
-                namePrefixes[index] = EditorGUILayout.TextField("이름 접두사", namePrefixes[index]);
-                EditorGUILayout.EndVertical();
-            }
-
-            SWEditorUtils.DrawHeader("목록과 저장");
-            listWidth = EditorGUILayout.Slider("목록 너비", listWidth, 260f, 520f);
-            saveAssetsAutomatically = EditorGUILayout.Toggle("변경 후 자동 저장", saveAssetsAutomatically);
-
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("설정 저장"))
-            {
-                SaveSettings();
-                ShowNotification(new GUIContent("퀘스트 편집기 설정을 저장했습니다."));
-            }
-
-            if (GUILayout.Button("기본값 복원"))
-            {
-                ResetSettings();
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndScrollView();
-        }
-        #endregion // 화면
 
         #region 에셋 관리
         /// <summary>
@@ -874,20 +593,6 @@ namespace SW.EditorTools.Window
         }
 
         /// <summary>
-        /// 생성 타입 선택 목록의 표시 이름을 만듭니다.
-        /// </summary>
-        private static string[] GetCreationTypeNames(IReadOnlyList<Type> creationTypes)
-        {
-            string[] names = new string[creationTypes.Count];
-            for (int index = 0; index < creationTypes.Count; index++)
-            {
-                names[index] = creationTypes[index].Name;
-            }
-
-            return names;
-        }
-
-        /// <summary>
         /// 검색어가 에셋 이름, 타입 이름, 코드명 또는 표시명에 포함되는지 확인합니다.
         /// </summary>
         private static bool MatchesSearch(ScriptableObject asset, string searchText)
@@ -944,17 +649,17 @@ namespace SW.EditorTools.Window
             if (asset is SWIdentifiedObject identifiedAsset
                 && !string.IsNullOrWhiteSpace(identifiedAsset.CodeName))
             {
-                return $"{identifiedAsset.CodeName}  ·  {asset.name}";
+                return identifiedAsset.CodeName;
             }
 
-            return $"{asset.name}  ·  {asset.GetType().Name}";
+            return asset.name;
         }
 
         /// <summary>
         /// 관리 분류의 한글 표시 이름을 반환합니다.
         /// </summary>
         private static string GetKindLabel(ManagedAssetKind kind)
-            => ToolbarNames[(int)kind];
+            => AssetKindNames[(int)kind];
         #endregion // 검색과 분류
 
         #region 설정
