@@ -1,0 +1,1189 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d3da75bf45442980a2e60433174e9a, type: 3}
+  m_Name: MiningSkillTree
+  m_EditorClassIdentifier: 
+  identifier: d2014aadfb184e2fa0e829bb39ce2277
+  nodes:
+  - identifier: mining-node-1
+    skill: {fileID: 11400000, guid: b7c52e53a28f43a68c84e24aa2f9f0c3, type: 2}
+    position: {x: 0, y: 0}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements: []
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-2
+    skill: {fileID: 11400000, guid: 4d6de3e597634993a4477dd9bd0b3d0a, type: 2}
+    position: {x: -240, y: 170}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-1
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-3
+    skill: {fileID: 11400000, guid: 87a6dadded0749f0a47191d6e11f6f20, type: 2}
+    position: {x: 240, y: 170}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-1
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-4
+    skill: {fileID: 11400000, guid: 8cd4ce0c5b754ea2ad17d979b2f38111, type: 2}
+    position: {x: -240, y: 340}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-2
+      requiredLevel: 3
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-5
+    skill: {fileID: 11400000, guid: 20a2a0a4b5d641e7b3e8233acb93959f, type: 2}
+    position: {x: 0, y: 510}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-4
+      requiredLevel: 1
+    exclusiveGroup: MiningMethod
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-6
+    skill: {fileID: 11400000, guid: b6e26ad9677844dba7edf60db72746c3, type: 2}
+    position: {x: -480, y: 510}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-4
+      requiredLevel: 1
+    exclusiveGroup: MiningMethod
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-7
+    skill: {fileID: 11400000, guid: 0d62a6247aa04d258d5556adbc5925fd, type: 2}
+    position: {x: -240, y: 680}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-node-5
+      requiredLevel: 1
+    - nodeIdentifier: mining-node-6
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-8
+    skill: {fileID: 11400000, guid: 832da52e08354a6694bd66f710c6afe0, type: 2}
+    position: {x: 480, y: 0}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements: []
+    exclusiveGroup: 
+    retainOnReset: 1
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-node-9
+    skill: {fileID: 11400000, guid: 08e4ed01466749fdb87fe8c8fe81d89e, type: 2}
+    position: {x: 240, y: 510}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-3
+      requiredLevel: 1
+    - nodeIdentifier: mining-node-5
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-1-0
+    skill: {fileID: 11400000, guid: 27850dce4cdab6b45b57b1b1981f7004, type: 2}
+    position: {x: -866.0254, y: -500.00006}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-1-1
+    skill: {fileID: 11400000, guid: 715e45c133aea0d40b95bca9c31e44b9, type: 2}
+    position: {x: -1228.5125, y: -432.15396}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-1-2
+    skill: {fileID: 11400000, guid: be8be96f4c492df4da3a16ccba0fb0ea, type: 2}
+    position: {x: -988.51245, y: -847.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-2-0
+    skill: {fileID: 11400000, guid: 0fa8486ab014afb478d87c5fe8edf7f7, type: 2}
+    position: {x: -1420.2816, y: -820.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-1-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-1-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-2-1
+    skill: {fileID: 11400000, guid: 1a73c9701c89759458335c445d830c0e, type: 2}
+    position: {x: -1782.7687, y: -752.15405}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-2-2
+    skill: {fileID: 11400000, guid: 64c714a5121dfc54495ca690718b8d6a, type: 2}
+    position: {x: -1542.7687, y: -1167.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-3-0
+    skill: {fileID: 11400000, guid: a64378552fb50a34bb9434abd4a20b83, type: 2}
+    position: {x: -1974.5378, y: -1140.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-1-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-1-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-3-1
+    skill: {fileID: 11400000, guid: 54acb1401a5bc244599d89b52f13a794, type: 2}
+    position: {x: -2337.025, y: -1072.154}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-3-2
+    skill: {fileID: 11400000, guid: e286de007100ee248bd17dd8a48d079a, type: 2}
+    position: {x: -2097.025, y: -1487.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-4-0
+    skill: {fileID: 11400000, guid: efa8b3d7efdc7ea44be743a8e96a0c9a, type: 2}
+    position: {x: -2528.7942, y: -1460.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-1-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-1-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-4-1
+    skill: {fileID: 11400000, guid: 4506c437f1454364a89c1c0596532a46, type: 2}
+    position: {x: -2891.2812, y: -1392.154}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-1-4-2
+    skill: {fileID: 11400000, guid: 3a3938224a16fcf44a82f6fb24b1aaab, type: 2}
+    position: {x: -2651.2812, y: -1807.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-1-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-1-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-1-0
+    skill: {fileID: 11400000, guid: 6c43e6935baf27e448cc581502da1243, type: 2}
+    position: {x: -0.00004371139, y: -1000}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-3
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-1-1
+    skill: {fileID: 11400000, guid: 1df99e10965fd57448c0bf5ab2b07eec, type: 2}
+    position: {x: -240.00006, y: -1280}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-1-2
+    skill: {fileID: 11400000, guid: 1ac7c6be011ad724ead648a0fa9f9885, type: 2}
+    position: {x: 239.99994, y: -1280}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-2-0
+    skill: {fileID: 11400000, guid: c4a8d44adf5716b41941c1b16bd12ab0, type: 2}
+    position: {x: -0.00007168668, y: -1640}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-2-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-2-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-2-1
+    skill: {fileID: 11400000, guid: ee5008a5bd0768a42b4d24a62d5df165, type: 2}
+    position: {x: -240.00009, y: -1920}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-2-2
+    skill: {fileID: 11400000, guid: f89e7b9f0476e9f4b815a8b2e47d60d2, type: 2}
+    position: {x: 239.99991, y: -1920}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-3-0
+    skill: {fileID: 11400000, guid: 314c118f425e79b4183f00cc41c25911, type: 2}
+    position: {x: -0.000099661964, y: -2280}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-2-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-2-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-3-1
+    skill: {fileID: 11400000, guid: 11042bb515c46e04aa17f3f4b1035cf3, type: 2}
+    position: {x: -240.0001, y: -2560}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-3-2
+    skill: {fileID: 11400000, guid: 5f82541ab84a1ec47916a00435009120, type: 2}
+    position: {x: 239.9999, y: -2560}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-4-0
+    skill: {fileID: 11400000, guid: a31e614a2b34bec45a824bf45ea0fb4a, type: 2}
+    position: {x: -0.00012763725, y: -2920}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-2-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-2-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-4-1
+    skill: {fileID: 11400000, guid: c7cd665f6782e674ebccbfc1095f8f1b, type: 2}
+    position: {x: -240.00014, y: -3200}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-2-4-2
+    skill: {fileID: 11400000, guid: 4d38f42d5fdb09f40bed9a12b3c3f5cb, type: 2}
+    position: {x: 239.99986, y: -3200}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-2-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-2-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-1-0
+    skill: {fileID: 11400000, guid: a6c36e98cf5d6034c90e00e16c4b4dad, type: 2}
+    position: {x: 866.0254, y: -500}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-4
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-1-1
+    skill: {fileID: 11400000, guid: ed74f4582813aec42b81cc6ca66e94e0, type: 2}
+    position: {x: 988.51245, y: -847.84607}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-1-2
+    skill: {fileID: 11400000, guid: f210395b953ac7d4694a16aa4ae81181, type: 2}
+    position: {x: 1228.5125, y: -432.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-2-0
+    skill: {fileID: 11400000, guid: ef9b0095000075a459a79d0c5c815078, type: 2}
+    position: {x: 1420.2816, y: -820}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-3-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-3-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-2-1
+    skill: {fileID: 11400000, guid: 8e9bdc4a57b8e3d449e07e2913c1b1fc, type: 2}
+    position: {x: 1542.7687, y: -1167.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-2-2
+    skill: {fileID: 11400000, guid: 1293387f5f41d28459e770b6f9ddebea, type: 2}
+    position: {x: 1782.7687, y: -752.15393}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-3-0
+    skill: {fileID: 11400000, guid: 8a7a3d14a6acb0d40a1c9183ef76ca93, type: 2}
+    position: {x: 1974.5378, y: -1140}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-3-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-3-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-3-1
+    skill: {fileID: 11400000, guid: be8c3786cbfe18f4dae2ea44acd66945, type: 2}
+    position: {x: 2097.025, y: -1487.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-3-2
+    skill: {fileID: 11400000, guid: 0e4bb35113a46914f9cbb4b2c221b41c, type: 2}
+    position: {x: 2337.025, y: -1072.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-4-0
+    skill: {fileID: 11400000, guid: 2324c75bdb35406498b6e5a9c4829fd0, type: 2}
+    position: {x: 2528.7942, y: -1460}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-3-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-3-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-4-1
+    skill: {fileID: 11400000, guid: f5ce743352457504d825597fda057384, type: 2}
+    position: {x: 2651.2812, y: -1807.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-3-4-2
+    skill: {fileID: 11400000, guid: 85f85686f811aa74d9a5265b728706d8, type: 2}
+    position: {x: 2891.2812, y: -1392.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-3-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-3-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-1-0
+    skill: {fileID: 11400000, guid: 508c0a71ef988914bbcbdef54189ac45, type: 2}
+    position: {x: 866.0254, y: 500}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-7
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-1-1
+    skill: {fileID: 11400000, guid: 8229a9937875d224c99281871b1e7622, type: 2}
+    position: {x: 1228.5125, y: 432.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-1-2
+    skill: {fileID: 11400000, guid: 58f86ea7d57823c4d9cc52ee5a8bb4de, type: 2}
+    position: {x: 988.51245, y: 847.84607}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-2-0
+    skill: {fileID: 11400000, guid: 6d844c326c953394ab96b9eed6770645, type: 2}
+    position: {x: 1420.2816, y: 820}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-4-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-4-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-2-1
+    skill: {fileID: 11400000, guid: aaf32150f3daaa542b37e496813bab0e, type: 2}
+    position: {x: 1782.7687, y: 752.15393}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-2-2
+    skill: {fileID: 11400000, guid: 9516c32770cd61144b1ec659e8c07b87, type: 2}
+    position: {x: 1542.7687, y: 1167.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-3-0
+    skill: {fileID: 11400000, guid: 5619a038cbb7fa1448aef23c14ffb1f3, type: 2}
+    position: {x: 1974.5378, y: 1140}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-4-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-4-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-3-1
+    skill: {fileID: 11400000, guid: d8776330b34d5184cbd6c9e0e50501b7, type: 2}
+    position: {x: 2337.025, y: 1072.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-3-2
+    skill: {fileID: 11400000, guid: 085a895d359c1464791120fdb80c02c2, type: 2}
+    position: {x: 2097.025, y: 1487.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-4-0
+    skill: {fileID: 11400000, guid: ccfe3181ecba0ad44a6de452b4cd7ae8, type: 2}
+    position: {x: 2528.7942, y: 1460}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-4-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-4-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-4-1
+    skill: {fileID: 11400000, guid: 5cf298306867cbb4381254bbce9624d4, type: 2}
+    position: {x: 2891.2812, y: 1392.1539}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-4-4-2
+    skill: {fileID: 11400000, guid: c961050cf3336a449b6ff482ea76469a, type: 2}
+    position: {x: 2651.2812, y: 1807.8461}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-4-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-4-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-1-0
+    skill: {fileID: 11400000, guid: eeba07032d4b4a24ca6e26f5fcf17607, type: 2}
+    position: {x: -0.00004371139, y: 1000}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-8
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-1-1
+    skill: {fileID: 11400000, guid: 7772ce3f0e025e34aad9689cda848269, type: 2}
+    position: {x: 239.99994, y: 1280}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-1-2
+    skill: {fileID: 11400000, guid: 01dcbf58d2a051b42acfa50af838f099, type: 2}
+    position: {x: -240.00006, y: 1280}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-2-0
+    skill: {fileID: 11400000, guid: e28792cdc208d004f9efb8e960cb5bf2, type: 2}
+    position: {x: -0.00007168668, y: 1640}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-5-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-5-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-2-1
+    skill: {fileID: 11400000, guid: 0a7d951d5dee9674cbdc8901cb44f96d, type: 2}
+    position: {x: 239.99991, y: 1920}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-2-2
+    skill: {fileID: 11400000, guid: 68667bfd9a2c44a4d9e869cc0ccbbc7f, type: 2}
+    position: {x: -240.00009, y: 1920}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-3-0
+    skill: {fileID: 11400000, guid: 7fd868270cf1fb7409fa92555cf9d87b, type: 2}
+    position: {x: -0.000099661964, y: 2280}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-5-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-5-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-3-1
+    skill: {fileID: 11400000, guid: 4ad6b5dc931c8bd4bbffe0935ac90603, type: 2}
+    position: {x: 239.9999, y: 2560}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-3-2
+    skill: {fileID: 11400000, guid: ab8bfaab562d3b64ab6a6b5fe1a0af67, type: 2}
+    position: {x: -240.0001, y: 2560}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-4-0
+    skill: {fileID: 11400000, guid: 444298dc2f52acd429e7a7541fc612a5, type: 2}
+    position: {x: -0.00012763725, y: 2920}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-5-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-5-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-4-1
+    skill: {fileID: 11400000, guid: 16f166a1d2be4fa479b95704c4c193fa, type: 2}
+    position: {x: 239.99986, y: 3200}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-5-4-2
+    skill: {fileID: 11400000, guid: 9c1cade876d9fbd44869655b625a0a98, type: 2}
+    position: {x: -240.00014, y: 3200}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-5-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-5-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-1-0
+    skill: {fileID: 11400000, guid: 76ea1b6490859794198d8ffb814075e5, type: 2}
+    position: {x: -866.0254, y: 500.00006}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-node-9
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-1-1
+    skill: {fileID: 11400000, guid: f7088f0f279931a41a36a6d18f72e9b4, type: 2}
+    position: {x: -988.51245, y: 847.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-1-2
+    skill: {fileID: 11400000, guid: adf71acb41db9a248922995d9eafe3cb, type: 2}
+    position: {x: -1228.5125, y: 432.15396}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-1-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-1-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-2-0
+    skill: {fileID: 11400000, guid: 00e26d5c0a2ee774c97be4def0a5ac74, type: 2}
+    position: {x: -1420.2816, y: 820.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-6-1-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-6-1-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-2-1
+    skill: {fileID: 11400000, guid: e4abc2d59eafe8144864ab8e1d204bb7, type: 2}
+    position: {x: -1542.7687, y: 1167.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-2-2
+    skill: {fileID: 11400000, guid: 0eda4f408e21dfb45af312d932cc9d9f, type: 2}
+    position: {x: -1782.7687, y: 752.15405}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-2-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-2-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-3-0
+    skill: {fileID: 11400000, guid: ba67c44fc83b6124f8df21e75c92532e, type: 2}
+    position: {x: -1974.5378, y: 1140.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-6-2-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-6-2-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-3-1
+    skill: {fileID: 11400000, guid: 043279fc33bb5f84c89d2c07365d1be7, type: 2}
+    position: {x: -2097.025, y: 1487.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-3-2
+    skill: {fileID: 11400000, guid: 06d5154b1e54f08498e0b60e379a4631, type: 2}
+    position: {x: -2337.025, y: 1072.154}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-3-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-3-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-4-0
+    skill: {fileID: 11400000, guid: fee5bb7f57f6ba14eb9fdf13252eadc7, type: 2}
+    position: {x: -2528.7942, y: 1460.0001}
+    hasSavedPosition: 1
+    requirementMode: 1
+    requirements:
+    - nodeIdentifier: mining-expansion-6-3-1
+      requiredLevel: 1
+    - nodeIdentifier: mining-expansion-6-3-2
+      requiredLevel: 1
+    exclusiveGroup: 
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-4-1
+    skill: {fileID: 11400000, guid: d55c5a630ac8ab9429377533d39f25c8, type: 2}
+    position: {x: -2651.2812, y: 1807.8462}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  - identifier: mining-expansion-6-4-2
+    skill: {fileID: 11400000, guid: e743ef3cdff340648a43f7a514aaac25, type: 2}
+    position: {x: -2891.2812, y: 1392.154}
+    hasSavedPosition: 1
+    requirementMode: 0
+    requirements:
+    - nodeIdentifier: mining-expansion-6-4-0
+      requiredLevel: 3
+    exclusiveGroup: mining-expansion-6-4-choice
+    retainOnReset: 0
+    revealPolicy: 1
+    concealment: 0
+    visibilityConditions: []
+    purchaseConditions: []
+  references:
+    version: 2
+    RefIds: []

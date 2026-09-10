@@ -23,6 +23,9 @@ namespace SW.EditorTools.Base
         /// </summary>
         public bool IsGroupOpen;
 
+        /// <summary>인스펙터 표시 방식에 관계없이 접힘 상태를 저장하는 키입니다.</summary>
+        public string PreferenceKey;
+
         /// <summary>
         /// 그룹에 속한 프로퍼티 리스트.
         /// </summary>

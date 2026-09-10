@@ -21,6 +21,8 @@ namespace SW.EditorTools
         private readonly TextField assetNameField;
         private readonly Button pingButton;
         private readonly Button deleteButton;
+        private readonly Label emptyNotice;
+        private readonly Label resultCount;
         private UnityEngine.Object selectedAsset;
         private bool isSynchronizingSelection;
 
@@ -78,6 +80,21 @@ namespace SW.EditorTools
             searchField.RegisterValueChangedCallback(_ => ApplySearchFilter());
             Add(searchField);
 
+            resultCount = new Label();
+            resultCount.style.marginLeft = 8f;
+            resultCount.style.marginBottom = 5f;
+            resultCount.style.fontSize = 11f;
+            resultCount.style.color = new Color(0.68f, 0.71f, 0.75f);
+            Add(resultCount);
+
+            emptyNotice = new Label();
+            emptyNotice.style.whiteSpace = WhiteSpace.Normal;
+            emptyNotice.style.marginLeft = 10f;
+            emptyNotice.style.marginRight = 10f;
+            emptyNotice.style.marginTop = 12f;
+            emptyNotice.style.color = new Color(0.68f, 0.71f, 0.75f);
+            Add(emptyNotice);
+
             assetListView = new ListView
             {
                 selectionType = SelectionType.Single,
@@ -97,11 +114,11 @@ namespace SW.EditorTools
             selectedAssetPanel.style.paddingBottom = 6f;
             selectedAssetPanel.style.borderTopWidth = 1f;
             selectedAssetPanel.style.borderTopColor = new Color(0.24f, 0.26f, 0.28f);
-            assetNameField = new TextField("Asset Name") { isDelayed = true };
+            assetNameField = new TextField("에셋 이름") { isDelayed = true, tooltip = "파일 이름을 변경합니다. Enter 키로 적용합니다." };
             assetNameField.RegisterValueChangedCallback(changeEvent =>
                 RenameSelectedAsset(changeEvent.newValue));
             selectedAssetPanel.Add(assetNameField);
-            pingButton = new Button(PingSelectedAsset) { text = "Ping" };
+            pingButton = new Button(PingSelectedAsset) { text = "프로젝트에서 찾기" };
             selectedAssetPanel.Add(pingButton);
             Add(selectedAssetPanel);
 
@@ -196,12 +213,19 @@ namespace SW.EditorTools
             row.Add(icon);
             VisualElement textGroup = new VisualElement();
             textGroup.style.flexGrow = 1f;
+            textGroup.style.minWidth = 0f;
             textGroup.style.overflow = Overflow.Hidden;
             Label nameLabel = new Label { name = "asset-name" };
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            nameLabel.style.overflow = Overflow.Hidden;
+            nameLabel.style.textOverflow = TextOverflow.Ellipsis;
+            nameLabel.style.whiteSpace = WhiteSpace.NoWrap;
             Label pathLabel = new Label { name = "asset-path" };
-            pathLabel.style.fontSize = 9f;
-            pathLabel.style.color = new Color(0.55f, 0.58f, 0.61f);
+            pathLabel.style.fontSize = 10f;
+            pathLabel.style.color = new Color(0.68f, 0.71f, 0.75f);
+            pathLabel.style.overflow = Overflow.Hidden;
+            pathLabel.style.textOverflow = TextOverflow.Ellipsis;
+            pathLabel.style.whiteSpace = WhiteSpace.NoWrap;
             textGroup.Add(nameLabel);
             textGroup.Add(pathLabel);
             row.Add(textGroup);
@@ -209,6 +233,8 @@ namespace SW.EditorTools
                 DeleteAsset(row.userData as UnityEngine.Object)) { text = "×" };
             rowDeleteButton.style.width = 22f;
             rowDeleteButton.style.height = 20f;
+            rowDeleteButton.style.flexShrink = 0f;
+            rowDeleteButton.tooltip = "이 에셋 삭제";
             row.Add(rowDeleteButton);
             return row;
         }
@@ -242,6 +268,12 @@ namespace SW.EditorTools
                     visibleAssets.Add(asset);
             }
             assetListView.itemsSource = visibleAssets;
+            resultCount.text = string.IsNullOrWhiteSpace(searchText)
+                ? $"{allAssets.Count}개 에셋" : $"{allAssets.Count}개 중 {visibleAssets.Count}개 표시";
+            emptyNotice.text = allAssets.Count == 0
+                ? "아직 에셋이 없습니다. 위의 만들기 버튼으로 추가하세요."
+                : "검색 결과가 없습니다. 다른 이름이나 경로를 입력하거나 검색어를 지우세요.";
+            emptyNotice.style.display = visibleAssets.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None;
             assetListView.Rebuild();
             SelectAsset(selectedAsset);
         }

@@ -16,13 +16,18 @@ namespace SW.Base
     public class SWIdentifiedObject : SWScriptableObject, ICloneable
     {
         #region 필드
-        [SWGroup("데이터 정의")]
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField] private SWCategory[] categories;
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField] private int id;
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField] private string codeName;
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField] private string displayName;
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField, TextArea] private string description;
 #if UNITY_EDITOR
+        [SWGroup("기본 정의", groupAllFieldsUntilNextGroupAttribute: false, closedByDefault: true)]
         [SerializeField] private Sprite spriteIcon;
 #endif
         #endregion // 필드

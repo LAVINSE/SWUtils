@@ -11,7 +11,6 @@ namespace SW.EditorTools.StateMachine
     {
         #region 색상
         private static readonly Color WindowBackground = new Color(0.075f, 0.08f, 0.09f);
-        private static readonly Color PanelBackground = new Color(0.149f, 0.157f, 0.173f);
         private static readonly Color CardBackground = new Color(0.157f, 0.165f, 0.18f);
         private static readonly Color BorderColor = new Color(0.282f, 0.298f, 0.322f);
         private static readonly Color MutedTextColor = new Color(0.62f, 0.65f, 0.68f);
@@ -32,14 +31,7 @@ namespace SW.EditorTools.StateMachine
         /// <summary>상단 도구 모음의 크기와 구분선을 적용합니다.</summary>
         public static void ApplyToolbar(VisualElement toolbar)
         {
-            toolbar.style.height = 34f;
-            toolbar.style.flexShrink = 0f;
-            toolbar.style.paddingLeft = 8f;
-            toolbar.style.paddingRight = 8f;
-            toolbar.style.alignItems = Align.Center;
-            toolbar.style.backgroundColor = PanelBackground;
-            toolbar.style.borderBottomWidth = 1f;
-            toolbar.style.borderBottomColor = BorderColor;
+            SWGraphEditorVisualUtility.ApplyToolbar(toolbar);
         }
 
         /// <summary>도구 모음의 주요 작업 버튼을 강조합니다.</summary>

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 585b0162231d49ec8e911870333f1fe1, type: 3}
+  m_Name: Skill8
+  m_EditorClassIdentifier: 
+  categories: []
+  id: 9208
+  codeName: MINING_SKILL_8
+  displayName: Permanent Knowledge
+  description: An independent upgrade retained when progress is reset.
+  spriteIcon: {fileID: 0}
+  icon: {fileID: 0}
+  maximumLevel: 5
+  costs:
+  - rid: 1
+  effects:
+  - {fileID: 11400000, guid: 0ce0a0c42e77402b8cffbf4ad322159d, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1
+      type: {class: SWSkillTreeFormulaCost, ns: SW.SkillTree, asm: SWUtils.Runtime}
+      data:
+        currency: Gold
+        growth: 2
+        initialCost: 200
+        growthValue: 1.2
+        levelCosts: []

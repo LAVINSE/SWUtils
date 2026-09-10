@@ -3,7 +3,7 @@
 [한국어](README.md) | [English](README.en.md)
 
 ![Unity 6.0+](https://img.shields.io/badge/Unity-6.0%2B-222222)
-![Package 1.2.2](https://img.shields.io/badge/package-1.2.2-2f80ed)
+![Package 1.3.0](https://img.shields.io/badge/package-1.3.0-2f80ed)
 ![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
 
 SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시스템, 인스펙터 워크플로, 디버깅 도구, 에디터 생산성 창을 모은 유틸리티 패키지입니다.
@@ -15,7 +15,7 @@ SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시�
 
 | 영역 | 제공 기능 |
 | --- | --- |
-| 런타임 기반 | `SWMonoBehaviour`, `SWScriptableObject`, 코루틴 실행기, 퀘스트와 업적, 풀링, 팝업 흐름, 해상도 보정, 능력치 데이터, 공통 유틸리티를 제공합니다. |
+| 런타임 기반 | `SWMonoBehaviour`, `SWScriptableObject`, 코루틴 실행기, 퀘스트와 업적, 스킬트리, 풀링, 팝업 흐름, 해상도 보정, 능력치 데이터, 공통 유틸리티를 제공합니다. |
 | 그래프 런타임 | 다중 계층 및 스택 State Machine, Behaviour Tree, Blackboard, 그래프 에셋 팩터리와 Runtime Debug를 제공합니다. |
 | 데이터와 저장 | 암호화 PlayerPrefs, 저장 슬롯, 파일 저장, 클라우드 저장 진입점, JSON 가져오기와 내보내기 헬퍼를 제공합니다. |
 | 인스펙터 도구 | 그룹, 버튼, 조건 표시, 드롭다운, 읽기 전용 필드, `SerializeReference` 타입 선택, 표 가져오기 어트리뷰트를 제공합니다. |
@@ -25,6 +25,7 @@ SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시�
 빠른 링크:
 
 - [주요 기능 미리보기](#주요-기능-미리보기)
+- [변경 기록](CHANGELOG.ko.md)
 - [Git 주소로 설치](#git-주소로-설치)
 - [빠른 시작](#빠른-시작)
 - [네임스페이스 구조](#네임스페이스-구조)
@@ -93,7 +94,7 @@ Unity Package Manager에서 다음 순서로 설치합니다.
 4. 다음 주소를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.2.2
+https://github.com/LAVINSE/SWUtils.git#v1.3.0
 ```
 
 특정 브랜치나 태그를 설치하려면 주소 뒤에 `#브랜치이름` 또는 `#태그이름`을 붙입니다.
@@ -145,6 +146,7 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 | `Runtime/Pooling` | `SW.Pooling` |
 | `Runtime/Popup` | `SW.Popup` |
 | `Runtime/Quest` | `SW.Quest` |
+| `Runtime/SkillTree` | `SW.SkillTree` |
 | `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/StateMachine` | `SW.StateMachine` |
@@ -153,6 +155,21 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 | `Editor/<기능>` | `SW.EditorTools.<기능>` |
 
 ## 런타임 기능
+
+### 스킬트리
+
+인크리멘탈 강화, 연구 해금과 특성 선택을 위한 스킬트리를 제공합니다. 노드별 선행 레벨, 모든 조건·하나 이상 조건, 선택 분기, 반복 강화, 여러 재화 구매, 환불, 저장 복원과 영구 노드를 유지하는 초기화를 구성할 수 있습니다. 정의와 소유자별 진행을 분리하며 조건, 비용, 지속 효과와 프로젝트 재화를 확장할 수 있습니다.
+
+- 제작 편집기: `SWTools > Utils > Data > Skill Tree Editor`
+- 기본 게임 화면: `Samples/Prefab/SWSkillTreeExample.prefab`
+- 화면 위치 편집: 예제 인스펙터의 `노드 생성 및 자동 배치`, `현재 위치 저장`, `저장 위치 불러오기`
+- [스킬트리 사용법, 확장 계약과 Kill AI Slop 적용](Documentation~/SkillTree.md)
+
+MiningSkillTree 예제는 **81개 노드와 6개 확장 경로**로 구성되어 있습니다. 기본 배율로 시작해 드래그와 휠로 화면을 탐색하고, `Start`, `Selected`, `Fit All` 버튼으로 시작 지점·선택 노드·현재 표시 중인 노드를 확인합니다. 노드 선택 상세 정보와 구매·환불 조작도 포함합니다.
+
+TreeView의 **노드 배치 → 노드 크기**에서 크기를 직접 설정합니다. 별도의 ViewStyle 에셋은 사용하지 않으며, TextMeshProUGUI와 프로젝트의 기본 글꼴을 사용합니다. 별도 글꼴 데이터는 포함하지 않습니다.
+
+인스펙터의 `SWButton`으로 노드를 생성하며, 자동 배치도 저장 좌표를 우선 사용합니다. 직접 수정한 위치를 저장하면 Skill Tree Editor에도 반영되고, 연결선의 길이와 각도는 실제 노드 위치에 맞춰 갱신됩니다. **편집 미리보기 → 전체 노드 보기**로 숨겨진 노드도 배치할 수 있습니다. 실행 중에는 선행 진행에 따른 숨김·정보 가리기를 적용하며, 플레이어 진행 저장에 화면 배치 데이터를 추가하지 않습니다. 예제 생성과 재생성은 SWTools 메뉴에 노출하지 않습니다.
 
 ### 어트리뷰트
 
@@ -174,6 +191,8 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 - `SWIdentifiedObject`: 식별자, 코드명, 표시명, 설명, 카테고리와 에디터 전용 스프라이트 아이콘을 가진 데이터 에셋입니다.
 - `SWIODatabase`: `SWIdentifiedObject` 목록을 관리하고 빠르게 조회합니다.
 - `SWCategory`: 데이터 에셋 분류에 사용합니다.
+
+`SWIdentifiedObject`의 공통 필드는 기본으로 접힌 **기본 정의** 폴드아웃에 모아 표시합니다. 기존 에셋과 파생 타입에도 자동 적용하며, 사용자가 변경한 펼침 상태를 유지합니다.
 
 ### 코루틴
 
@@ -552,6 +571,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - `SWTools/Utils/Data/Amount Format Window`
 - `SWTools/Utils/Data/Excel Table Importer`
 - `SWTools/Utils/Data/Localization Tools`
+- `SWTools/Utils/Data/Skill Tree Editor`: 스킬트리의 노드, 선행 연결, 공개 조건과 저장 위치를 편집합니다.
 - `SWTools/Utils/Data/Stat System Editor`: `SWCategory`, `SWStat` 같은 `SWIdentifiedObject` 에셋을 생성, 편집, 정렬, 이름 변경하고 목록 아이콘과 표시 크기를 조정합니다.
 - `SWTools/Utils/Hierarchy/Hierarchy Tools`
 - `SWTools/Utils/Project/Define Symbol Window`
@@ -588,6 +608,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - `SWSubClassSelectorExample`: `SerializeReference` 구현 타입 선택 예제
 - `SWGraphAssetsExample`: Behaviour Tree, 다중 계층 상태 머신, 스택 상태 머신과 사용자 정의 노드 카테고리를 한 파일에서 보여주는 통합 예제
 - `SWQuestExample`, `SWQuestScoreRewardExample`: 퀘스트 초기화, 진행 보고, 완료·업적 이벤트와 프로젝트별 보상 구현 예제
+- `SWSkillTreeExample`, `SWSkillTreeNode` 프리팹과 `MiningSkillTree`: 81개 노드의 화면 탐색, 구매·환불, 저장·복원과 배치 편집 예제
 - `SWExampleBehaviourTree`: 실행 가능한 Behaviour Tree 예제 에셋
 - `SWExampleStateMachine`: 실행 가능한 다중 계층 State Machine 예제 에셋
 - `SWExampleStackStateMachine`: Gameplay, Pause와 Return State를 사용하는 Stack State Machine 예제 에셋
@@ -600,5 +621,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - `SWUtils.Runtime`: 런타임 코드
 - `SWUtils.Editor`: 에디터 코드
 - `SWUtils.Samples`: 샘플 코드
+- `SWUtils.SkillTree.Samples.Editor`: 편집기 전용 스킬트리 예제 생성 코드
+- `SWUtils.SkillTree.Tests`: 편집 모드 스킬트리 테스트
 
 스크립트 파일을 이동하거나 이름을 변경할 때는 Unity 메타 식별자를 유지해야 기존 씬과 프리팹 참조가 보존됩니다.

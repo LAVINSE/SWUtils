@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 585b0162231d49ec8e911870333f1fe1, type: 3}
+  m_Name: ExpansionSkill6_2_2
+  m_EditorClassIdentifier: SWUtils.Runtime::SW.SkillTree.SWSkillDefinition
+  categories: []
+  id: 0
+  codeName: 
+  displayName: Automation Breakthrough II
+  description: Choose Efficiency for many smaller upgrades or Breakthrough for fewer
+    upgrades. Refund this path before switching specializations.
+  spriteIcon: {fileID: 0}
+  icon: {fileID: 0}
+  maximumLevel: 5
+  costs:
+  - rid: 5248826844889743698
+  - rid: 5248826844889743699
+  effects:
+  - {fileID: 11400000, guid: 6fc255bc7c413be44b24e4d1fd68e7bf, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 5248826844889743698
+      type: {class: SWSkillTreeFormulaCost, ns: SW.SkillTree, asm: SWUtils.Runtime}
+      data:
+        currency: Gold
+        growth: 2
+        initialCost: 1687.5
+        growthValue: 1.2
+        levelCosts: []
+    - rid: 5248826844889743699
+      type: {class: SWSkillTreeFormulaCost, ns: SW.SkillTree, asm: SWUtils.Runtime}
+      data:
+        currency: Research
+        growth: 0
+        initialCost: 1
+        growthValue: 1.15
+        levelCosts: []

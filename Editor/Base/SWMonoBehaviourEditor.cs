@@ -228,6 +228,7 @@ namespace SW.EditorTools.Base
                 }
 
                 // 현재 그룹 어트리뷰트를 다음 반복을 위해 저장
+                shouldDrawBase = false;
                 previousGroupAttribute = group;
 
                 if (!GroupDataDict.TryGetValue(group.GroupName, out groupData))
@@ -242,7 +243,8 @@ namespace SW.EditorTools.Base
 
                     // EditorPrefs에서 저장된 접힘 상태 불러오기
                     // 키 형식: "{그룹이름}{필드이름}{오브젝트 식별자}"
-                    bool isGroupOpen = EditorPrefs.GetBool($"{group.GroupName}{fieldInfoList[i].Name}{SWEditorObjectUtility.GetPreferenceIdentifier(target)}", fallbackOpenState);
+                    string preferenceKey = $"{group.GroupName}{fieldInfoList[i].Name}{SWEditorObjectUtility.GetPreferenceIdentifier(target)}";
+                    bool isGroupOpen = EditorPrefs.GetBool(preferenceKey, fallbackOpenState);
 
                     // 새 그룹 데이터 생성 및 추가
                     GroupDataDict.Add(group.GroupName, new SWGroupDataEditor
@@ -250,7 +252,8 @@ namespace SW.EditorTools.Base
                         GroupAttribute = group,
                         GroupHashSet = new() { fieldInfoList[i].Name },
                         GroupColor = group.GroupColor,
-                        IsGroupOpen = isGroupOpen
+                        IsGroupOpen = isGroupOpen,
+                        PreferenceKey = preferenceKey
                     });
                 }
                 else
@@ -358,7 +361,7 @@ namespace SW.EditorTools.Base
             Initialized();
 
             VisualElement root = new();
-            root.styleSheets.Add(EditorStyleSheet);
+            if (EditorStyleSheet != null) root.styleSheets.Add(EditorStyleSheet);
 
             SerializedProperty scriptProperty = serializedObject.FindProperty("m_Script");
 
@@ -494,6 +497,12 @@ namespace SW.EditorTools.Base
 
             // viewDataKey: UI 상태 자동 저장/복원용 고유 키
             foldout.viewDataKey = target.name + "-" + targetTypeName + groupData.GroupAttribute.GroupName;
+            foldout.RegisterValueChangedCallback(change =>
+            {
+                if (change.target != foldout) return;
+                groupData.IsGroupOpen = change.newValue;
+                if (!string.IsNullOrEmpty(groupData.PreferenceKey)) EditorPrefs.SetBool(groupData.PreferenceKey, change.newValue);
+            });
             root.Add(foldout);
 
             // 토글(헤더) 요소에 CSS 클래스 추가
@@ -523,6 +532,39 @@ namespace SW.EditorTools.Base
 
                 VisualElement field = CreatePropertyField(groupData.PropertiesList[i]);
                 foldout.Add(field);
+            }
+        }
+
+        /// <summary>제작 창에 삽입된 즉시 모드 인스펙터에도 같은 그룹과 기본 접힘 상태를 적용합니다.</summary>
+        protected void DrawGroupedInspector()
+        {
+            Initialized();
+            serializedObject.Update();
+            foreach (SerializedProperty property in PropertiesList)
+            {
+                using (new EditorGUI.DisabledScope(property.name == "m_Script"))
+                    EditorGUILayout.PropertyField(property, true);
+            }
+            foreach (SWGroupDataEditor group in GroupDataDict.Values)
+            {
+                if (group.PropertiesList.Count == 0) continue;
+                EditorGUILayout.Space(3);
+                bool expanded = SWEditorUtils.DrawFoldoutHeader(group.GroupAttribute.GroupName, group.IsGroupOpen);
+                if (expanded != group.IsGroupOpen)
+                {
+                    group.IsGroupOpen = expanded;
+                    if (!string.IsNullOrEmpty(group.PreferenceKey)) EditorPrefs.SetBool(group.PreferenceKey, expanded);
+                }
+                if (!expanded) continue;
+                using (new EditorGUI.IndentLevelScope())
+                    foreach (SerializedProperty property in group.PropertiesList) EditorGUILayout.PropertyField(property, true);
+            }
+            serializedObject.ApplyModifiedProperties();
+            foreach (SWButtonMethodInfo button in buttonMethodList)
+            {
+                using (new EditorGUI.DisabledScope(button.Method.GetParameters().Length > 0))
+                    if (GUILayout.Button(string.IsNullOrEmpty(button.Attribute.DisplayName)
+                        ? ObjectNames.NicifyVariableName(button.Method.Name) : button.Attribute.DisplayName)) InvokeButtonMethod(button.Method);
             }
         }
 

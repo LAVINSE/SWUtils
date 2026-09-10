@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 585b0162231d49ec8e911870333f1fe1, type: 3}
+  m_Name: ExpansionSkill3_4_1
+  m_EditorClassIdentifier: SWUtils.Runtime::SW.SkillTree.SWSkillDefinition
+  categories: []
+  id: 0
+  codeName: 
+  displayName: Surveying Efficiency IV
+  description: Choose Efficiency for many smaller upgrades or Breakthrough for fewer
+    upgrades. Refund this path before switching specializations.
+  spriteIcon: {fileID: 0}
+  icon: {fileID: 0}
+  maximumLevel: 25
+  costs:
+  - rid: 5248826844889743645
+  - rid: 5248826844889743646
+  effects:
+  - {fileID: 11400000, guid: e6e950872d56d1e4bb4c279c22102276, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: 5248826844889743645
+      type: {class: SWSkillTreeFormulaCost, ns: SW.SkillTree, asm: SWUtils.Runtime}
+      data:
+        currency: Gold
+        growth: 2
+        initialCost: 4687.5
+        growthValue: 1.12
+        levelCosts: []
+    - rid: 5248826844889743646
+      type: {class: SWSkillTreeFormulaCost, ns: SW.SkillTree, asm: SWUtils.Runtime}
+      data:
+        currency: Research
+        growth: 0
+        initialCost: 3
+        growthValue: 1.15
+        levelCosts: []

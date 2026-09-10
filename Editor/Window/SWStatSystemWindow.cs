@@ -355,6 +355,7 @@ namespace SW.EditorTools.Window
             string searchText = searchTextsByType[dataType];
             bool anyDeleted = false;
             float drawRowHeight = GetListDrawRowHeight();
+            int visibleCount = 0;
 
             for (int index = 0; index < assets.Count; index++)
             {
@@ -370,6 +371,7 @@ namespace SW.EditorTools.Window
                 }
 
                 Rect rowRectangle = GUILayoutUtility.GetRect(0f, drawRowHeight, GUILayout.ExpandWidth(true));
+                visibleCount++;
                 bool isSelected = selectedObjectsByType[dataType] == data;
                 string idText = data.ID != 0 ? $"[{data.ID}] " : string.Empty;
                 bool isDeleteClicked = DrawListRow(
@@ -397,6 +399,8 @@ namespace SW.EditorTools.Window
                     Event.current.Use();
                 }
             }
+            if (visibleCount == 0 && !anyDeleted)
+                SWEditorUtils.DrawEmptyNotice("검색 결과가 없습니다. 다른 이름을 입력하거나 검색어를 지우세요.", MessageType.None);
         }
 
         /// <summary>

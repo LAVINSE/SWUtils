@@ -2,7 +2,8 @@
     "name": "SWUtils.Samples",
     "rootNamespace": "",
     "references": [
-        "SWUtils.Runtime"
+        "SWUtils.Runtime",
+        "Unity.ugui", "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -8,11 +8,29 @@ Release notes are grouped by version and date. The latest release is summarized 
 
 | Latest | Date | Focus |
 | --- | --- | --- |
-| `v1.2.2` | 2026-09-07 | Unity 6.6 object identifier and Editor compatibility fixes. |
+| `v1.3.0` | 2026-09-10 | Incremental skill trees, an 81-node example, and editor workflow improvements. |
 
 ## [Unreleased]
 
 No changes are currently scheduled.
+
+## [v1.3.0] - 2026-09-10
+
+### Added
+
+- Added `SW.SkillTree` for incremental upgrades, research unlocks, and talent choices. Shared definitions are separated from owner progress, with extensible costs, conditions, effects, wallets, and save stores.
+- Added prerequisite levels, all/any requirements, exclusive branches, repeatable upgrades, multiple currencies, bulk purchases, refunds based on original payments, save restoration, and progress resets that retain permanent nodes.
+- Added Skill Tree Editor and a game view. Connections follow actual node rectangles; edited positions can be saved to the shared tree asset and reflected in the editor. Automatic layout fills nodes without saved positions.
+- Added prerequisite-based hiding and masking, plus an editor-only option to display all nodes for placement. Player save data does not include layout coordinates.
+- Added an 81-node MiningSkillTree example with six expansion paths, a node prefab, purchase and refund controls, and save restoration. Navigation supports dragging, pointer-centered zoom, start and selection focus, and fitting visible nodes.
+- Added the skill tree guide, extension contracts, and Edit Mode tests.
+
+### Changed
+
+- Grouped common `SWIdentifiedObject` fields under **기본 정의**, collapsed by default. Existing assets and derived types inherit the presentation while retaining the user's foldout preference.
+
+- Skill tree node size is configured directly on TreeView. The view uses TextMeshProUGUI and the project default font without a separate ViewStyle asset or bundled font data.
+- Kept sample creation and rebuilding out of the SWTools menu, using Inspector layout actions and editor code instead. The node retention setting is labeled **진행 초기화 시 유지**.
 
 ## [v1.2.2] - 2026-09-07
 

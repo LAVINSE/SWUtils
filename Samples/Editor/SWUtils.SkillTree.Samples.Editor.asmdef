@@ -1,0 +1,6 @@
+{
+    "name": "SWUtils.SkillTree.Samples.Editor",
+    "references": ["SWUtils.Runtime", "SWUtils.Samples", "Unity.ugui", "Unity.TextMeshPro"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": true
+}

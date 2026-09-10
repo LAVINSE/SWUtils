@@ -3,7 +3,7 @@
 [한국어](README.md) | [English](README.en.md)
 
 ![Unity 6.0+](https://img.shields.io/badge/Unity-6.0%2B-222222)
-![Package 1.2.2](https://img.shields.io/badge/package-1.2.2-2f80ed)
+![Package 1.3.0](https://img.shields.io/badge/package-1.3.0-2f80ed)
 ![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
 
 SWUtils is a compact Unity utility package for runtime systems, inspector workflows, debugging tools, and editor productivity windows.
@@ -15,7 +15,7 @@ SWUtils is a compact Unity utility package for runtime systems, inspector workfl
 
 | Area | What it provides |
 | --- | --- |
-| Runtime foundations | `SWMonoBehaviour`, `SWScriptableObject`, coroutine runners, quests and achievements, pooling, popup flow, resolution helpers, stat data, and reusable utilities. |
+| Runtime foundations | `SWMonoBehaviour`, `SWScriptableObject`, coroutine runners, quests and achievements, skill trees, pooling, popup flow, resolution helpers, stat data, and reusable utilities. |
 | Graph runtimes | Layered and stack State Machines, Behaviour Trees, Blackboards, graph-asset factories, and Runtime Debug. |
 | Data and persistence | Encrypted PlayerPrefs, save slots, file saves, cloud-save entry points, and JSON import/export helpers. |
 | Inspector tooling | Grouped fields, buttons, conditions, dropdowns, read-only fields, `SerializeReference` type selection, and table import attributes. |
@@ -25,6 +25,7 @@ SWUtils is a compact Unity utility package for runtime systems, inspector workfl
 Quick links:
 
 - [Feature Preview](#feature-preview)
+- [Changelog](CHANGELOG.md)
 - [Install from a Git URL](#install-from-a-git-url)
 - [Quick Start](#quick-start)
 - [Namespace Layout](#namespace-layout)
@@ -95,7 +96,7 @@ Add the package through Unity Package Manager:
 Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.2.2
+https://github.com/LAVINSE/SWUtils.git#v1.3.0
 ```
 
 ## Dependencies
@@ -148,6 +149,7 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 | `Runtime/Pooling` | `SW.Pooling` |
 | `Runtime/Popup` | `SW.Popup` |
 | `Runtime/Quest` | `SW.Quest` |
+| `Runtime/SkillTree` | `SW.SkillTree` |
 | `Runtime/Resolution` | `SW.ScreenResolution` |
 | `Runtime/Stat` | `SW.Stat` |
 | `Runtime/StateMachine` | `SW.StateMachine` |
@@ -156,6 +158,21 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 | `Editor/<Feature>` | `SW.EditorTools.<Feature>` |
 
 ## Runtime Features
+
+### `Runtime/SkillTree`
+
+Provides incremental upgrades, research unlocks, and talent choices through reusable definitions and independent progress for each owner. Supports prerequisite levels, all/any requirements, exclusive branches, repeated upgrades, multiple currencies, refunds, save restoration, and progress resets that retain permanent nodes. Costs, conditions, effects, wallets, and save stores can be extended for each project.
+
+- Editor: `SWTools > Utils > Data > Skill Tree Editor`.
+- Example: `Samples/Prefab/SWSkillTreeExample.prefab`, with **81 nodes and six expansion paths** in MiningSkillTree.
+- Navigation: drag to pan, scroll to zoom around the pointer, and use `Start`, `Selected`, and `Fit All` to focus the first revealed node, selected node, or currently displayed nodes.
+- Layout: Inspector buttons generate nodes, save edited positions to the shared tree definition, and reload saved positions. Automatic layout gives saved coordinates priority; Skill Tree Editor shares those coordinates. Connections follow the actual node rectangles.
+- Editing preview: **편집 미리보기 → 전체 노드 보기** displays every node for placement without changing gameplay reveal rules. Hidden and masked nodes still follow prerequisite progress during play.
+- Node size: set it directly under **노드 배치 → 노드 크기** in TreeView. No separate ViewStyle asset is required.
+
+The default view uses TextMeshProUGUI with the project's default font. No font data is bundled. Player save data does not include view layout. Sample creation and rebuilding are available through editor code and Inspector workflows rather than SWTools menu entries.
+
+See the [skill tree guide, extension contracts, and Kill AI Slop notes (Korean)](Documentation~/SkillTree.md).
 
 ### `Runtime/Attribute`
 
@@ -448,6 +465,10 @@ public class PlayerController : SWMonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
 }
 ```
+
+### `Runtime/Base` - `SWIdentifiedObject`
+
+Shared definition fields are grouped under **기본 정의**, collapsed by default. This applies automatically to existing assets and derived types, while preserving the user's foldout preference.
 
 ### `Runtime/Base` - `SWScriptableObject`
 
@@ -975,6 +996,7 @@ Editor windows available from the `SWTools` menu. Debugging tools are under `SWT
 - `SWTools/Utils/Data/Amount Format Window`: Creates and edits number format presets.
 - `SWTools/Utils/Data/Excel Table Importer`: Applies tabular text to ScriptableObject data.
 - `SWTools/Utils/Data/Localization Tools`: Assists with Localization table workflows.
+- `SWTools/Utils/Data/Skill Tree Editor`: Edits skill nodes, prerequisite connections, reveal rules, and shared layout coordinates.
 - `SWTools/Utils/Data/Stat System Editor`: Creates, edits, sorts, renames, previews icons, and adjusts list display sizes for `SWIdentifiedObject` assets such as categories and stats.
 - `SWTools/Utils/Hierarchy/Hierarchy Tools`: Configures Hierarchy object colors, icons, and styles.
 - `SWTools/Utils/Project/Define Symbol Window`: Manages Scripting Define Symbols.
@@ -1100,6 +1122,7 @@ Provides sample prefabs and example scripts.
 - `Samples/Example/SWSubClassSelectorExample.cs`: Examples for `SWSubClassSelector`, `SWAddTypeMenu`, and `SWHideInTypeMenu`.
 - `Samples/Example/SWGraphAssetsExample.cs`: Consolidated Behaviour Tree, layered state machine, stack state machine, and custom node-category example.
 - `Samples/Scripts/SWQuestExample.cs`, `SWQuestScoreRewardExample.cs`: Quest initialization, progress reporting, completion and achievement events, and a project reward example.
+- `Samples/Prefab/SWSkillTreeExample.prefab`, `SWSkillTreeNode.prefab`, and `Samples/Data/SkillTree/MiningSkillTree.asset`: An 81-node example with navigation, purchases, refunds, persistence, and layout editing.
 - `Samples/Example/SWExampleBehaviourTree.asset`: Ready-to-run Behaviour Tree graph.
 - `Samples/Example/SWExampleStateMachine.asset`: Ready-to-run layered State Machine graph.
 - `Samples/Example/SWExampleStackStateMachine.asset`: Ready-to-run Stack State Machine graph using Gameplay, Pause, and Return State.
@@ -1114,5 +1137,7 @@ After installation, inspect the examples directly in `Packages > SWUtils > Sampl
 - `SWUtils.Runtime`: Runtime code assembly.
 - `SWUtils.Editor`: Editor code assembly.
 - `SWUtils.Samples`: Sample code assembly.
+- `SWUtils.SkillTree.Samples.Editor`: Editor-only skill tree sample generation.
+- `SWUtils.SkillTree.Tests`: Edit Mode skill tree tests.
 
 Sample prefabs are serialized using the assembly name that contains each script.
