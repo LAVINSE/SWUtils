@@ -25,8 +25,6 @@ namespace SW.EditorTools.Attributes
         private MethodInfo[] eventMethodInfos = null;
         #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         /// <summary>
         /// 버튼 바 UIElements 트리를 생성합니다.

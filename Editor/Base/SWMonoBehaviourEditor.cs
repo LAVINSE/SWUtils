@@ -115,8 +115,6 @@ namespace SW.EditorTools.Base
         }
         #endregion // 내부 클래스
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         /// <summary>
         /// 현재 인스펙터를 계속 다시 그려야 하는지 확인합니다.

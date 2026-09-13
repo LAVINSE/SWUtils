@@ -17,14 +17,11 @@ namespace SW.EditorTools.Attributes
     {
         #region 필드
         /// <summary>
-        /// propertyPath를 키로, enumPropPath를 값으로 저장하는 캐시입니다.
-        /// 매 프레임 문자열 연산을 피하기 위해 사용합니다.
+        /// 대상 필드 경로와 조건 필드 이름을 묶어 조건 열거형의 경로를 저장합니다.
         /// </summary>
         private static Dictionary<string, string> cachedPaths = new();
         #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         [InitializeOnLoadMethod]
         private static void ClearCacheOnReload()
@@ -65,10 +62,12 @@ namespace SW.EditorTools.Attributes
             string enumPropPath = string.Empty;
             string propertyPath = property.propertyPath;
 
-            if (!cachedPaths.TryGetValue(propertyPath, out enumPropPath))
+            string cacheKey = propertyPath + "\n" + enumConditionAttribute.ConditionEnum;
+            if (!cachedPaths.TryGetValue(cacheKey, out enumPropPath))
             {
-                enumPropPath = propertyPath.Replace(property.name, enumConditionAttribute.ConditionEnum);
-                cachedPaths.Add(propertyPath, enumPropPath);
+                int separatorIndex = propertyPath.LastIndexOf('.');
+                enumPropPath = propertyPath.Substring(0, separatorIndex + 1) + enumConditionAttribute.ConditionEnum;
+                cachedPaths.Add(cacheKey, enumPropPath);
             }
 
             enumProp = property.serializedObject.FindProperty(enumPropPath);

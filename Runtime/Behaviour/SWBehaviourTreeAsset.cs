@@ -132,6 +132,11 @@ namespace SW.BehaviourTree
         /// <summary>식별자로 노드를 찾습니다.</summary>
         public bool TryGetNode(string identifier, out SWBehaviourNode node)
         {
+            if (string.IsNullOrWhiteSpace(identifier))
+            {
+                node = null;
+                return false;
+            }
             EnsureLookup();
             return nodesByIdentifier.TryGetValue(identifier, out node);
         }
@@ -147,10 +152,54 @@ namespace SW.BehaviourTree
             GameObject owner,
             SWBehaviourBlackboard sharedBlackboard)
         {
+            if (!ValidateSubTrees(out string error))
+            {
+                SW.Util.SWLog.LogError(error);
+                return null;
+            }
             SWBehaviourTreeAsset instance = Instantiate(this);
             instance.hideFlags = HideFlags.DontSave;
             instance.InitializeRuntime(owner, sharedBlackboard);
             return instance;
+        }
+
+        /// <summary>하위 에셋 참조의 순환과 과도한 중첩을 검사합니다.</summary>
+        public bool ValidateSubTrees(out string error)
+        {
+            return ValidateSubTrees(new HashSet<SWBehaviourTreeAsset>(), new Dictionary<SWBehaviourTreeAsset, int>(), out _, out error);
+        }
+
+        /// <summary>현재 조상 경로를 유지하며 각 에셋을 검사합니다.</summary>
+        private bool ValidateSubTrees(HashSet<SWBehaviourTreeAsset> ancestors,
+            Dictionary<SWBehaviourTreeAsset, int> completedDepths, out int depth, out string error)
+        {
+            depth = 1;
+            error = null;
+            if (ancestors.Contains(this) || ancestors.Count >= 64)
+            {
+                error = $"[행동 트리] 하위 트리가 순환하거나 64단계 중첩 제한을 넘었습니다: {name}";
+                return false;
+            }
+            if (completedDepths.TryGetValue(this, out depth))
+            {
+                if (ancestors.Count + depth <= 64) return true;
+                error = $"[행동 트리] 하위 트리가 64단계 중첩 제한을 넘었습니다: {name}";
+                return false;
+            }
+            depth = 1;
+            ancestors.Add(this);
+            foreach (SWBehaviourNode node in nodes)
+            {
+                if (node is SWBehaviourSubTreeNode subTree && subTree.SubTreeAsset != null)
+                {
+                    if (!subTree.SubTreeAsset.ValidateSubTrees(ancestors, completedDepths, out int childDepth, out error))
+                        return false;
+                    depth = Math.Max(depth, childDepth + 1);
+                }
+            }
+            ancestors.Remove(this);
+            completedDepths[this] = depth;
+            return true;
         }
 
         /// <summary>Root에서 Behaviour Tree를 한 번 실행합니다.</summary>

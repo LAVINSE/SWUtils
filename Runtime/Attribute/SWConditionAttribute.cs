@@ -17,8 +17,6 @@ namespace SW.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
     public class SWConditionAttribute : PropertyAttribute
     {
-        #region 필드
-        #endregion // 필드
 
         #region 프로퍼티
         /// <summary>

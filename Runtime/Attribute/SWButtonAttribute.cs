@@ -9,8 +9,6 @@ namespace SW.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public class SWButtonAttribute : PropertyAttribute
     {
-        #region 필드
-        #endregion // 필드
 
         #region 프로퍼티
         /// <summary>

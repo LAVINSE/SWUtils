@@ -32,6 +32,7 @@ namespace SW.StateMachine
         private readonly Dictionary<Type, SWStackState<TContext>> registeredStates =
             new Dictionary<Type, SWStackState<TContext>>();
         private readonly List<SWStackState<TContext>> stateStack = new List<SWStackState<TContext>>();
+        private readonly SWStateOperationQueue stateOperations = new();
         #endregion // 필드
 
         #region 프로퍼티
@@ -151,6 +152,12 @@ namespace SW.StateMachine
         /// <param name="initialStateType">처음 진입할 상태 타입입니다.</param>
         public void Start(Type initialStateType)
         {
+            stateOperations.Execute(() => StartInternal(initialStateType));
+        }
+
+        /// <summary>현재 전환이 끝난 뒤 초기 상태에 진입합니다.</summary>
+        private void StartInternal(Type initialStateType)
+        {
             if (IsRunning)
                 throw new InvalidOperationException("스택 상태 머신이 이미 실행 중입니다.");
 
@@ -173,6 +180,12 @@ namespace SW.StateMachine
         /// 스택에 남아 있는 상태를 모두 종료하고 상태 머신을 정지합니다.
         /// </summary>
         public void Stop()
+        {
+            stateOperations.Execute(StopInternal);
+        }
+
+        /// <summary>상태 종료 중 요청이 현재 스택을 바꾸지 않도록 순서대로 정지합니다.</summary>
+        private void StopInternal()
         {
             if (!IsRunning)
                 return;
@@ -198,6 +211,12 @@ namespace SW.StateMachine
         /// <param name="stateType">추가할 상태 타입입니다.</param>
         public void Push(Type stateType)
         {
+            stateOperations.Execute(() => PushState(stateType));
+        }
+
+        /// <summary>대기 중인 추가 요청을 적용합니다.</summary>
+        private void PushState(Type stateType)
+        {
             EnsureRunning();
             EnsureStateExists(stateType);
             PushInternal(stateType, SWStackStateOperation.Push);
@@ -206,8 +225,14 @@ namespace SW.StateMachine
         /// <summary>
         /// 최상단 상태를 제거하고 아래 상태를 다시 활성화합니다.
         /// </summary>
-        /// <returns>제거한 상태가 있으면 true입니다.</returns>
+        /// <returns>제거한 상태가 있거나 전환 중인 제거 요청을 접수했으면 true입니다.</returns>
         public bool Pop()
+        {
+            return stateOperations.Execute(PopInternal);
+        }
+
+        /// <summary>현재 전환과 분리하여 최상단 상태를 제거합니다.</summary>
+        private bool PopInternal()
         {
             EnsureRunning();
 
@@ -240,6 +265,12 @@ namespace SW.StateMachine
         /// <param name="stateType">교체할 상태 타입입니다.</param>
         public void Replace(Type stateType)
         {
+            stateOperations.Execute(() => ReplaceInternal(stateType));
+        }
+
+        /// <summary>대기 중인 교체 요청을 적용합니다.</summary>
+        private void ReplaceInternal(Type stateType)
+        {
             EnsureRunning();
             EnsureStateExists(stateType);
 
@@ -266,8 +297,11 @@ namespace SW.StateMachine
         /// </summary>
         public void Clear()
         {
-            EnsureRunning();
-            ClearInternal(true);
+            stateOperations.Execute(() =>
+            {
+                EnsureRunning();
+                ClearInternal(true);
+            });
         }
 
         /// <summary>지정한 상태를 스택에 추가합니다.</summary>

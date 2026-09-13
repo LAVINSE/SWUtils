@@ -49,13 +49,13 @@ namespace SW.Stat
         public float MaxValue
         {
             get => maxValue;
-            set => maxValue = value;
+            set => SetRange(minValue, value);
         }
         /// <summary>허용되는 최솟값입니다.</summary>
         public float MinValue
         {
             get => minValue;
-            set => minValue = value;
+            set => SetRange(value, maxValue);
         }
         /// <summary>보너스를 적용하기 전의 기본값입니다.</summary>
         public float DefaultValue
@@ -83,6 +83,22 @@ namespace SW.Stat
         /// <summary>현재 값이 최솟값에 도달했을 때 발생합니다.</summary>
         public event ValueChangedHandler OnValueMin;
         #endregion // 프로퍼티
+
+        /// <summary>유효한 범위를 적용하고 최종 값이 달라지면 변경을 알립니다.</summary>
+        /// <param name="minimumValue">유한한 최솟값입니다.</param>
+        /// <param name="maximumValue">최솟값 이상인 유한한 최댓값입니다.</param>
+        public void SetRange(float minimumValue, float maximumValue)
+        {
+            if (float.IsNaN(minimumValue) || float.IsInfinity(minimumValue)
+                || float.IsNaN(maximumValue) || float.IsInfinity(maximumValue)
+                || minimumValue > maximumValue)
+                throw new System.ArgumentException("능력치 범위는 유한하며 최솟값이 최댓값 이하여야 합니다.");
+
+            float previousValue = Value;
+            minValue = minimumValue;
+            maxValue = maximumValue;
+            TryInvokeValueChangedEvent(Value, previousValue);
+        }
 
         #region 복사
         /// <summary>

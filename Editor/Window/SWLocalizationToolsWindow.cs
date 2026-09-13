@@ -393,15 +393,16 @@ namespace SW.EditorTools.Window
         /// </summary>
         private string GenerateJsonExportData()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("{");
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("{");
 
             var allKeys = selectedCollection.SharedData.Entries.Select(e => e.Key).OrderBy(k => k).ToList();
             var orderedLocales = selectedLocales.OrderBy(l => l.LocaleName).ToList();
+            bool hasWrittenEntry = false;
 
-            for (int i = 0; i < allKeys.Count; i++)
+            for (int keyIndex = 0; keyIndex < allKeys.Count; keyIndex++)
             {
-                string key = allKeys[i];
+                string key = allKeys[keyIndex];
                 var translations = new List<(string code, string value)>();
                 bool hasAnyValue = false;
 
@@ -416,53 +417,49 @@ namespace SW.EditorTools.Window
 
                 if (!exportIncludeEmptyEntries && !hasAnyValue) continue;
 
-                sb.Append("  ").Append(JsonEscape(key)).Append(": {");
-                for (int j = 0; j < translations.Count; j++)
+                if (hasWrittenEntry) stringBuilder.AppendLine(",");
+                hasWrittenEntry = true;
+                stringBuilder.Append("  ").Append(JsonEscape(key)).Append(": {");
+                for (int translationIndex = 0; translationIndex < translations.Count; translationIndex++)
                 {
-                    if (j > 0) sb.Append(", ");
-                    sb.Append(JsonEscape(translations[j].code)).Append(": ").Append(JsonEscape(translations[j].value));
+                    if (translationIndex > 0) stringBuilder.Append(", ");
+                    stringBuilder.Append(JsonEscape(translations[translationIndex].code)).Append(": ").Append(JsonEscape(translations[translationIndex].value));
                 }
-                sb.Append("}");
-                if (i < allKeys.Count - 1) sb.Append(",");
-                sb.AppendLine();
+                stringBuilder.Append("}");
             }
 
-            sb.AppendLine("}");
-            return sb.ToString();
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine("}");
+            return stringBuilder.ToString();
         }
 
         private string JsonEscape(string value)
         {
             if (value == null) return "\"\"";
-            var sb = new StringBuilder(value.Length + 2);
-            sb.Append('"');
-            foreach (char c in value)
+            var stringBuilder = new StringBuilder(value.Length + 2);
+            stringBuilder.Append('"');
+            foreach (char character in value)
             {
-                switch (c)
+                switch (character)
                 {
-                    case '"': sb.Append("\\\""); break;
-                    case '\\': sb.Append("\\\\"); break;
-                    case '\n': sb.Append("\\n"); break;
-                    case '\r': sb.Append("\\r"); break;
-                    case '\t': sb.Append("\\t"); break;
+                    case '"': stringBuilder.Append("\\\""); break;
+                    case '\\': stringBuilder.Append("\\\\"); break;
+                    case '\n': stringBuilder.Append("\\n"); break;
+                    case '\r': stringBuilder.Append("\\r"); break;
+                    case '\t': stringBuilder.Append("\\t"); break;
                     default:
-                        if (c < 0x20) sb.Append($"\\u{(int)c:X4}");
-                        else sb.Append(c);
+                        if (character < 0x20) stringBuilder.Append($"\\u{(int)character:X4}");
+                        else stringBuilder.Append(character);
                         break;
                 }
             }
-            sb.Append('"');
-            return sb.ToString();
+            stringBuilder.Append('"');
+            return stringBuilder.ToString();
         }
 
         private string QuoteIfNeeded(string value, string separator)
         {
-            if (exportFormat == ExportFormat.CSV &&
-                (value.Contains(",") || value.Contains("\"") || value.Contains("\n")))
-            {
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
-            }
-            return value;
+            return SW.EditorTools.Data.SWDelimitedText.Quote(value, separator[0]);
         }
 
         private void ExportCollection()
@@ -687,55 +684,33 @@ namespace SW.EditorTools.Window
         /// </summary>
         private List<ImportEntry> ParseTSVData(string data)
         {
-            var entries = new List<ImportEntry>();
-            if (string.IsNullOrEmpty(data)) return entries;
-
-            var lines = data.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length < 2) return entries;
-
-            var headers = lines[0].Split('\t');
-            if (headers.Length < 2) return entries;
-
-            var languages = headers.Skip(1).ToArray();
-            int expectedColumnCount = headers.Length;
-
-            int currentLine = 1;
-            while (currentLine < lines.Length)
+            List<ImportEntry> entries = new();
+            List<string[]> rows = SW.EditorTools.Data.SWDelimitedText.Read(data);
+            if (rows.Count < 2) return entries;
+            string[] headers = rows[0];
+            if (headers.Length < 2) throw new FormatException("키와 언어 열이 필요합니다.");
+            HashSet<string> languages = new(StringComparer.OrdinalIgnoreCase);
+            for (int column = 1; column < headers.Length; column++)
+                if (string.IsNullOrWhiteSpace(headers[column]) || !languages.Add(headers[column]))
+                    throw new FormatException("언어 열 이름이 비어 있거나 중복되었습니다.");
+            HashSet<string> keys = new(StringComparer.Ordinal);
+            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
-                string fullLine = lines[currentLine];
-                int tabCount = fullLine.Count(c => c == '\t');
-
-                while (tabCount < expectedColumnCount - 1 && currentLine + 1 < lines.Length)
-                {
-                    currentLine++;
-                    fullLine += "\n" + lines[currentLine];
-                    tabCount = fullLine.Count(c => c == '\t');
-                }
-
-                var columns = fullLine.Split('\t');
-                if (columns.Length < 2 || string.IsNullOrEmpty(columns[0]))
-                {
-                    currentLine++;
-                    continue;
-                }
-
-                var entry = new ImportEntry
+                string[] columns = rows[rowIndex];
+                if (columns.Length != headers.Length)
+                    throw new FormatException($"{rowIndex + 1}번째 행의 열 수가 헤더와 다릅니다.");
+                if (string.IsNullOrEmpty(columns[0]) || !keys.Add(columns[0]))
+                    throw new FormatException($"{rowIndex + 1}번째 행의 키가 비어 있거나 중복되었습니다.");
+                ImportEntry entry = new()
                 {
                     key = string.IsNullOrEmpty(importKeyPrefix) ? columns[0] : importKeyPrefix + columns[0]
                 };
-
-                for (int j = 1; j < columns.Length && j - 1 < languages.Length; j++)
-                {
-                    entry.translations[languages[j - 1]] = columns[j];
-                }
-
+                for (int column = 1; column < columns.Length; column++)
+                    entry.translations[headers[column]] = columns[column];
                 entries.Add(entry);
-                currentLine++;
             }
-
             return entries;
         }
-
         /// <summary>
         /// 파싱된 엔트리를 실제 StringTableCollection에 반영합니다.
         /// </summary>

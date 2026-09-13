@@ -20,8 +20,6 @@ namespace SW.Attributes
         public readonly object[] DropdownValues;
         #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         /// <summary>
         /// 드롭다운에 표시할 값 목록을 지정해 드롭다운 어트리뷰트를 생성합니다.

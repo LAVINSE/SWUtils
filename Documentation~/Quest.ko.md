@@ -35,7 +35,7 @@
 8. 각 데이터베이스를 선택해 `프로젝트 정의 동기화`, `구성 검증`을 차례로 실행합니다.
 9. 시작 장면에 `SWQuestSystem`을 배치하고 두 데이터베이스를 연결합니다.
 
-업적은 시스템 초기화 시 자동 등록되며 모든 일반 퀘스트와 같은 진행 보고를 받습니다. 업적은 작업을 모두 채우는 즉시 완료되고 취소할 수 없으며 항상 저장됩니다.
+업적은 시스템 초기화 시 자동 등록되며 일반 퀘스트와 같은 진행 보고를 받습니다. 작업을 모두 채우면 자동으로 보상 지급을 시도하고, 모두 성공하면 완료됩니다. 업적은 취소할 수 없으며 저장 대상에 항상 포함됩니다.
 
 ## 퀘스트 시스템 편집기
 
@@ -83,7 +83,9 @@ SWQuestSystem.Instance.ReceiveReport("KILL", defeatedEnemy, 1);
 
 ## 완료와 취소
 
-일반 퀘스트가 모든 작업을 끝내면 `WaitingForCompletion` 상태가 됩니다. 자동 완료를 사용하거나 `Complete()`를 호출하면 보상을 지급하고 완료 목록으로 이동합니다.
+일반 퀘스트가 모든 작업을 끝내면 `WaitingForCompletion` 상태가 됩니다. 자동 완료를 사용하거나 `Complete()`를 호출하면 등록된 보상을 차례로 지급합니다. 전부 성공하면 완료 목록으로 이동하고 `true`를 반환합니다.
+
+퀘스트 하나에 골드와 아이템 보상이 함께 있을 수 있습니다. 골드 지급 후 아이템 지급이 실패하면 퀘스트는 완료 대기로 남고 `Complete()`는 `false`를 반환합니다. 지급 문제를 해결한 뒤 다시 호출하면 기록된 골드는 건너뛰고 아이템부터 재시도합니다. 자동 완료가 실패한 경우에도 재시도 시점은 게임 코드에서 정합니다.
 
 ```csharp
 if (runtimeQuest.IsWaitingForCompletion)
@@ -94,7 +96,7 @@ if (runtimeQuest.IsWaitingForCompletion)
 
 `ForceComplete()`는 남은 모든 작업을 완료한 뒤 보상까지 지급하므로 개발 도구나 명시적인 건너뛰기 기능에서만 사용합니다.
 
-취소 가능 설정과 모든 취소 조건을 충족한 일반 퀘스트만 `Cancel()`할 수 있습니다. 업적의 취소 호출은 항상 실패합니다.
+취소 가능 설정과 모든 취소 조건을 충족한 일반 퀘스트만 `Cancel()`할 수 있습니다. 보상을 지급하는 중이거나 일부 보상이 이미 지급되었다면 취소할 수 없습니다. 업적의 취소 호출도 항상 실패합니다.
 
 ## 사용자 정의 조건
 
@@ -120,7 +122,7 @@ public sealed class MinimumLevelCondition : SWQuestCondition
 
 ## 사용자 정의 보상
 
-보상 하나에서 예외가 발생해도 나머지 보상 지급은 계속됩니다. 완료 복원 과정에서는 보상을 다시 지급하지 않습니다.
+`Grant`가 정상 반환하면 해당 보상이 지급된 것으로 기록합니다. 지급할 수 없으면 게임 데이터를 변경하기 전에 예외를 발생시킵니다. 실패한 항목 이후의 지급은 멈추며, 완료 상태를 복원할 때는 보상을 다시 지급하지 않습니다.
 
 ```csharp
 using SW.Quest;
@@ -130,15 +132,19 @@ public sealed class GoldReward : SWQuestReward
 {
     public override void Grant(SWQuestSystem questSystem, SWQuest quest)
     {
-        if (questSystem.TryGetContext(out PlayerWallet wallet))
-        {
-            wallet.AddGold(Quantity);
-        }
+        if (questSystem == null || !questSystem.TryGetContext(out PlayerWallet wallet))
+            throw new System.InvalidOperationException("골드를 지급할 지갑이 없습니다.");
+
+        wallet.AddGold(Quantity);
     }
 }
 ```
 
-`SWQuestRewardGrantedEvent`를 구독하면 보상 에셋을 프로젝트 서비스에 직접 연결하지 않고 별도 보상 처리기로 전달할 수도 있습니다.
+예제의 `PlayerWallet`은 프로젝트에서 구현할 타입입니다. `AddGold`가 예외를 던질 때는 잔액을 변경하지 않아야 합니다. 외부 서버 지급처럼 결과가 불확실할 수 있는 처리는 해당 서비스에서 중복 요청을 식별해야 합니다.
+
+`RewardGranted`와 `SWQuestRewardGrantedEvent`는 지급 성공 후의 알림입니다. 화면 표시나 효과음에 사용하고, 실제 재화 지급은 `Grant`에서 처리합니다. 알림 구독자의 예외는 다른 구독자와 퀘스트 처리를 중단하지 않습니다.
+
+보상 에셋은 편집기에서 에셋 식별자를 저장합니다. 기존 보상 에셋도 다시 저장한 뒤 배포하세요. 같은 보상을 여러 번 등록하면 등장 순서별로 각각 지급합니다. 일부 보상이 지급된 퀘스트의 보상 식별자나 같은 보상의 등록 순서는 유지해야 저장 기록이 같은 항목을 가리킵니다.
 
 ## 이벤트
 
@@ -181,6 +187,8 @@ SWQuestSystem.Instance.RestoreSaveData(saveData.quests);
 ```
 
 저장 데이터에는 현재 작업 묶음뿐 아니라 모든 묶음과 모든 작업의 상태가 들어갑니다. 묶음과 작업을 코드명으로 대응하므로 정의에 항목이 추가되거나 순서가 달라져도 가능한 진행량을 복원하고, 사라진 항목은 경고합니다. 코드명이 없던 이전 저장 데이터는 배열 인덱스로 복원합니다. 완료된 퀘스트와 업적을 불러올 때는 이미 지급된 보상을 다시 지급하지 않습니다. 현재 구현보다 높은 형식 버전의 저장 데이터는 상태를 지우기 전에 거부합니다.
+
+지급 기록은 `grantedRewardIdentifiers`에 포함됩니다. 이 필드가 없는 이전 저장도 읽을 수 있습니다. 퀘스트 저장은 지갑이나 인벤토리를 대신 저장하지 않으므로 **재화·아이템과 퀘스트 지급 기록을 같은 게임 저장 단위로 보존**해야 합니다. 둘을 따로 저장하다 종료되면 중복 지급 또는 누락이 생길 수 있습니다. `Complete()`가 실패한 뒤에도 부분 지급 기록을 저장해야 합니다.
 
 ## 현재 검토가 필요한 부분
 

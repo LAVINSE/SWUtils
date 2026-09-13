@@ -38,8 +38,6 @@ namespace SW.EditorTools.Attributes
         private bool isInitialized;
         #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         /// <summary>
         /// Inspector GUI를 그립니다.

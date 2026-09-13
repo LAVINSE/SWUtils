@@ -42,6 +42,8 @@ namespace SW.Quest
         public SWQuestState state;
         /// <summary>현재 작업 묶음 인덱스입니다.</summary>
         public int currentTaskGroupIndex;
+        /// <summary>정상 지급이 끝난 보상 식별자입니다. 이전 저장 형식에서는 비어 있습니다.</summary>
+        public string[] grantedRewardIdentifiers = Array.Empty<string>();
         /// <summary>현재 작업 묶음 코드명입니다.</summary>
         public string currentTaskGroupCodeName;
         /// <summary>모든 작업 묶음의 진행 상태입니다.</summary>

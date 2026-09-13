@@ -71,6 +71,7 @@ namespace SW.BehaviourTree
             SWBehaviourBlackboardEntry entry = new(uniqueName, valueType);
             entries.Add(entry);
             entriesByName.Add(uniqueName, entry);
+            entry.NameChanged = InvalidateLookup;
             return entry;
         }
 
@@ -89,6 +90,7 @@ namespace SW.BehaviourTree
             entry.Initialize(uniqueName);
             entries.Add(entry);
             entriesByName.Add(uniqueName, entry);
+            entry.NameChanged = InvalidateLookup;
             return entry;
         }
 
@@ -100,6 +102,7 @@ namespace SW.BehaviourTree
             if (index < 0)
                 return false;
 
+            entries[index].NameChanged = null;
             entries.RemoveAt(index);
             RebuildLookup();
             return true;
@@ -113,6 +116,8 @@ namespace SW.BehaviourTree
             for (int index = 0; index < entries.Count; index++)
             {
                 SWBehaviourBlackboardEntry entry = entries[index];
+                if (entry != null)
+                    entry.NameChanged = InvalidateLookup;
                 if (entry != null && !string.IsNullOrWhiteSpace(entry.Name))
                     entriesByName[entry.Name] = entry;
             }
@@ -130,6 +135,26 @@ namespace SW.BehaviourTree
         {
             if (entriesByName == null)
                 RebuildLookup();
+        }
+
+        /// <summary>항목 이름 변경 후 다음 조회에서 이름 목록을 다시 만듭니다.</summary>
+        private void InvalidateLookup()
+        {
+            entriesByName = null;
+        }
+
+        /// <summary>중복되지 않는 이름으로 항목을 변경합니다. 기존 노드의 문자열 참조는 호출자가 갱신해야 합니다.</summary>
+        public bool Rename(string identifier, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                return false;
+            EnsureLookup();
+            SWBehaviourBlackboardEntry entry = entries.Find(candidate => candidate.Identifier == identifier);
+            string changedName = newName.Trim();
+            if (entry == null || entriesByName.TryGetValue(changedName, out SWBehaviourBlackboardEntry existing) && existing != entry)
+                return false;
+            entry.Name = changedName;
+            return true;
         }
 
         private string GetUniqueName(string requestedName)
@@ -174,7 +199,20 @@ namespace SW.BehaviourTree
         public string Identifier => identifier;
 
         /// <summary>노드에서 값을 찾을 때 사용하는 이름입니다.</summary>
-        public string Name { get => name; set => name = value; }
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (name == value)
+                    return;
+                name = value;
+                NameChanged?.Invoke();
+            }
+        }
+
+        /// <summary>이 항목을 소유한 블랙보드의 이름 조회를 무효화합니다.</summary>
+        [NonSerialized] internal Action NameChanged;
 
         /// <summary>저장된 값의 종류입니다.</summary>
         public virtual SWBehaviourBlackboardValueType ValueType => valueType;
@@ -230,12 +268,14 @@ namespace SW.BehaviourTree
             }
 
             value = default;
-            return boxedValue == null && default(T) is null;
+            return boxedValue == null && default(T) is null && typeof(T).IsAssignableFrom(SystemValueType);
         }
 
         /// <summary>요청한 타입과 저장 타입이 일치하면 값을 변경합니다.</summary>
         public virtual bool TrySetValue<T>(T value)
         {
+            if (value is null && SystemValueType.IsAssignableFrom(typeof(T)))
+                return TrySetBoxedValue(null);
             switch (valueType)
             {
                 case SWBehaviourBlackboardValueType.Boolean when value is bool typedValue:
@@ -276,6 +316,20 @@ namespace SW.BehaviourTree
         /// <summary>Override에서 전달한 박싱된 값으로 Key를 변경합니다.</summary>
         public virtual bool TrySetBoxedValue(object value)
         {
+            if (value is null)
+            {
+                if (valueType == SWBehaviourBlackboardValueType.String)
+                {
+                    stringValue = null;
+                    return true;
+                }
+                if (valueType == SWBehaviourBlackboardValueType.Object)
+                {
+                    objectValue = null;
+                    return true;
+                }
+                return false;
+            }
             return valueType switch
             {
                 SWBehaviourBlackboardValueType.Boolean when value is bool typedValue =>
@@ -321,11 +375,16 @@ namespace SW.BehaviourTree
                 return true;
             }
             result = default;
-            return value is null && default(TValue) is null;
+            return value is null && default(TValue) is null && typeof(TValue).IsAssignableFrom(typeof(T));
         }
 
         public override bool TrySetValue<TValue>(TValue changedValue)
         {
+            if (changedValue is null && default(T) is null && typeof(T).IsAssignableFrom(typeof(TValue)))
+            {
+                value = default;
+                return true;
+            }
             if (changedValue is T typedValue)
             {
                 value = typedValue;
@@ -338,6 +397,11 @@ namespace SW.BehaviourTree
 
         public override bool TrySetBoxedValue(object changedValue)
         {
+            if (changedValue is null && default(T) is null)
+            {
+                value = default;
+                return true;
+            }
             if (changedValue is not T typedValue)
                 return false;
             value = typedValue;

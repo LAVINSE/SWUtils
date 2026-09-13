@@ -52,6 +52,8 @@ public sealed class AddScoreNode : SWBehaviourActionNode
 
 사용자 Key 타입은 `SWBehaviourBlackboardEntry<T>`를 상속하고 Blackboard의 `Custom` 메뉴에서 추가합니다.
 
+참조 타입의 값은 `null`로 지울 수 있습니다. 키 이름을 바꾸면 조회 캐시도 갱신됩니다. 코드에서는 `Rename(identifier, newName)`으로 빈 이름·중복 이름을 검사할 수 있습니다. 이름 변경은 노드에 저장된 문자열 참조를 자동으로 바꾸지 않으므로 연결된 노드의 키 설정도 갱신해야 합니다.
+
 ```csharp
 [Serializable]
 public sealed class TargetKey : SWBehaviourBlackboardEntry<GameObject>
@@ -83,6 +85,8 @@ bool visible = runner.GetBlackboardValue("TargetVisible", false);
 ## SubTree
 
 `Sub Tree` 노드에 다른 Tree Asset을 연결하면 재사용 가능한 트리를 실행합니다. `Share Blackboard`를 켜면 부모와 같은 Blackboard를 사용하고, 끄면 SubTree에 저장된 기본값을 독립적으로 사용합니다.
+
+실행 복제본을 만들기 전에 하위 트리 연결을 검사합니다. 자기 자신 또는 상위 트리를 다시 참조하거나 중첩이 64단계를 넘으면 생성을 거절하고 원인을 알립니다. `ValidateSubTrees(out string error)`로 검사할 수 있으며 에셋 인스펙터에도 오류가 표시됩니다. 이때 `CreateRuntimeInstance`는 `null`을 반환하므로 직접 호출하는 코드도 결과를 확인해야 합니다.
 
 ## 실행 상태 확인
 

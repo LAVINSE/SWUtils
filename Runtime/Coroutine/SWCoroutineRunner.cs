@@ -14,7 +14,7 @@ namespace SW.Coroutines
     {
         #region 필드
         private readonly Dictionary<float, WaitForSeconds> waitDict = new();
-        private readonly Dictionary<float, WaitForSecondsRealtime> waitRealtimeCacheDict = new();
+        private const int MaximumCachedWaitCount = 128;
         private readonly WaitForEndOfFrame waitEndOfFrame = new();
         private readonly WaitForFixedUpdate waitFixedUpdate = new();
         #endregion // 필드
@@ -31,7 +31,6 @@ namespace SW.Coroutines
         {
             StopAll();
             waitDict.Clear();
-            waitRealtimeCacheDict.Clear();
         }
         #endregion // 초기화
 
@@ -46,24 +45,22 @@ namespace SW.Coroutines
             if (!waitDict.TryGetValue(seconds, out var waitForSeconds))
             {
                 waitForSeconds = new WaitForSeconds(seconds);
+                if (waitDict.Count >= MaximumCachedWaitCount)
+                    waitDict.Clear();
                 waitDict[seconds] = waitForSeconds;
             }
             return waitForSeconds;
         }
 
         /// <summary>
-        /// 캐시된 WaitForSecondsRealtime을 반환합니다. 없으면 생성하여 캐시합니다.
+        /// 호출마다 독립적인 실제 시간 대기 객체를 생성합니다.
+        /// 대기 객체가 종료 시각을 보관하므로 동시에 실행하는 코루틴과 공유하지 않습니다.
         /// </summary>
         /// <param name="seconds">대기 시간(초)</param>
-        /// <returns>캐시된 WaitForSecondsRealtime 인스턴스</returns>
+        /// <returns>이번 호출에서만 사용하는 WaitForSecondsRealtime 인스턴스</returns>
         public WaitForSecondsRealtime WaitRealtime(float seconds)
         {
-            if (!waitRealtimeCacheDict.TryGetValue(seconds, out var waitForSecondsRealtime))
-            {
-                waitForSecondsRealtime = new WaitForSecondsRealtime(seconds);
-                waitRealtimeCacheDict[seconds] = waitForSecondsRealtime;
-            }
-            return waitForSecondsRealtime;
+            return new WaitForSecondsRealtime(seconds);
         }
         #endregion // Wait 캐시
 

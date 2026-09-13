@@ -16,6 +16,8 @@ namespace SW.Util
         [SerializeField] private bool allowSceneActivation = true;
 
         private Coroutine loadingRoutine;
+        private AsyncOperation activeOperation;
+        private int requestVersion;
         #endregion // 필드
 
         #region 프로퍼티
@@ -30,7 +32,11 @@ namespace SW.Util
         public bool AllowSceneActivation
         {
             get => allowSceneActivation;
-            set => allowSceneActivation = value;
+            set
+            {
+                allowSceneActivation = value;
+                if (activeOperation != null) activeOperation.allowSceneActivation = value;
+            }
         }
         #endregion // 프로퍼티
 
@@ -46,7 +52,6 @@ namespace SW.Util
         #endregion // 이벤트
 
         #region 초기화
-        /// <inheritdoc/>
         /// <inheritdoc />
         public override void Awake()
         {
@@ -57,7 +62,7 @@ namespace SW.Util
         /// <inheritdoc />
         public override void OnDestroy()
         {
-            CancelCurrentLoad();
+            ReleaseOperation();
             base.OnDestroy();
         }
         #endregion // 초기화
@@ -158,185 +163,115 @@ namespace SW.Util
         }
 
         /// <summary>
-        /// 현재 진행 중인 로딩 코루틴을 취소합니다.
+        /// 엔진 작업이 시작되기 전의 요청을 취소합니다. 이미 시작한 작업은 유지하고 경고를 남깁니다.
         /// </summary>
         public void CancelCurrentLoad()
         {
-            if (loadingRoutine != null)
-            {
-                StopCoroutine(loadingRoutine);
-                SWLog.LogWarning($"[SWSceneLoader] Load canceled: {LoadingSceneName}");
-            }
+            if (!TryCancelCurrentLoad())
+                SWLog.LogWarning("[SWSceneLoader] 엔진에서 진행 중인 씬 작업은 취소할 수 없습니다.");
+        }
 
+        /// <summary>대기 요청을 취소합니다. 엔진 작업이 시작되었으면 false를 반환합니다.</summary>
+        public bool TryCancelCurrentLoad()
+        {
+            if (activeOperation != null) return false;
+            if (loadingRoutine != null) StopCoroutine(loadingRoutine);
             ResetLoadingState();
+            return true;
         }
         #endregion // 로드
 
         #region 내부
-        /// <summary>
-        /// 씬 이름 기반 로딩을 시작합니다.
-        /// </summary>
-        private void StartLoading(string sceneName, LoadSceneMode mode,
-            Action<float> onProgress, Action onComplete)
-        {
-            if (IsLoading)
-            {
-                SWLog.LogWarning($"[SWSceneLoader] Already loading: {LoadingSceneName}");
-                return;
-            }
+        /// <summary>씬 이름으로 엔진 작업을 예약합니다.</summary>
+        private void StartLoading(string sceneName, LoadSceneMode mode, Action<float> onProgress, Action onComplete)
+            => StartOperation(sceneName, () => SceneManager.LoadSceneAsync(sceneName, mode), onProgress, onComplete);
 
-            loadingRoutine = StartCoroutine(LoadSceneRoutine(sceneName, mode, onProgress, onComplete));
-        }
+        /// <summary>빌드 번호로 엔진 작업을 예약합니다.</summary>
+        private void StartLoading(int sceneBuildIndex, LoadSceneMode mode, Action<float> onProgress, Action onComplete)
+            => StartOperation(sceneBuildIndex.ToString(), () => SceneManager.LoadSceneAsync(sceneBuildIndex, mode), onProgress, onComplete);
 
-        /// <summary>
-        /// 빌드 인덱스 기반 로딩을 시작합니다.
-        /// </summary>
-        private void StartLoading(int sceneBuildIndex, LoadSceneMode mode,
-            Action<float> onProgress, Action onComplete)
-        {
-            if (IsLoading)
-            {
-                SWLog.LogWarning($"[SWSceneLoader] Already loading: {LoadingSceneName}");
-                return;
-            }
-
-            loadingRoutine = StartCoroutine(LoadSceneRoutine(sceneBuildIndex, mode, onProgress, onComplete));
-        }
-
-        /// <summary>
-        /// 씬 언로드를 시작합니다.
-        /// </summary>
+        /// <summary>씬 언로드를 예약합니다.</summary>
         private void StartUnloading(string sceneName, Action<float> onProgress, Action onComplete)
+            => StartOperation(sceneName, () => SceneManager.UnloadSceneAsync(sceneName), onProgress, onComplete);
+
+        /// <summary>다음 프레임에 시작할 작업을 등록합니다. 엔진 작업 시작 전까지 취소할 수 있습니다.</summary>
+        private void StartOperation(string sceneName, Func<AsyncOperation> createOperation,
+            Action<float> onProgress, Action onComplete)
         {
-            if (IsLoading)
+            if (IsLoading || !isActiveAndEnabled)
             {
-                SWLog.LogWarning($"[SWSceneLoader] Already loading: {LoadingSceneName}");
+                SWLog.LogWarning("[SWSceneLoader] 로더가 비활성 상태이거나 다른 작업이 진행 중입니다.");
                 return;
             }
-
-            loadingRoutine = StartCoroutine(UnloadSceneRoutine(sceneName, onProgress, onComplete));
-        }
-
-        /// <summary>
-        /// 씬 이름 기반 로딩 코루틴.
-        /// </summary>
-        private IEnumerator LoadSceneRoutine(string sceneName, LoadSceneMode mode,
-            Action<float> onProgress, Action onComplete)
-        {
-            BeginLoad(sceneName);
-
-            AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, mode);
-            if (operation == null)
-            {
-                FailLoad(sceneName);
-                yield break;
-            }
-
-            yield return TrackOperation(sceneName, operation, onProgress);
-            CompleteLoad(sceneName, onComplete);
-        }
-
-        /// <summary>
-        /// 빌드 인덱스 기반 로딩 코루틴.
-        /// </summary>
-        private IEnumerator LoadSceneRoutine(int sceneBuildIndex, LoadSceneMode mode,
-            Action<float> onProgress, Action onComplete)
-        {
-            string sceneLabel = sceneBuildIndex.ToString();
-            BeginLoad(sceneLabel);
-
-            AsyncOperation operation = SceneManager.LoadSceneAsync(sceneBuildIndex, mode);
-            if (operation == null)
-            {
-                FailLoad(sceneLabel);
-                yield break;
-            }
-
-            yield return TrackOperation(sceneLabel, operation, onProgress);
-            CompleteLoad(sceneLabel, onComplete);
-        }
-
-        /// <summary>
-        /// 씬 언로드 코루틴.
-        /// </summary>
-        private IEnumerator UnloadSceneRoutine(string sceneName, Action<float> onProgress, Action onComplete)
-        {
-            BeginLoad(sceneName);
-
-            AsyncOperation operation = SceneManager.UnloadSceneAsync(sceneName);
-            if (operation == null)
-            {
-                FailLoad(sceneName);
-                yield break;
-            }
-
-            yield return TrackOperation(sceneName, operation, onProgress);
-            CompleteLoad(sceneName, onComplete);
-        }
-
-        /// <summary>
-        /// AsyncOperation 진행률을 추적합니다.
-        /// </summary>
-        private IEnumerator TrackOperation(string sceneName, AsyncOperation operation, Action<float> onProgress)
-        {
-            operation.allowSceneActivation = allowSceneActivation;
-
-            while (!operation.isDone)
-            {
-                operation.allowSceneActivation = allowSceneActivation;
-                Progress = Mathf.Clamp01(operation.progress / 0.9f);
-                onProgress?.Invoke(Progress);
-                LoadProgressChanged?.Invoke(sceneName, Progress);
-                yield return null;
-            }
-
-            Progress = 1f;
-            onProgress?.Invoke(Progress);
-            LoadProgressChanged?.Invoke(sceneName, Progress);
-        }
-
-        /// <summary>
-        /// 로딩 상태를 시작 상태로 설정합니다.
-        /// </summary>
-        private void BeginLoad(string sceneName)
-        {
             IsLoading = true;
             LoadingSceneName = sceneName;
             Progress = 0f;
-            LoadStarted?.Invoke(sceneName);
-            SWLog.Log($"[SWSceneLoader] Load started: {sceneName}");
+            int version = ++requestVersion;
+            loadingRoutine = StartCoroutine(RunOperation(sceneName, createOperation, onProgress, onComplete, version));
         }
 
-        /// <summary>
-        /// 로딩 완료 처리를 수행합니다.
-        /// </summary>
-        private void CompleteLoad(string sceneName, Action onComplete)
+        /// <summary>작업 생성 실패와 외부 알림 예외를 분리하고 완료 전까지 엔진 작업을 소유합니다.</summary>
+        private IEnumerator RunOperation(string sceneName, Func<AsyncOperation> createOperation,
+            Action<float> onProgress, Action onComplete, int version)
         {
-            onComplete?.Invoke();
-            LoadCompleted?.Invoke(sceneName);
-            SWLog.Log($"[SWSceneLoader] Load completed: {sceneName}");
+            yield return null;
+            if (version != requestVersion) yield break;
+            try
+            {
+                activeOperation = createOperation();
+            }
+            catch (Exception exception)
+            {
+                SWLog.LogError($"[SWSceneLoader] 씬 작업 시작 실패: {sceneName}, {exception.Message}");
+            }
+            if (activeOperation == null)
+            {
+                ResetLoadingState();
+                SWSafeEvent.Invoke(LoadFailed, handler => handler(sceneName));
+                yield break;
+            }
+            AsyncOperation operation = activeOperation;
+            operation.allowSceneActivation = allowSceneActivation;
+            SWSafeEvent.Invoke(LoadStarted, handler => handler(sceneName));
+            while (!operation.isDone)
+            {
+                if (version != requestVersion) yield break;
+                Progress = Mathf.Clamp01(operation.progress / 0.9f);
+                SWSafeEvent.Invoke(onProgress, handler => handler(Progress));
+                SWSafeEvent.Invoke(LoadProgressChanged, handler => handler(sceneName, Progress));
+                yield return null;
+            }
+            if (version != requestVersion) yield break;
+            Progress = 1f;
+            SWSafeEvent.Invoke(onProgress, handler => handler(1f));
+            SWSafeEvent.Invoke(LoadProgressChanged, handler => handler(sceneName, 1f));
+            if (version != requestVersion) yield break;
+            ResetLoadingState();
+            SWSafeEvent.Invoke(onComplete, handler => handler());
+            SWSafeEvent.Invoke(LoadCompleted, handler => handler(sceneName));
+        }
+
+        /// <summary>로더를 비활성화해도 엔진 작업이 활성화 대기로 대기열을 막지 않도록 합니다.</summary>
+        private void OnDisable() => ReleaseOperation();
+
+        /// <summary>추적을 중단하기 전에 엔진 작업의 활성화 보류를 해제합니다.</summary>
+        private void ReleaseOperation()
+        {
+            if (activeOperation != null && !activeOperation.isDone)
+                activeOperation.allowSceneActivation = true;
+            if (loadingRoutine != null) StopCoroutine(loadingRoutine);
             ResetLoadingState();
         }
 
-        /// <summary>
-        /// 로딩 실패 처리를 수행합니다.
-        /// </summary>
-        private void FailLoad(string sceneName)
-        {
-            SWLog.LogWarning($"[SWSceneLoader] Load failed: {sceneName}");
-            LoadFailed?.Invoke(sceneName);
-            ResetLoadingState();
-        }
-
-        /// <summary>
-        /// 로딩 상태 값을 초기화합니다.
-        /// </summary>
+        /// <summary>이전 요청을 무효화하고 다음 요청을 받을 수 있는 상태로 돌립니다.</summary>
         private void ResetLoadingState()
         {
+            requestVersion++;
             IsLoading = false;
             LoadingSceneName = string.Empty;
             Progress = 0f;
             loadingRoutine = null;
+            activeOperation = null;
         }
         #endregion // 내부
     }

@@ -66,6 +66,8 @@ namespace SW.BehaviourTree
             if (treeAsset != null)
             {
                 runtimeTree = treeAsset.CreateRuntimeInstance(gameObject);
+                if (runtimeTree == null)
+                    return;
                 for (int index = 0; index < blackboardOverrides.Count; index++)
                     blackboardOverrides[index]?.Apply(runtimeTree.Blackboard);
             }

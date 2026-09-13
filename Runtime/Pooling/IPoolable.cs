@@ -12,7 +12,8 @@ namespace SW.Pooling
         public void SetPool(IPool pool);
 
         /// <summary>
-        /// 풀에서 꺼내진 후 호출됩니다. 상태 초기화에 사용합니다.
+        /// 부모, 위치와 풀 참조를 설정한 뒤 활성화 전에 호출합니다. 재사용 상태를 초기화합니다.
+        /// 미리 생성하는 과정에서는 호출하지 않습니다.
         /// </summary>
         public void OnSpawnFromPool();
 

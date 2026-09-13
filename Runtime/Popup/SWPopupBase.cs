@@ -30,6 +30,7 @@ namespace SW.Popup
 
         private SWPopupEffectHandle showEffectHandle;
         private SWPopupEffectHandle hideEffectHandle;
+        private int visibilityVersion;
         #endregion // 필드
 
         #region 프로퍼티
@@ -61,11 +62,13 @@ namespace SW.Popup
         /// </summary>
         public virtual void Show()
         {
+            int version = ++visibilityVersion;
             IsVisible = true;
             StopHideEffect();
             gameObject.SetActive(true);
+            if (version != visibilityVersion) return;
             OnShow();
-            PlayShowEffect();
+            if (version == visibilityVersion) PlayShowEffect();
         }
 
         /// <summary>
@@ -82,13 +85,17 @@ namespace SW.Popup
         /// <param name="onHidden">숨김 완료 후 호출할 콜백입니다.</param>
         public virtual void Hide(Action onHidden)
         {
+            int version = ++visibilityVersion;
             IsVisible = false;
             StopShowEffect();
             OnHide();
+            if (version != visibilityVersion) return;
             PlayHideEffect(() =>
             {
+                if (version != visibilityVersion) return;
                 gameObject.SetActive(false);
-                onHidden?.Invoke();
+                if (version == visibilityVersion)
+                    SW.Util.SWSafeEvent.Invoke(onHidden, handler => handler());
             });
         }
         #endregion // 표시

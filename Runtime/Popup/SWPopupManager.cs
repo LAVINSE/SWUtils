@@ -30,6 +30,8 @@ namespace SW.Popup
             public bool OwnedByManager;
             /// <summary>팝업 숨김 완료를 기다리는 Task 완료 소스입니다.</summary>
             public TaskCompletionSource<bool> HideCompletionSource;
+            /// <summary>같은 인스턴스를 다시 표시했는지 구분하는 번호입니다.</summary>
+            public int PresentationVersion;
         }
 
         #endregion // 데이터
@@ -48,6 +50,7 @@ namespace SW.Popup
         private readonly Dictionary<SWPopupBase, PopupRecord> activeRecords = new();
         private readonly List<SWPopupBase> activePopups = new();
         private readonly HashSet<string> unregisteredKeys = new();
+        private int nextPresentationVersion;
         #endregion // 필드
 
         #region 이벤트
@@ -180,6 +183,11 @@ namespace SW.Popup
         public T Show<T>(string key, Action<T> setup = null, Transform parent = null) where T : SWPopupBase
         {
             if (!TryGetEntry(key, out SWPopupCatalog.Entry entry)) return null;
+            if (entry.prefab is not T)
+            {
+                SWLog.LogWarning($"[SWPopupManager] 등록된 팝업이 요청한 타입과 다릅니다: {key}, {typeof(T).Name}");
+                return null;
+            }
 
             Transform targetParent = ResolveParent(parent);
             if (targetParent == null) return null;
@@ -246,9 +254,14 @@ namespace SW.Popup
         public bool Hide(SWPopupBase popup)
         {
             if (popup == null) return false;
-            if (!activeRecords.ContainsKey(popup)) return false;
-
-            popup.Hide(() => CompletePopupHidden(popup, false));
+            if (!activeRecords.TryGetValue(popup, out PopupRecord record)) return false;
+            int version = record.PresentationVersion;
+            popup.Hide(() =>
+            {
+                if (activeRecords.TryGetValue(popup, out PopupRecord current)
+                    && ReferenceEquals(current, record) && current.PresentationVersion == version)
+                    CompletePopupHidden(popup, false);
+            });
             return true;
         }
 
@@ -467,10 +480,11 @@ namespace SW.Popup
             }
 
             EnsureLifecycleWatcher(popup);
+            activeRecords[popup].PresentationVersion = ++nextPresentationVersion;
             popup.transform.SetAsLastSibling();
             setup?.Invoke(popup);
             popup.Show();
-            PopupShown?.Invoke(popup);
+            SWSafeEvent.Invoke(PopupShown, handler => handler(popup));
             return popup;
         }
 
@@ -622,7 +636,11 @@ namespace SW.Popup
         private void DestroyCachedPopup(SWPopupBase popup)
         {
             if (popup == null) return;
-            if (activeRecords.ContainsKey(popup)) return;
+            if (activeRecords.TryGetValue(popup, out PopupRecord record))
+            {
+                record.UseCache = false;
+                return;
+            }
 
             Destroy(popup.gameObject);
         }
@@ -639,18 +657,16 @@ namespace SW.Popup
 
             activeRecords.Remove(popup);
             activePopups.Remove(popup);
-            record.HideCompletionSource.TrySetResult(true);
-            PopupHidden?.Invoke(popup);
-
             if (record.UseCache)
             {
                 if (!destroyed)
                     popup.gameObject.SetActive(false);
-                return;
             }
-
-            if (record.OwnedByManager && !destroyed)
+            else if (record.OwnedByManager && !destroyed)
                 Destroy(popup.gameObject);
+
+            record.HideCompletionSource.TrySetResult(true);
+            SWSafeEvent.Invoke(PopupHidden, handler => handler(popup));
         }
         #endregion // 내부
     }

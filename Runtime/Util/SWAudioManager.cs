@@ -56,6 +56,7 @@ namespace SW.Util
         [SerializeField] private float sfxVolume = 1f;
 
         private readonly List<AudioSource> sfxSources = new();
+        private readonly Dictionary<AudioSource, float> effectVolumeScales = new();
         /// <summary>클립별 마지막 재생 시각(Time.unscaledTime)입니다. 재생 간격 제한에 사용합니다.</summary>
         private readonly Dictionary<AudioClip, float> lastPlayTimeDictionary = new();
         private Coroutine musicFadeRoutine;
@@ -75,7 +76,6 @@ namespace SW.Util
         #endregion // 프로퍼티
 
         #region 초기화
-        /// <inheritdoc/>
         /// <inheritdoc />
         public override void Awake()
         {
@@ -95,12 +95,12 @@ namespace SW.Util
             PlayMusic(startMusicKey);
         }
 
-        /// <inheritdoc/>
         /// <inheritdoc />
         public override void OnDestroy()
         {
             StopAllCoroutines();
             sfxSources.Clear();
+            effectVolumeScales.Clear();
             lastPlayTimeDictionary.Clear();
             SWLog.Log("[SWAudioManager] Destroyed.");
             base.OnDestroy();
@@ -428,7 +428,8 @@ namespace SW.Util
             source.clip = clip;
             source.loop = false;
             source.pitch = pitch;
-            source.volume = masterVolume * sfxVolume * Mathf.Clamp01(volumeScale);
+            effectVolumeScales[source] = Mathf.Clamp01(volumeScale);
+            source.volume = masterVolume * sfxVolume * effectVolumeScales[source];
             source.spatialBlend = 0f;
             source.transform.SetParent(transform, false);
             source.Play();
@@ -551,8 +552,11 @@ namespace SW.Util
 
             foreach (AudioSource source in sfxSources)
             {
-                if (source != null && !source.isPlaying)
-                    source.volume = masterVolume * sfxVolume;
+                if (source != null)
+                {
+                    float volumeScale = effectVolumeScales.TryGetValue(source, out float storedScale) ? storedScale : 1f;
+                    source.volume = masterVolume * sfxVolume * volumeScale;
+                }
             }
         }
 

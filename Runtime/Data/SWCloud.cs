@@ -9,7 +9,7 @@ using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
 #endif
 
-#if UNITY_IOS && !UNITY_EDITOR
+#if UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
 using System.Runtime.InteropServices;
 #endif
 
@@ -54,7 +54,7 @@ namespace SW.Data
             {
 #if UNITY_ANDROID && SW_GOOGLEPLAY_ENABLE && !UNITY_EDITOR
                 return isAuthenticated;
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
                 return true;
 #elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return SteamManager.Initialized;
@@ -71,7 +71,7 @@ namespace SW.Data
             {
 #if UNITY_ANDROID && SW_GOOGLEPLAY_ENABLE && !UNITY_EDITOR
                 return "Google Play Games";
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
                 return "iCloud";
 #elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return "Steam Cloud";
@@ -83,7 +83,7 @@ namespace SW.Data
         #endregion // 프로퍼티
 
         #region iOS 네이티브 바인딩
-#if UNITY_IOS && !UNITY_EDITOR
+#if UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
         [DllImport("__Internal")]
         private static extern string _GetiCloudData(string key);
 
@@ -157,7 +157,7 @@ namespace SW.Data
                 SWLog.Log($"[SWCloud] GPGS 인증 결과: {status}");
                 onComplete?.Invoke(isAuthenticated);
             });
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
             _ForceSynciCloudData();
             isAuthenticated = true;
             isInitialized = true;
@@ -241,7 +241,7 @@ namespace SW.Data
                         SaveLocalAndComplete(json, saveName, onComplete, success);
                     });
                 });
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
             try
             {
                 bool result = iCloudSet(saveName, json);
@@ -341,7 +341,7 @@ namespace SW.Data
                         CacheLocalAndComplete(json, saveName, onComplete, true);
                     });
                 });
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
             try
             {
                 _ForceSynciCloudData();
@@ -457,7 +457,7 @@ namespace SW.Data
                         onComplete?.Invoke(false);
                     }
                 });
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
             try
             {
                 bool result = iCloudSet(saveName, string.Empty);
@@ -629,7 +629,7 @@ namespace SW.Data
         /// <param name="saveName">저장 이름</param>
         private static void SaveLocal(string json, string saveName)
         {
-            SWPlayerPrefs.SetString($"{LocalFallbackKey}_{saveName}", json);
+            SWPlayerPrefs.SetString($"{LocalFallbackKey}_{saveName}", json, saveName);
             SWPlayerPrefs.Save();
         }
 
@@ -640,7 +640,16 @@ namespace SW.Data
         /// <returns>저장된 JSON 문자열</returns>
         private static string LoadLocal(string saveName)
         {
-            return SWPlayerPrefs.GetString($"{LocalFallbackKey}_{saveName}", string.Empty);
+            string key = $"{LocalFallbackKey}_{saveName}";
+            string local = SWPlayerPrefs.GetString(key, null, saveName);
+            if (local != null) return local;
+
+            // 이전 버전은 요청 이름과 별개로 현재 선택한 슬롯에 캐시를 기록했습니다.
+            string legacy = SWPlayerPrefs.GetString(key, null)
+                ?? SWPlayerPrefs.GetString(key, null, SWSaveSlot.Default);
+            if (legacy == null) return string.Empty;
+            SaveLocal(legacy, saveName);
+            return legacy;
         }
 
         /// <summary>
@@ -649,7 +658,8 @@ namespace SW.Data
         /// <param name="saveName">저장 슬롯 이름</param>
         private static void DeleteLocal(string saveName)
         {
-            SWPlayerPrefs.DeleteKey($"{LocalFallbackKey}_{saveName}");
+            // 삭제 표시를 남겨 다른 슬롯의 이전 캐시가 다시 복원되지 않도록 합니다.
+            SWPlayerPrefs.SetString($"{LocalFallbackKey}_{saveName}", string.Empty, saveName);
             SWPlayerPrefs.Save();
         }
         #endregion // 로컬 폴백
@@ -662,7 +672,7 @@ namespace SW.Data
         /// <param name="saveName">저장 슬롯 이름</param>
         public static void BackupPrefs(Action<bool> onComplete = null, string saveName = DefaultSaveName)
         {
-            string json = SWPlayerPrefs.ExportToJson(IsCloudBackupKey);
+            string json = SWPlayerPrefs.ExportSlotToJson(saveName, IsCloudBackupKey);
             Save(json, onComplete, saveName);
         }
 
@@ -673,7 +683,7 @@ namespace SW.Data
         /// <returns>성공 여부</returns>
         public static Task<bool> BackupPrefsAsync(string saveName = DefaultSaveName)
         {
-            return SaveAsync(SWPlayerPrefs.ExportToJson(IsCloudBackupKey), saveName);
+            return SaveAsync(SWPlayerPrefs.ExportSlotToJson(saveName, IsCloudBackupKey), saveName);
         }
 
         private static bool IsCloudBackupKey(string key)
@@ -698,8 +708,8 @@ namespace SW.Data
                 }
 
                 bool result = merge
-                    ? SWPlayerPrefs.MergeFromJson(json)
-                    : SWPlayerPrefs.ImportFromJson(json);
+                    ? SWPlayerPrefs.MergeFromJson(json, saveName)
+                    : SWPlayerPrefs.ImportFromJson(json, saveName);
                 onComplete?.Invoke(result);
             }, saveName);
         }
@@ -716,8 +726,8 @@ namespace SW.Data
             if (!success || string.IsNullOrEmpty(json)) return false;
 
             return merge
-                ? SWPlayerPrefs.MergeFromJson(json)
-                : SWPlayerPrefs.ImportFromJson(json);
+                ? SWPlayerPrefs.MergeFromJson(json, saveName)
+                : SWPlayerPrefs.ImportFromJson(json, saveName);
         }
         #endregion // SWPlayerPrefs 통합
     }

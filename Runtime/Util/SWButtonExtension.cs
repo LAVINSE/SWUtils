@@ -166,7 +166,7 @@ namespace SW.Util
         /// </summary>
         public override void OnSubmit(BaseEventData eventData)
         {
-            if (!CanInvokeClick()) return;
+            if (!IsActive() || !IsInteractable() || isCooldown) return;
 
             PlayClickSfx();
             base.OnSubmit(eventData);

@@ -22,6 +22,9 @@ namespace SW.Util
         /// 이벤트 버스 로그를 출력할지 여부입니다.
         /// </summary>
         public static bool IsLogOutputEnabled { get; set; } = true;
+
+        /// <summary>진단 창에 표시할 발행 횟수와 전달값 요약을 기록할지 여부입니다.</summary>
+        public static bool IsDiagnosticsEnabled { get; set; } = true;
         #endregion // 프로퍼티
 
         #region 데이터
@@ -49,6 +52,7 @@ namespace SW.Util
             eventTable.Clear();
             publishRecordTable.Clear();
             IsLogOutputEnabled = true;
+            IsDiagnosticsEnabled = true;
         }
         #endregion // 초기화
 
@@ -229,6 +233,9 @@ namespace SW.Util
         /// <param name="eventData">발행된 이벤트 데이터입니다.</param>
         private static void RecordPublish<TEvent>(Type eventType, TEvent eventData)
         {
+            if (!IsDiagnosticsEnabled)
+                return;
+
             if (!publishRecordTable.TryGetValue(eventType, out PublishRecord record))
             {
                 record = new PublishRecord();
@@ -237,7 +244,14 @@ namespace SW.Util
 
             record.publishCount++;
             record.lastPublishTime = DateTime.Now;
-            record.lastPayloadText = eventData != null ? eventData.ToString() : "(null)";
+            try
+            {
+                record.lastPayloadText = eventData != null ? eventData.ToString() : "(null)";
+            }
+            catch (Exception exception)
+            {
+                record.lastPayloadText = $"문자열 변환 실패: {exception.GetType().Name}";
+            }
         }
 
         /// <summary>

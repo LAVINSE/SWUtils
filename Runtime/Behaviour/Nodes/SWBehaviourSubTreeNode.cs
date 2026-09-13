@@ -11,6 +11,9 @@ namespace SW.BehaviourTree
         [SerializeField] private bool shareBlackboard = true;
         [NonSerialized] private SWBehaviourTreeAsset runtimeSubTree;
 
+        /// <summary>실행할 하위 트리 정의입니다. 에셋 간 순환 검사에 사용합니다.</summary>
+        public SWBehaviourTreeAsset SubTreeAsset => subTreeAsset;
+
         protected override void OnStart(SWBehaviourContext context)
         {
             if (subTreeAsset != null)

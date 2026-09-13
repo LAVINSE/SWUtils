@@ -55,3 +55,11 @@ public sealed class CanChaseCondition : SWStateMachineGraphCondition<GameObject>
 ## 실행
 
 Layered 그래프는 `SWStateMachineGraphFactory.CreateLayered`, Stack 그래프는 `SWStateMachineGraphFactory.CreateStack`으로 실행 인스턴스를 생성합니다. Play Mode에서 문맥 게임 오브젝트를 선택하면 활성 상태, 실행 시간과 최근 전이를 Runtime Inspector에서 확인할 수 있습니다.
+
+## 콜백에서 전환 요청하기
+
+진입·종료·일시 정지·복귀 등 전환 콜백에서 다시 전환을 요청하면 대기열에 넣습니다. 현재 전환을 마친 뒤 요청한 순서대로 처리합니다. 예를 들어 A를 제거하는 `OnExit`에서 B를 추가하면 A의 제거를 끝낸 다음 B를 추가합니다.
+
+전환 중 호출한 `Pop`이나 `ExecuteCommand`의 `true`는 요청이 접수되었다는 의미입니다. 실제 실행 시점에는 앞선 요청으로 현재 상태가 달라질 수 있습니다. 현재 상태 변경은 전환 알림에서 확인하세요. 실행 중이 아닌 상태에서의 일반 호출은 실제 처리 결과를 반환합니다.
+
+하나의 호출에서 연속 작업이 1,024회를 넘으면 순환 요청으로 보고 예외를 발생시키며 남은 요청을 비웁니다. 사용자 콜백이 예외를 던지는 경우에도 남은 요청을 비웁니다. 상태 콜백은 내부 상태를 일부 변경한 뒤 예외를 던지지 않도록 작성해야 합니다.

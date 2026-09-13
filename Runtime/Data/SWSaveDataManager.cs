@@ -192,30 +192,18 @@ namespace SW.Data
 
             string normalizedSlot = ResolveSlotName(slot);
             string path = GetSavePath(normalizedSlot);
-            string tempPath = path + TempExtension;
             string backupPath = path + BackupExtension;
 
             try
             {
                 EnsureSaveDirectory();
 
-                File.WriteAllText(tempPath, json);
-
-                if (File.Exists(path))
-                {
-                    if (createBackup)
-                        File.Copy(path, backupPath, true);
-
-                    File.Delete(path);
-                }
-
-                File.Move(tempPath, path);
+                SWAtomicFile.WriteAllText(path, json, createBackup ? backupPath : null);
                 SWLog.Log($"[SWSaveDataManager] Save complete. Slot: {normalizedSlot}");
                 return true;
             }
             catch (Exception exception)
             {
-                TryDeleteFile(tempPath);
                 SWLog.LogError($"[SWSaveDataManager] SaveJson failed. Slot: {normalizedSlot}, Error: {exception.Message}");
                 return false;
             }
@@ -406,32 +394,26 @@ namespace SW.Data
             SetSharedSlot(normalizedSlot);
             string path = GetSavePath(normalizedSlot);
 
-            if (!File.Exists(path))
+            foreach (string candidatePath in new[] { path, path + BackupExtension })
             {
-                SWLog.LogWarning($"[SWSaveDataManager] Load skipped. Save file does not exist. Slot: {normalizedSlot}");
-                return false;
-            }
-
-            try
-            {
-                string json = File.ReadAllText(path);
-                object loaded = JsonUtility.FromJson(json, currentDataType);
-                if (loaded == null)
+                if (!File.Exists(candidatePath)) continue;
+                try
                 {
-                    SWLog.LogWarning($"[SWSaveDataManager] Load failed. JsonUtility returned null. Slot: {normalizedSlot}");
-                    return false;
+                    string json = File.ReadAllText(candidatePath);
+                    object loaded = JsonUtility.FromJson(json, currentDataType);
+                    if (loaded == null) continue;
+                    if (candidatePath != path)
+                        SWAtomicFile.WriteAllText(path, json);
+                    currentData = loaded;
+                    currentDataType = loaded.GetType();
+                    return true;
                 }
-
-                currentData = loaded;
-                currentDataType = loaded.GetType();
-                SWLog.Log($"[SWSaveDataManager] Load complete. Slot: {normalizedSlot}");
-                return true;
+                catch (Exception exception)
+                {
+                    SWLog.LogWarning($"[SWSaveDataManager] 저장 파일 읽기 실패: {candidatePath}, {exception.Message}");
+                }
             }
-            catch (Exception exception)
-            {
-                SWLog.LogError($"[SWSaveDataManager] Load failed. Slot: {normalizedSlot}, Error: {exception.Message}");
-                return false;
-            }
+            return false;
         }
         #endregion // Load
 
@@ -590,7 +572,7 @@ namespace SW.Data
             {
                 slot = normalizedSlot,
                 saveDataJson = saveDataJson,
-                playerPrefsJson = SWPlayerPrefs.ExportToJson(IsCloudBackupKey),
+                playerPrefsJson = SWPlayerPrefs.ExportSlotToJson(normalizedSlot, IsCloudBackupKey),
                 savedAtUtc = DateTime.UtcNow.ToString("o")
             };
 
@@ -607,8 +589,6 @@ namespace SW.Data
         public static void RestoreFromCloud(Action<bool> onComplete = null, string slot = null, bool createBackup = true)
         {
             string normalizedSlot = ResolveSlotName(slot);
-            SetSharedSlot(normalizedSlot);
-
             SWCloud.Load((success, json) =>
             {
                 if (!success || string.IsNullOrEmpty(json))
@@ -682,21 +662,21 @@ namespace SW.Data
                 if (backupData != null && (!string.IsNullOrEmpty(backupData.saveDataJson)
                     || !string.IsNullOrEmpty(backupData.playerPrefsJson)))
                 {
+                    bool hasSettings = !string.IsNullOrEmpty(backupData.playerPrefsJson);
+                    if (hasSettings && !SWPlayerPrefs.CanImportJson(backupData.playerPrefsJson)) return false;
+                    string previousSettings = hasSettings ? SWPlayerPrefs.ExportSlotToJson(slot) : null;
+                    if (hasSettings && !SWPlayerPrefs.ImportFromJson(backupData.playerPrefsJson, slot)) return false;
                     bool saveDataRestored = string.IsNullOrEmpty(backupData.saveDataJson)
                         || SaveJson(backupData.saveDataJson, slot, createBackup);
-
-                    bool prefsRestored = string.IsNullOrEmpty(backupData.playerPrefsJson)
-                        || SWPlayerPrefs.ImportFromJson(backupData.playerPrefsJson);
-
-                    if (prefsRestored)
-                        SWPlayerPrefs.Save();
-
-                    return saveDataRestored && prefsRestored;
+                    if (!saveDataRestored && hasSettings)
+                        SWPlayerPrefs.ImportFromJson(previousSettings, slot);
+                    return saveDataRestored;
                 }
             }
             catch (Exception exception)
             {
-                SWLog.LogWarning($"[SWSaveDataManager] Cloud backup bundle parse failed. Fallback to raw save json. Error: {exception.Message}");
+                SWLog.LogWarning($"[SWSaveDataManager] 클라우드 복원 실패: {exception.Message}");
+                return false;
             }
 
             return SaveJson(json, slot, createBackup);

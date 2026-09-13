@@ -2,138 +2,84 @@
 
 [한국어](README.md) | [English](README.en.md)
 
-![Unity 6.0+](https://img.shields.io/badge/Unity-6.0%2B-222222)
-![Package 1.3.0](https://img.shields.io/badge/package-1.3.0-2f80ed)
-![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
+Shared runtime systems and editor tools for Unity 6. SWUtils provides save slots, state machines, behaviour trees, quests, skill trees, pooling and popups, with inspectors and editors for authoring their data.
 
-SWUtils is a compact Unity utility package for runtime systems, inspector workflows, debugging tools, and editor productivity windows.
+The package is in testing. Validate the features you use, including quest and achievement persistence, in your project before release.
 
-> [!WARNING]
-> The features provided by SWUtils are currently experimental. Unexpected behavior or bugs may occur, so verify them thoroughly before using them in a production project.
+## Installation
 
-## Overview
-
-| Area | What it provides |
-| --- | --- |
-| Runtime foundations | `SWMonoBehaviour`, `SWScriptableObject`, coroutine runners, quests and achievements, skill trees, pooling, popup flow, resolution helpers, stat data, and reusable utilities. |
-| Graph runtimes | Layered and stack State Machines, Behaviour Trees, Blackboards, graph-asset factories, and Runtime Debug. |
-| Data and persistence | Encrypted PlayerPrefs, save slots, file saves, cloud-save entry points, and JSON import/export helpers. |
-| Inspector tooling | Grouped fields, buttons, conditions, dropdowns, read-only fields, `SerializeReference` type selection, and table import attributes. |
-| Debugging | Runtime debug console, command registration, watch values, optional Input System support, and a lightweight performance overlay. |
-| Editor workflow | Shader Graph-inspired graph editors, Graph Lists, custom node categories, debug windows, PlayerPrefs inspection, pool and event monitoring, table importing, and reference search. |
-
-Quick links:
-
-- [Feature Preview](#feature-preview)
-- [Changelog](CHANGELOG.md)
-- [Install from a Git URL](#install-from-a-git-url)
-- [Quick Start](#quick-start)
-- [Namespace Layout](#namespace-layout)
-- [Runtime Features](#runtime-features)
-- [Editor Features](#editor-features)
-- [Assembly Definitions](#assembly-definitions)
-
-## Feature Preview
-
-### Inspector Attributes
-
-Use groups, read-only fields, conditional fields, dropdowns, and method buttons directly in the standard Inspector.
-
-<p align="center">
-  <img src="Documentation~/Media/SWAttribute.gif" alt="SWUtils Inspector attributes" width="460">
-</p>
-
-### State Machine Graph
-
-Build states and transitions visually, then inspect the active state and latest transition while running.
-
-![SWUtils State Machine Graph](Documentation~/Media/SWStateMachine.gif)
-
-### Behaviour Tree
-
-Build trees with a Blackboard and node Inspector, then inspect node states while the tree is running.
-
-![SWUtils Behaviour Tree](Documentation~/Media/SWBehaviourTree.gif)
-
-### Editor Workflow Tools
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <strong>Quick Asset Palette</strong><br>
-      Register frequently used assets and folders for fast opening, selection, and prefab creation.<br><br>
-      <img src="Documentation~/Media/SWAssetPalette.png" alt="SWUtils Quick Asset Palette">
-    </td>
-    <td width="50%" valign="top">
-      <strong>Reference Finder</strong><br>
-      Search reverse references, dependencies, and potentially unused assets.<br><br>
-      <img src="Documentation~/Media/ReferenceFinder.png" alt="SWUtils Reference Finder">
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <strong>Excel Table Importer</strong><br>
-      Preview tab-separated table data and apply it to a ScriptableObject.<br><br>
-      <img src="Documentation~/Media/ExcelTable.png" alt="SWUtils Excel Table Importer">
-    </td>
-    <td width="50%" valign="top">
-      <strong>Amount Format</strong><br>
-      Manage large-number units, decimal places, and rounding behavior with reusable presets.<br><br>
-      <img src="Documentation~/Media/AmountFormat.png" alt="SWUtils Amount Format">
-    </td>
-  </tr>
-</table>
-
-## Install from a Git URL
-
-Add the package through Unity Package Manager:
-
-1. Open `Window > Package Manager` from the Unity menu.
-2. Select the `+` button in the upper-left corner.
-3. Select `Add package from git URL...`.
-4. Enter the Git URL for this repository.
-
-Append `#branch-name` or `#tag-name` to the URL to install a specific branch or tag.
+In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.3.0
+https://github.com/LAVINSE/SWUtils.git#v1.3.1
 ```
 
-## Dependencies
+The URL above requires the `v1.3.1` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
-The Unity packages and modules used by SWUtils are connected automatically through `package.json` when SWUtils is installed from a Git URL.
+Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 
-- Localization
-- TextMeshPro
-- Unity UI
-- Physics
-- Physics 2D
+Cloud integrations require separate setup: `SW_GOOGLEPLAY_ENABLE` for Google Play Games, `SW_STEAMWORKS_NET` for Steamworks.NET and `SW_ICLOUD_ENABLE` for an iCloud native bridge supplied by your project. See the [integration and persistence requirements (Korean)](Documentation~/Reliability.ko.md).
 
-Unity Input System is not installed automatically. The debug console can use it when it already exists in the project, but SWUtils keeps it optional to avoid a mandatory package dependency.
+## First use
 
-Install the following external libraries only when using their related features:
+1. Derive components from `SW.Base.SWMonoBehaviour` and data assets from `SW.Base.SWScriptableObject`.
+2. Import `SW.Attributes` for inspector attributes.
+3. Reference `SWUtils.Runtime` if your project uses assembly definition files.
+4. Find examples under `Packages > SWUtils > Samples` in the Project window.
 
-- Google Play Games: Used for Android cloud saves.
-- Steamworks.NET: Used for standalone cloud saves.
+Attach this component to a game object to edit a score and save it with an inspector button:
 
-## Optional Define Symbols
+```csharp
+using UnityEngine;
+using SW.Attributes;
+using SW.Base;
+using SW.Data;
 
-Add the following define symbols when using external libraries for cloud saves:
+/// <summary>인스펙터에서 설정한 시작 점수를 저장하는 예제입니다.</summary>
+public sealed class ScoreSettings : SWMonoBehaviour
+{
+    [SerializeField] private int startingScore = 100;
 
-- `SW_GOOGLEPLAY_ENABLE`: Enables Google Play Games saves on Android.
-- `SW_STEAMWORKS_NET`: Enables Steamworks.NET saves on standalone platforms.
+    /// <summary>현재 저장 슬롯에 시작 점수를 기록합니다.</summary>
+    [SWButton("Save starting score")]
+    private void SaveStartingScore()
+    {
+        SWPlayerPrefs.SetInt("StartingScore", startingScore);
+        SWPlayerPrefs.Save();
+    }
+}
+```
 
-## Quick Start
+Configure scene persistence on each manager component. Choose save slots as part of your game's save flow.
 
-After installation:
+## Find a feature
 
-1. Find the examples in `Packages > SWUtils > Samples` in the Project window.
-2. Add `using SW.Base;` for `SWMonoBehaviour` and `SWScriptableObject`, and add `using SW.Attributes;` for Inspector attributes.
-3. Import the namespace that owns the feature you use, such as `SW.Data`, `SW.Popup`, `SW.ScreenResolution`, or `SW.Util`.
-4. Add `using SW.Coroutines;` when using `ICoroutineRunner` or `SWCoroutineRunner`.
-5. If your project uses assembly definition files, add references to `SWUtils.Runtime` and any optional assemblies required by the feature.
+These links lead to the feature descriptions in this README, including setup instructions and usage examples.
 
-Most manager components are scene-owned. Add the required manager or registry to a bootstrap scene and keep that scene alive when the feature must persist between scene changes.
+| Area | README sections |
+| --- | --- |
+| Components and inspectors | [Base types](#runtime-base) · [Attributes](#runtime-attributes) |
+| Scheduling and persistence | [Coroutines](#runtime-coroutines) · [Storage](#runtime-storage) |
+| Game systems | [Skill trees](#runtime-skilltree) · [Quests and achievements](#runtime-quests) · [Stats](#runtime-stats) |
+| Control flow | [State machines](#runtime-states) · [Behaviour trees](#runtime-behaviour) |
+| Objects and views | [Pooling](#runtime-pooling) · [Popups](#runtime-popups) · [Resolution](#runtime-resolution) |
+| Time, input, audio, scenes and events | [Utilities](#runtime-utilities) |
+| Debugging and authoring | [Runtime console](#runtime-debug) · [Editor features and menus](#editor-tools) |
+
+[Namespaces](#namespace-layout) · [Samples](#samples) · [Assemblies](#assembly-definitions) · [Changelog](CHANGELOG.md)
+
+## Preview
+
+Configure inspector groups, conditional fields and method buttons:
+
+<img src="Documentation~/Media/SWAttribute.gif" alt="SWUtils inspector attribute example" width="460">
+
+Connect state and behaviour nodes in graph editors and inspect their runtime state:
+
+![State machine editor](Documentation~/Media/SWStateMachine.gif)
+![Behaviour tree editor](Documentation~/Media/SWBehaviourTree.gif)
+
+[Asset palette](Documentation~/Media/SWAssetPalette.png) · [Reference finder](Documentation~/Media/ReferenceFinder.png) · [Table importer](Documentation~/Media/ExcelTable.png) · [Number formatting](Documentation~/Media/AmountFormat.png)
 
 ## Namespace Layout
 
@@ -143,6 +89,7 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 | --- | --- |
 | `Runtime/Attribute` | `SW.Attributes` |
 | `Runtime/Base` | `SW.Base` |
+| `Runtime/Behaviour` | `SW.BehaviourTree` |
 | `Runtime/Coroutine` | `SW.Coroutines` |
 | `Runtime/Data` | `SW.Data` |
 | `Runtime/Debug` | `SW.Debugging` |
@@ -159,7 +106,9 @@ Runtime and Editor code use feature-oriented namespaces that match their folders
 
 ## Runtime Features
 
-### `Runtime/SkillTree`
+<a id="runtime-skilltree"></a>
+
+### Skill trees
 
 Provides incremental upgrades, research unlocks, and talent choices through reusable definitions and independent progress for each owner. Supports prerequisite levels, all/any requirements, exclusive branches, repeated upgrades, multiple currencies, refunds, save restoration, and progress resets that retain permanent nodes. Costs, conditions, effects, wallets, and save stores can be extended for each project.
 
@@ -172,9 +121,15 @@ Provides incremental upgrades, research unlocks, and talent choices through reus
 
 The default view uses TextMeshProUGUI with the project's default font. No font data is bundled. Player save data does not include view layout. Sample creation and rebuilding are available through editor code and Inspector workflows rather than SWTools menu entries.
 
-See the [skill tree guide, extension contracts, and Kill AI Slop notes (Korean)](Documentation~/SkillTree.md).
+See the [skill tree guide, extension contracts, (Korean)](Documentation~/SkillTree.md).
 
-### `Runtime/Attribute`
+Use `SWSkillTreeSystem` with an `ISWSkillTreeWallet` implementation to create independent player progress. `PreviewPurchase` checks a purchase, `Purchase` charges its full cost, and `Refund` returns the actual payment for the last level when prerequisites allow it. `Reset` controls permanent-node retention and whether payments are refunded. `CaptureSaveData` and `Restore` handle progress; save wallet balances in the same game snapshot.
+
+Extend `SWSkillTreeCondition`, `SWSkillTreeCost` and `SWSkillTreeEffect` for project rules. `SWSkillTreeEffectBinding` applies ongoing effects from absolute levels; dispose the binding before the system. Use the `Purchased` event for one-time purchase notifications and `Changed` for progress, restore and balance changes.
+
+<a id="runtime-attributes"></a>
+
+### Inspector attributes
 
 Attributes that extend Inspector presentation and behavior.
 
@@ -266,7 +221,9 @@ public class HiddenSkillAction : SkillAction
 
 When an abstract class or interface such as `SkillAction` is used as the base type, serializable implementations such as `HealSkillAction` appear in an Inspector dropdown. Use `SWAddTypeMenu` to define a menu path and `SWHideInTypeMenu` to exclude a type.
 
-### `Runtime/Coroutine`
+<a id="runtime-coroutines"></a>
+
+### Coroutines
 
 Separates coroutine execution behind an interface so runtime code does not depend tightly on a specific MonoBehaviour.
 
@@ -297,7 +254,7 @@ public class CoroutineExample : MonoBehaviour
 }
 ```
 
-`SWCoroutineRunner` also provides cached wait instructions and common scheduling operations:
+`SWCoroutineRunner.Wait` caches up to 128 durations. `WaitRealtime` creates an independent wait object for each call. Scheduling operations include:
 
 ```csharp
 coroutineRunner.DelayedCall(1f, () => Debug.Log("One second later"));
@@ -312,7 +269,9 @@ coroutineRunner.Tween(
 
 Keep the returned `Coroutine` when an individual operation may need to be cancelled with `Stop`.
 
-### `Runtime/Data`
+<a id="runtime-storage"></a>
+
+### Storage
 
 Provides save data, PlayerPrefs, encryption, and cloud save features.
 
@@ -327,8 +286,6 @@ Example:
 
 ```csharp
 using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 
 SWPlayerPrefs.SetSlot("player_01");
@@ -352,7 +309,7 @@ string exportedJson = SWPlayerPrefs.ExportToJson();
 bool imported = SWPlayerPrefs.ImportFromJson(exportedJson);
 ```
 
-`ImportFromJson` replaces the imported keys, while `MergeFromJson` merges incoming entries into the current slot. Use `HasKey`, `DeleteKey`, and `DeleteAll` for key-level or slot-level cleanup.
+`ImportFromJson` replaces the entire selected slot after validation, while `MergeFromJson` preserves existing keys and overwrites matching incoming keys. Use `HasKey`, `DeleteKey`, and `DeleteAll` for key-level or slot-level cleanup.
 
 Create and edit salt settings from `SWTools/Utils/Project/PlayerPrefs Salt Settings`. The settings asset is created at `Assets/Resources/SWPlayerPrefsSettings.asset` and loaded automatically through Resources at runtime. Data saved with a previous salt cannot be read after the salt changes, so delete or migrate existing data first.
 
@@ -361,8 +318,6 @@ Save manager example:
 ```csharp
 using System;
 using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 
 [Serializable]
@@ -397,7 +352,13 @@ await SWSaveDataManager.SaveAllAsync();
 
 `ListSaves`, `CopySlot`, `Delete`, and `GetSaveInfo` provide save-slot management. `SaveAll` writes the registered data and the current SWUtils PlayerPrefs slot together; changing the save-manager slot also aligns the PlayerPrefs slot.
 
-### `Runtime/Debug`
+Slot overloads of `SetString`, `GetString`, `ImportFromJson` and `MergeFromJson` operate on a specified slot without changing the current selection. `ExportSlotToJson` exports that slot. Empty strings and keys containing delimiters are preserved. Imports validate their input before applying it and attempt to restore previous values on failure.
+
+File saves replace the target after a temporary write completes. Registered-data loads check a backup when the main file is missing or cannot be parsed. Cloud restore uses the requested slot. File and PlayerPrefs updates do not form an atomic transaction across process termination. See the [persistence contracts](Documentation~/Reliability.ko.md) for provider setup and legacy local-cache behavior.
+
+<a id="runtime-debug"></a>
+
+### Debug console
 
 Provides a runtime debug console, command registration, watch values, logging helpers, and a lightweight performance overlay.
 
@@ -416,7 +377,7 @@ Debug console setup:
 4. Choose the open key and optional `Control`, `Shift`, or `Alt` modifiers.
 5. Set the mobile touch count used to open the console on touch devices.
 
-The package no longer requires the Unity Input System package. If `Input System 확인` is enabled and the Input System package exists in the project, SWUtils checks it through cached reflection first. If the package is missing, the console falls back to Unity's built-in `Input` API without compile errors.
+Input System is optional. If `Input System 확인` is enabled and the package is installed, the console reads input through cached reflection. Otherwise it uses Unity's built-in `Input` API.
 
 Performance overlay setup:
 
@@ -449,7 +410,9 @@ public class DebugCommands
 }
 ```
 
-### `Runtime/Base` - `SWMonoBehaviour`
+<a id="runtime-base"></a>
+
+### Base components
 
 Provides the `SWMonoBehaviour` base class for use with the attribute-driven `SWTools` custom Inspector.
 
@@ -466,11 +429,13 @@ public class PlayerController : SWMonoBehaviour
 }
 ```
 
-### `Runtime/Base` - `SWIdentifiedObject`
+### Identified assets
+
+`SWIODatabase` stores and looks up `SWIdentifiedObject` assets, while `SWCategory` groups related definitions.
 
 Shared definition fields are grouped under **기본 정의**, collapsed by default. This applies automatically to existing assets and derived types, while preserving the user's foldout preference.
 
-### `Runtime/Base` - `SWScriptableObject`
+### Data assets
 
 Provides the `SWScriptableObject` base class for ScriptableObject assets that use the same attribute-driven custom Inspector as `SWMonoBehaviour`.
 
@@ -503,7 +468,9 @@ public class CharacterData : SWScriptableObject
 }
 ```
 
-### `Runtime/Pooling`
+<a id="runtime-pooling"></a>
+
+### Pooling
 
 Provides GameObject pooling and group-based spawning.
 
@@ -554,25 +521,39 @@ using UnityEngine;
 public class Bullet : MonoBehaviour, IPoolable
 {
     private IPool pool;
+    private float remainingLifetime;
 
+    /// <summary>반납할 풀을 연결합니다.</summary>
     public void SetPool(IPool pool)
     {
         this.pool = pool;
     }
 
+    /// <summary>활성화 전에 재사용할 탄환의 수명을 초기화합니다.</summary>
     public void OnSpawnFromPool()
     {
-        gameObject.SetActive(true);
+        remainingLifetime = 2f;
     }
 
+    /// <summary>반납 시 남은 수명을 비웁니다.</summary>
     public void OnReturnToPool()
     {
-        gameObject.SetActive(false);
+        remainingLifetime = 0f;
+    }
+
+    private void Update()
+    {
+        remainingLifetime -= Time.deltaTime;
+        if (remainingLifetime <= 0f) pool.Release(gameObject);
     }
 }
 ```
 
-### `Runtime/Popup`
+The pool sets the parent, position and pool reference before `OnSpawnFromPool`, then activates the instance. Prewarming keeps objects inactive and does not invoke spawn or return callbacks.
+
+<a id="runtime-popups"></a>
+
+### Popups
 
 Manages popup creation, display, hiding, caching, and animation.
 
@@ -582,13 +563,12 @@ Manages popup creation, display, hiding, caching, and animation.
 - `SWPopupShowEffect`, `SWPopupHideEffect`: Abstract classes for show and hide effects.
 - `SWPopupScaleShowEffect`, `SWPopupScaleHideEffect`: Default coroutine-based scale effects.
 - `SWPopupLifecycle`: Connects popup lifecycle events.
+- `SWPopupEffectHandle`: Controls an active popup effect.
 
 Example:
 
 ```csharp
-using SW.Data;
 using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -613,9 +593,7 @@ Setup:
 Key-based example:
 
 ```csharp
-using SW.Data;
 using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 
 SWPopupManager.Instance.Register("option", optionPopupPrefab);
@@ -623,7 +601,9 @@ SWPopupManager.Instance.Show("option");
 SWPopupManager.Instance.Hide("option");
 ```
 
-### `Runtime/Resolution`
+<a id="runtime-resolution"></a>
+
+### Resolution
 
 Provides resolution, safe area, and CanvasScaler adjustments.
 
@@ -636,7 +616,19 @@ Usage:
 2. Add `SWCanvasResolution` to a Canvas that requires CanvasScaler adjustment.
 3. Configure the directions and ratios in the Inspector.
 
-### `Runtime/Quest`
+<a id="runtime-stats"></a>
+
+### Stats
+
+`SWStat` combines a base value and bonuses, clamped to a minimum and maximum. `SWStats` prepares per-object runtime stats, `SWStatOverride` configures base-value overrides, and `SWStatScaleFloat` derives scaled values. Track bonuses by source and subkey so equipment or effects can remove only their own contribution.
+
+Value-change and minimum/maximum events notify consumers of the final value. `SetRange(minimumValue, maximumValue)` validates both bounds together and also notifies consumers when a range change affects the final value.
+
+<a id="runtime-quests"></a>
+
+### Quests and achievements
+
+`SWQuestTaskGroup` combines tasks that run together and sequences them with later groups. `SWQuestTarget` matches reports against a string or Unity object target.
 
 Provides a data-driven quest and achievement runtime built on `SWIdentifiedObject`, `SWSingleton`, encrypted `SWPlayerPrefs`, and `SWEventBus`.
 
@@ -672,7 +664,13 @@ if (runtimeQuest != null && runtimeQuest.IsWaitingForCompletion)
 
 `Save()` and `Load()` use encrypted `SWPlayerPrefs`. Disable automatic loading and call `SetSaveStore(ISWQuestSaveStore)` before initialization to use another store. To include quest state in a larger save root, store the `SWQuestSystemSaveData` returned by `CreateSaveData()` and pass it back to `RestoreSaveData()`. Task groups and tasks restore by code name, so their ordering may change without assigning progress to the wrong definition. Restoring completed entries never grants their rewards again. Project conditions and rewards can receive external services through `SetContext` and `TryGetContext<TContext>`. See `Samples/Scripts/SWQuestExample.cs` and `SWQuestScoreRewardExample.cs`.
 
-### `Runtime/StateMachine`
+Completion is confirmed after all rewards succeed. If gold is granted but an item reward fails, the quest remains `WaitingForCompletion`. A later `Complete()` skips recorded rewards and retries the failed item. A partially rewarded quest cannot be canceled.
+
+A reward's `Grant` implementation must throw before changing data when it cannot pay. Reward events are notifications after payment; grant currency in `Grant`. Persist wallet or inventory data together with quest reward records to avoid duplicates or omissions across saves.
+
+<a id="runtime-states"></a>
+
+### State machines
 
 Provides a general-purpose finite state machine that supports independent layers without depending on a Unity component.
 
@@ -724,6 +722,8 @@ The same `SWGraphAssetsExample` file also contains graph-compatible stack states
 
 #### State Machine Graph Editor
 
+`SWStateMachineGraphAsset` stores the state nodes, layers and transitions used by the runtime graph factory.
+
 The Unity 6-only graph editor stores state nodes and connections in a `ScriptableObject` asset. Its Shader Graph-inspired layout uses a full-window canvas with a collapsible Graph List, floating Blackboard and Graph Inspector panels, and a bottom validation console.
 
 1. Create an asset from `Assets > Create > SWTools > State Machine Graph`.
@@ -771,7 +771,13 @@ public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
 
 The layered graph factory returns a configured and started `SWStateMachine<TContext>`. The stack graph controller provides `Tick`, `ExecuteCommand`, `SendMessage`, and `Stop`, and executes graph-authored push, replace, and pop connections.
 
+Transitions requested from transition callbacks are queued until the current transition finishes, then processed in order. A `true` result from a nested `Pop` or `ExecuteCommand` means the request was accepted. Observe the state-change notification for the resulting state. More than 1,024 consecutive operations in one call raises an error and clears pending requests.
+
+<a id="runtime-behaviour"></a>
+
 ### Behaviour Tree
+
+`SWBehaviourActionNode`, `SWBehaviourCompositeNode` and `SWBehaviourDecoratorNode` are the three node base types. Nodes receive an `SWBehaviourContext` and return an `SWBehaviourStatus`. `SWBehaviourBlackboard` holds shared values, `SWBehaviourNodeProperty<T>` connects fields to those values or constants, and `SWBehaviourSubTreeNode` runs a referenced tree.
 
 `SWBehaviourTreeAsset` in the `SW.BehaviourTree` namespace provides a Behaviour Tree runtime based on `Running`, `Success`, `Failure`, and `Aborted`. It includes Composite, Decorator, Action, SubTree, typed Blackboard, NodeProperty, and per-Runner override support. Project-defined node and custom Blackboard entry types appear automatically in the editor.
 
@@ -783,7 +789,13 @@ Both graph editors provide a collapsible shared Graph List and Runtime Debug. Us
 
 Generic Set Property and Compare Property nodes support built-in and custom Blackboard values. `SWBehaviourTreeRunner` exposes external get, set, and cached key APIs, and custom keys can be overridden per Runner. Node scripts are generated from editable text templates under `Editor/Behaviour/Templates`.
 
-### `Runtime/Util`
+Reference values in the blackboard can be cleared with `null`. Renaming a key invalidates its lookup cache. `Rename(identifier, newName)` validates empty and duplicate names; update string-based references in nodes separately.
+
+Subtree cycles and nesting beyond 64 levels are rejected before runtime cloning. The inspector displays the problem and `CreateRuntimeInstance` returns `null`. Call `ValidateSubTrees(out error)` to inspect the definition from code.
+
+<a id="runtime-utilities"></a>
+
+### Utilities
 
 A collection of small, general-purpose game utilities.
 
@@ -806,6 +818,10 @@ A collection of small, general-purpose game utilities.
 - `SWAmountFormat`: Formats large numbers with suffixes such as K, M, B, and T.
 - `SWAmountFormatProfile`: Stores number suffixes, decimal places, and decimal handling in a Resources preset asset.
 - `SWRectDummy`: A mesh-free Graphic that creates a rectangular user interface raycast area without an Image.
+- `SWButtonExtension`: Configures cooldowns, long presses, held-button repetition, submit input and click sounds.
+- `SWRandom`, `SWShuffleBag<T>`: Provide weighted selection, shuffling and draws without repetition until the current bag is exhausted.
+
+Configure `SWButtonExtension` on the button and use its events for held or repeated actions. Keyboard and gamepad submit input is handled independently of previous pointer holds. Compare random-selection settings in `SWTools > Utils > Simulation > Random Simulator`.
 
 #### Audio
 
@@ -815,9 +831,6 @@ A collection of small, general-purpose game utilities.
 4. Optionally assign dedicated music and sound-effect `AudioSource` components. Missing sources are created automatically.
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -846,9 +859,6 @@ Call `LoadVolumes` during initialization if volume settings were saved previousl
 Event bus example:
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 
 public readonly struct CoinChangedEvent
@@ -872,9 +882,6 @@ SWEventBus.IsLogOutputEnabled = false; // Suppresses all event bus logs.
 Cooldown example:
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 
 private readonly SWCooldown skillCooldown = new(3f);
@@ -890,9 +897,6 @@ private void TryUseSkill()
 Timer example:
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -918,9 +922,6 @@ public class RoundTimerExample : MonoBehaviour
 Scene-loading example:
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 using UnityEngine;
 
@@ -938,12 +939,11 @@ public class SceneTransitionExample : MonoBehaviour
 
 Add all target scenes to Build Settings before loading them. `LoadAdditive`, `UnloadScene`, `ReloadActiveScene`, and `SetActiveScene` cover multi-scene flows. Set `AllowSceneActivation` when a loading screen must hold activation after loading reaches the ready state.
 
+`TryCancelCurrentLoad()` accepts cancellation before the engine operation starts and returns `false` afterward. Set `AllowSceneActivation = true` to release a held load. Completion callbacks run after the loader resets its request state.
+
 Number format preset example:
 
 ```csharp
-using SW.Data;
-using SW.Popup;
-using SW.ScreenResolution;
 using SW.Util;
 using TMPro;
 using UnityEngine;
@@ -973,13 +973,19 @@ Rect Dummy usage:
 3. Use the `Fit Parent` Inspector button or context menu to match the parent RectTransform.
 4. Select `GameObject > UI > SW Rect Dummy` to create one from the menu.
 
+Volume changes also update currently playing sound effects while preserving each playback's volume scale. `SWEventBus.IsDiagnosticsEnabled` controls snapshot recording separately from `IsLogOutputEnabled`; failures in diagnostic string conversion do not interrupt publishing. Zero-length timers and timers shortened below elapsed time complete on the next `Tick`.
+
+`SWUtility.SetGaugeText` displays the current and maximum values as text. The existing `SetGauge` method keeps this behavior; its image argument is retained for compatibility.
+
+<a id="editor-tools"></a>
+
 ## Editor Features
 
-### `Editor/Attribute`
+### Inspector drawers
 
 A collection of PropertyDrawers that render the Inspector features defined in `Runtime/Attribute`.
 
-### `Editor/Window`
+### Editor windows
 
 Editor windows available from the `SWTools` menu. Debugging tools are under `SWTools/Debug`, while general utilities are under `SWTools/Utils`.
 
@@ -995,6 +1001,8 @@ Editor windows available from the `SWTools` menu. Debugging tools are under `SWT
 - `SWTools/Utils/Asset/TMP Font Asset Manager`: Manages TextMeshPro font asset assignment and performance inspection.
 - `SWTools/Utils/Data/Amount Format Window`: Creates and edits number format presets.
 - `SWTools/Utils/Data/Excel Table Importer`: Applies tabular text to ScriptableObject data.
+- `SWTools/Utils/Behaviour/Tree Editor`: Authors behaviour trees, blackboard keys and subtrees.
+- `SWTools/Utils/Data/Quest System Editor`: Manages quests, achievements, rewards, conditions and their databases.
 - `SWTools/Utils/Data/Localization Tools`: Assists with Localization table workflows.
 - `SWTools/Utils/Data/Skill Tree Editor`: Edits skill nodes, prerequisite connections, reveal rules, and shared layout coordinates.
 - `SWTools/Utils/Data/Stat System Editor`: Creates, edits, sorts, renames, previews icons, and adjusts list display sizes for `SWIdentifiedObject` assets such as categories and stats.
@@ -1075,7 +1083,7 @@ Displayed information:
 
 The inspection warns about large atlas memory, high glyph counts, long fallback chains, dynamic atlases, and numerous material presets that may require attention on mobile targets.
 
-### `Editor/Data`
+### Table importer
 
 Parses tabular text and applies it to ScriptableObject fields marked with `SWTable` or `SWTableSheet`.
 `SWTableSheet` supports `List<T>`, arrays, and ordinary class fields. Collections receive every
@@ -1094,23 +1102,31 @@ Usage:
 
 Collection fields receive every data row. An ordinary class field receives the first row in horizontal layout, or matching field-and-value rows in vertical layout. Field names must match serialized field names.
 
-### `Editor/Hierarchy`
+Missing required columns, duplicate headers, unknown boolean values and unclosed quotes are rejected before application. Quoted cells preserve tabs, newlines and quotes.
+
+### Localization tools
+
+Open `SWTools > Utils > Data > Localization Tools` to work with string-table collections. Export selected locales as CSV, TSV or JSON, and preview TSV before importing it. Configure new-collection creation or existing-collection updates, key prefixes, Smart String usage and empty-entry export.
+
+Updating an existing collection removes keys absent from the incoming table. Enabling **모든 기존 키 삭제 후 교체** clears all existing keys before rebuilding them from the input. Review the preview and target collection before applying the import.
+
+### Hierarchy tools
 
 Stores and applies Hierarchy display styles and icons. Used with `SWHierarchyToolsWindow`.
 
-### `Editor/Base` - `SWMonoBehaviour`
+### Component inspectors
 
 Builds custom Inspectors for components derived from `SWMonoBehaviour`, including groups, buttons, conditional display, and constant repaint behavior. The shared Inspector implementation is also used by `SWScriptableObject`.
 
-### `Editor/Base` - `SWScriptableObject`
+### Asset inspectors
 
 Applies the shared SWUtils custom Inspector to assets derived from `SWScriptableObject`.
 
-### `Editor/StyleSheet`
+### Editor stylesheets
 
 Stylesheets used by editor UI Toolkit views.
 
-### `Editor/Util`
+### Shared editor utilities
 
 Shared editor-window and custom-Inspector utilities for graphical user interfaces, drag and drop, icons, EditorPrefs, style caching, selection, and pinging assets.
 
@@ -1138,6 +1154,6 @@ After installation, inspect the examples directly in `Packages > SWUtils > Sampl
 - `SWUtils.Editor`: Editor code assembly.
 - `SWUtils.Samples`: Sample code assembly.
 - `SWUtils.SkillTree.Samples.Editor`: Editor-only skill tree sample generation.
-- `SWUtils.SkillTree.Tests`: Edit Mode skill tree tests.
+- `SWUtils.SkillTree.Tests`: Edit Mode skill tree and reliability tests.
 
 Sample prefabs are serialized using the assembly name that contains each script.

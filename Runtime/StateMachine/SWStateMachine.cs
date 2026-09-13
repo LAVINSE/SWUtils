@@ -32,6 +32,7 @@ namespace SW.StateMachine
 
         #region 필드
         private readonly SortedDictionary<int, LayerData> layers = new SortedDictionary<int, LayerData>();
+        private readonly SWStateOperationQueue stateOperations = new();
         #endregion // 필드
 
         #region 프로퍼티
@@ -334,6 +335,12 @@ namespace SW.StateMachine
         /// </summary>
         public void Start()
         {
+            stateOperations.Execute(StartInternal);
+        }
+
+        /// <summary>모든 초기 상태의 진입을 먼저 예약한 뒤 후속 요청을 처리합니다.</summary>
+        private void StartInternal()
+        {
             if (IsRunning)
                 throw new InvalidOperationException("상태 머신이 이미 실행 중입니다.");
 
@@ -359,9 +366,10 @@ namespace SW.StateMachine
 
             foreach (KeyValuePair<int, LayerData> pair in layers)
             {
+                if (!IsRunning) break;
                 LayerData layerData = pair.Value;
                 if (!TryAutomaticTransition(layerData, pair.Key))
-                    layerData.CurrentState.Tick(deltaTime);
+                    layerData.CurrentState?.Tick(deltaTime);
             }
         }
 
@@ -369,6 +377,12 @@ namespace SW.StateMachine
         /// 모든 계층의 현재 상태를 종료하고 상태 머신을 정지합니다.
         /// </summary>
         public void Stop()
+        {
+            stateOperations.Execute(StopInternal);
+        }
+
+        /// <summary>모든 계층을 현재 전환 이후에 정지합니다.</summary>
+        private void StopInternal()
         {
             if (!IsRunning)
                 return;
@@ -396,6 +410,12 @@ namespace SW.StateMachine
         /// <summary>지정한 상태로 전환합니다.</summary>
         private void ChangeState(LayerData layerData, Type stateType, int layer)
         {
+            stateOperations.Execute(() => ChangeStateInternal(layerData, stateType, layer));
+        }
+
+        /// <summary>종료·진입·변경 알림이 끝날 때까지 다른 전환을 지연합니다.</summary>
+        private void ChangeStateInternal(LayerData layerData, Type stateType, int layer)
+        {
             SWState<TContext> previousState = layerData.CurrentState;
             SWState<TContext> newState = layerData.States[stateType];
 
@@ -412,6 +432,12 @@ namespace SW.StateMachine
         /// </summary>
         public bool ExecuteCommand(int command, int layer)
         {
+            return stateOperations.Execute(() => ExecuteCommandInternal(command, layer));
+        }
+
+        /// <summary>앞선 전환이 끝난 상태를 기준으로 명령 조건을 평가합니다.</summary>
+        private bool ExecuteCommandInternal(int command, int layer)
+        {
             EnsureRunning();
             LayerData layerData = GetLayer(layer);
             SWStateTransition<TContext> transition = FindTransition(layerData, command, false);
@@ -419,7 +445,7 @@ namespace SW.StateMachine
             if (transition == null)
                 return false;
 
-            ChangeState(layerData, transition.ToStateType, layer);
+            ChangeStateInternal(layerData, transition.ToStateType, layer);
             return true;
         }
 
@@ -439,12 +465,18 @@ namespace SW.StateMachine
         /// </summary>
         public bool ExecuteCommand(int command)
         {
+            return stateOperations.Execute(() => ExecuteCommandAllLayers(command));
+        }
+
+        /// <summary>하나의 명령을 모든 계층에 전달한 뒤 콜백에서 접수된 명령을 처리합니다.</summary>
+        private bool ExecuteCommandAllLayers(int command)
+        {
             EnsureRunning();
             bool hasTransitioned = false;
 
             foreach (int layer in layers.Keys)
             {
-                if (ExecuteCommand(command, layer))
+                if (ExecuteCommandInternal(command, layer))
                     hasTransitioned = true;
             }
 
@@ -492,6 +524,7 @@ namespace SW.StateMachine
 
             foreach (int layer in layers.Keys)
             {
+                if (!IsRunning) break;
                 if (SendMessage(message, layer, data))
                     hasHandled = true;
             }

@@ -201,7 +201,7 @@ namespace SW.Util
         /// <returns>이번 호출로 타이머가 완료되었으면 true.</returns>
         public bool Tick(float deltaTime)
         {
-            if (!isRunning || isPaused || IsDone && !loop)
+            if (!isRunning || isPaused)
                 return false;
 
             elapsed += Mathf.Max(0f, deltaTime);

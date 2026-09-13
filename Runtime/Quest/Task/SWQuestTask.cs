@@ -245,7 +245,7 @@ namespace SW.Quest
 
             if (CurrentProgress != previousProgress)
             {
-                ProgressChanged?.Invoke(this, CurrentProgress, previousProgress);
+                SW.Util.SWSafeEvent.Invoke(ProgressChanged, handler => handler(this, CurrentProgress, previousProgress));
             }
         }
 
@@ -347,7 +347,7 @@ namespace SW.Quest
 
             SWQuestTaskState previousState = State;
             State = state;
-            StateChanged?.Invoke(this, State, previousState);
+            SW.Util.SWSafeEvent.Invoke(StateChanged, handler => handler(this, State, previousState));
         }
 
         /// <summary>

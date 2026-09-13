@@ -11,9 +11,9 @@ public sealed class SWQuestScoreRewardExample : SWQuestReward
     /// <inheritdoc />
     public override void Grant(SWQuestSystem questSystem, SWQuest quest)
     {
-        if (questSystem != null && questSystem.TryGetContext(out SWQuestExample example))
-        {
-            example.AddScore(Quantity);
-        }
+        if (questSystem == null || !questSystem.TryGetContext(out SWQuestExample example))
+            throw new System.InvalidOperationException("점수를 지급할 퀘스트 예제 문맥이 없습니다.");
+
+        example.AddScore(Quantity);
     }
 }

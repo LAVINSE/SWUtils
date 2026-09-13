@@ -15,10 +15,12 @@ namespace SW.Quest
         int Quantity { get; }
 
         /// <summary>
-        /// 퀘스트 완료 보상을 지급합니다.
+        /// 완료 대기 퀘스트의 보상을 지급합니다. 성공한 경우에만 정상 반환해야 합니다.
+        /// 실패 예외를 던질 때는 지급 대상의 값을 보존해야 합니다.
+        /// 외부 저장소를 변경하는 구현은 퀘스트 지급 기록과 같은 저장 단위로 처리해야 합니다.
         /// </summary>
         /// <param name="questSystem">퀘스트를 관리하는 시스템입니다.</param>
-        /// <param name="quest">완료된 퀘스트입니다.</param>
+        /// <param name="quest">보상을 지급받는 완료 대기 퀘스트입니다.</param>
         void Grant(SWQuestSystem questSystem, SWQuest quest);
     }
 }

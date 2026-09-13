@@ -49,6 +49,8 @@ namespace SW.Pooling
         private const float WaitCacheStep = 0.01f;
 
         private Coroutine autoClearRoutine;
+        private Transform inactiveCreationRoot;
+        private readonly HashSet<GameObject> spawnedInstances = new();
         #endregion // 필드
 
         #region 데이터
@@ -238,7 +240,17 @@ namespace SW.Pooling
             instanceTransform.SetParent(parent, false);
             instanceTransform.SetPositionAndRotation(position, rotation);
 
-            NotifyPoolables(instance);
+            spawnedInstances.Add(instance);
+            try
+            {
+                NotifyPoolables(instance);
+                instance.SetActive(true);
+            }
+            catch
+            {
+                pool.Release(instance);
+                throw;
+            }
             return instance;
         }
 
@@ -387,6 +399,7 @@ namespace SW.Pooling
 
             poolDictionary.Clear();
             instanceToPrefabDictionary.Clear();
+            spawnedInstances.Clear();
             poolStatisticsDictionary.Clear();
             lastUseTimeDictionary.Clear();
             waitCacheDictionary.Clear();
@@ -733,7 +746,10 @@ namespace SW.Pooling
             }
 
             for (int index = 0; index < autoClearBuffer.Count; index++)
+            {
                 instanceToPrefabDictionary.Remove(autoClearBuffer[index]);
+                spawnedInstances.Remove(autoClearBuffer[index]);
+            }
 
             autoClearBuffer.Clear();
         }
@@ -801,7 +817,7 @@ namespace SW.Pooling
 
             ObjectPool<GameObject> pool = new(
                 createFunc: () => CreatePooled(capturedPrefab),
-                actionOnGet: OnGetFromPool,
+                actionOnGet: null,
                 actionOnRelease: OnReleaseToPool,
                 actionOnDestroy: OnDestroyPooled,
                 collectionCheck: collectionCheck,
@@ -822,7 +838,16 @@ namespace SW.Pooling
         /// <returns>생성된 인스턴스입니다.</returns>
         private GameObject CreatePooled(GameObject prefab)
         {
-            GameObject instance = Instantiate(prefab, transform);
+            if (inactiveCreationRoot == null)
+            {
+                GameObject creationRoot = new GameObject("풀 생성 대기");
+                creationRoot.SetActive(false);
+                creationRoot.transform.SetParent(transform, false);
+                inactiveCreationRoot = creationRoot.transform;
+            }
+            GameObject instance = Instantiate(prefab, inactiveCreationRoot);
+            instance.SetActive(false);
+            instance.transform.SetParent(transform, false);
             instance.name = prefab.name;
             instanceToPrefabDictionary[instance] = prefab;
             GetOrCreateStatistics(prefab).createdCount++;
@@ -837,19 +862,9 @@ namespace SW.Pooling
         {
             IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
             for (int index = 0; index < poolables.Length; index++)
-            {
                 poolables[index].SetPool(this);
+            for (int index = 0; index < poolables.Length; index++)
                 poolables[index].OnSpawnFromPool();
-            }
-        }
-
-        /// <summary>
-        /// ObjectPool의 Get 호출 때 자동으로 실행됩니다.
-        /// </summary>
-        /// <param name="instance">꺼내진 오브젝트입니다.</param>
-        private void OnGetFromPool(GameObject instance)
-        {
-            instance.SetActive(true);
         }
 
         /// <summary>
@@ -858,10 +873,15 @@ namespace SW.Pooling
         /// <param name="instance">반환되는 오브젝트입니다.</param>
         private void OnReleaseToPool(GameObject instance)
         {
-            IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
-            for (int index = 0; index < poolables.Length; index++)
-                poolables[index].OnReturnToPool();
-
+            if (spawnedInstances.Remove(instance))
+            {
+                IPoolable[] poolables = instance.GetComponentsInChildren<IPoolable>(true);
+                for (int index = 0; index < poolables.Length; index++)
+                {
+                    try { poolables[index].OnReturnToPool(); }
+                    catch (System.Exception exception) { SWLog.LogError($"[SWPool] 반납 처리 실패: {exception.Message}"); }
+                }
+            }
             instance.SetActive(false);
             instance.transform.SetParent(transform, false);
         }
@@ -873,6 +893,7 @@ namespace SW.Pooling
         /// <param name="instance">파괴할 오브젝트입니다.</param>
         private void OnDestroyPooled(GameObject instance)
         {
+            spawnedInstances.Remove(instance);
             if (instance == null) return;
 
             if (instanceToPrefabDictionary.TryGetValue(instance, out GameObject prefab))

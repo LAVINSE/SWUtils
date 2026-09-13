@@ -109,10 +109,17 @@ namespace SW.Util
         /// 게이지 텍스트를 설정합니다. ("현재값 / 최대값" 형식)
         /// </summary>
         /// <param name="textMesh">값을 표시할 TextMeshProUGUI</param>
-        /// <param name="gaugeImage">게이지 이미지 (현재 미사용, 향후 확장용)</param>
+        /// <param name="gaugeImage">기존 호출 호환용 인수입니다. 이미지는 변경하지 않습니다.</param>
         /// <param name="currentValue">현재 값</param>
         /// <param name="maxValue">최대 값</param>
         public static void SetGauge(TextMeshProUGUI textMesh, Image gaugeImage, int currentValue, int maxValue)
+            => SetGaugeText(textMesh, currentValue, maxValue);
+
+        /// <summary>현재 값과 최대 값을 "현재값 / 최대값" 형식으로 표시합니다.</summary>
+        /// <param name="textMesh">값을 표시할 텍스트입니다.</param>
+        /// <param name="currentValue">현재 값입니다.</param>
+        /// <param name="maxValue">최대 값입니다.</param>
+        public static void SetGaugeText(TextMeshProUGUI textMesh, int currentValue, int maxValue)
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append(currentValue);

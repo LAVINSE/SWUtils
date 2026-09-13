@@ -10,9 +10,8 @@ using SW.Util;
 namespace SW.Data
 {
     /// <summary>
-    /// AES 암호화를 적용한 PlayerPrefs.
-    /// 키와 값 모두 암호화하여 저장합니다.
-    /// 전체 데이터를 JSON으로 export/import 할 수 있어 클라우드 동기화에 사용 가능.
+    /// 키 이름은 해시로 바꾸고 값은 AES로 암호화하여 PlayerPrefs에 저장합니다.
+    /// 슬롯별 JSON 가져오기와 내보내기를 제공합니다.
     /// </summary>
     public static class SWPlayerPrefs
     {
@@ -23,7 +22,7 @@ namespace SW.Data
         private class PrefsData
         {
             /// <summary>저장된 항목 목록.</summary>
-            public List<PrefsEntry> entries = new List<PrefsEntry>();
+            public List<PrefsEntry> entries;
         }
 
         /// <summary>
@@ -36,6 +35,13 @@ namespace SW.Data
             public string key;
             /// <summary>저장 값 (평문 상태).</summary>
             public string value;
+        }
+
+        /// <summary>구분자 문자가 포함된 키를 보존하는 이름 목록입니다.</summary>
+        [Serializable]
+        private class KeyIndexData
+        {
+            public List<string> keys;
         }
 
         #region 필드
@@ -94,15 +100,7 @@ namespace SW.Data
             {
                 if (keyIndexCache == null)
                 {
-                    keyIndexCache = new HashSet<string>();
-                    string raw = PlayerPrefs.GetString(KeyIndexName, string.Empty);
-                    if (!string.IsNullOrEmpty(raw))
-                    {
-                        foreach (var key in raw.Split('|'))
-                        {
-                            if (!string.IsNullOrEmpty(key)) keyIndexCache.Add(key);
-                        }
-                    }
+                    keyIndexCache = ReadKeyIndex(currentSlot);
                 }
                 return keyIndexCache;
             }
@@ -111,7 +109,7 @@ namespace SW.Data
 
         #region 슬롯 관리
         /// <summary>
-        /// 활성 슬롯을 변경합니다. 변경 후 모든 Get/Set은 해당 슬롯에 적용됩니다.
+        /// 활성 슬롯을 변경합니다. 슬롯을 생략한 읽기와 쓰기에 적용됩니다.
         /// </summary>
         /// <param name="slotName">슬롯 이름</param>
         public static void SetSlot(string slotName)
@@ -167,7 +165,7 @@ namespace SW.Data
             catch (Exception exception)
             {
                 SWLog.LogError($"[SWPlayerPrefs] Encrypt failed: {exception.Message}");
-                return string.Empty;
+                return null;
             }
         }
 
@@ -201,7 +199,7 @@ namespace SW.Data
             catch (Exception exception)
             {
                 SWLog.LogError($"[SWPlayerPrefs] Decrypt failed: {exception.Message}");
-                return string.Empty;
+                return null;
             }
         }
 
@@ -210,12 +208,12 @@ namespace SW.Data
         /// </summary>
         /// <param name="key">원본 키</param>
         /// <returns>해시되어 접두사가 붙은 저장용 키</returns>
-        private static string HashKey(string key)
+        private static string HashKey(string key, string slot = null)
         {
             using (var sha = SHA256.Create())
             {
                 // 슬롯 이름을 해시에 포함 → 슬롯별로 다른 키 생성
-                byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(key + CurrentSalt + currentSlot));
+                byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(key + CurrentSalt + NormalizeSlot(slot)));
                 return EncryptedPrefix + Convert.ToBase64String(bytes)
                     .Replace("/", "_").Replace("+", "-").Substring(0, 22);
             }
@@ -223,37 +221,35 @@ namespace SW.Data
         #endregion // 암호화 / 복호화
 
         #region 키 인덱스 관리
-        /// <summary>
-        /// 키 인덱스에 키를 추가하고 저장합니다.
-        /// </summary>
-        /// <param name="key">추가할 키</param>
-        private static void AddToIndex(string key)
+        /// <summary>명시한 슬롯 이름을 정규화합니다.</summary>
+        private static string NormalizeSlot(string slot)
+            => string.IsNullOrWhiteSpace(slot) ? currentSlot : slot.Trim();
+
+        /// <summary>문자열 배열 형식의 이름 목록을 저장할 키를 반환합니다.</summary>
+        private static string GetKeyIndexName(string slot) => $"SwUtilsPrefs_KeyIndexV2_{slot}";
+
+        /// <summary>새 형식이 없으면 기존 구분자 형식의 키 목록을 읽습니다.</summary>
+        private static HashSet<string> ReadKeyIndex(string slot)
         {
-            if (KeyIndex.Add(key))
+            string indexKey = GetKeyIndexName(slot);
+            if (PlayerPrefs.HasKey(indexKey))
             {
-                SaveIndex();
+                KeyIndexData data = JsonUtility.FromJson<KeyIndexData>(PlayerPrefs.GetString(indexKey));
+                if (data?.keys == null)
+                    throw new InvalidDataException("저장 키 목록을 읽을 수 없습니다.");
+                return new HashSet<string>(data.keys, StringComparer.Ordinal);
             }
+            string legacy = PlayerPrefs.GetString($"SwUtilsPrefs_KeyIndex_{slot}", string.Empty);
+            HashSet<string> keys = new(StringComparer.Ordinal);
+            foreach (string key in legacy.Split('|'))
+                if (!string.IsNullOrEmpty(key)) keys.Add(key);
+            return keys;
         }
 
-        /// <summary>
-        /// 키 인덱스에서 키를 제거하고 저장합니다.
-        /// </summary>
-        /// <param name="key">제거할 키</param>
-        private static void RemoveFromIndex(string key)
+        /// <summary>키 목록을 구분자가 없는 배열 형식으로 저장합니다.</summary>
+        private static void WriteKeyIndex(string slot, HashSet<string> keys)
         {
-            if (KeyIndex.Remove(key))
-            {
-                SaveIndex();
-            }
-        }
-
-        /// <summary>
-        /// 키 인덱스를 PlayerPrefs에 저장합니다.
-        /// </summary>
-        private static void SaveIndex()
-        {
-            string joined = string.Join("|", KeyIndex);
-            PlayerPrefs.SetString(KeyIndexName, joined);
+            PlayerPrefs.SetString(GetKeyIndexName(slot), JsonUtility.ToJson(new KeyIndexData { keys = new List<string>(keys) }));
         }
         #endregion // 키 인덱스 관리
 
@@ -265,10 +261,22 @@ namespace SW.Data
         /// <param name="value">저장할 값</param>
         public static void SetString(string key, string value)
         {
-            string encryptedKey = HashKey(key);
-            string encryptedValue = Encrypt(value ?? string.Empty);
-            PlayerPrefs.SetString(encryptedKey, encryptedValue);
-            AddToIndex(key);
+            SetString(key, value, currentSlot);
+        }
+
+        /// <summary>현재 선택을 바꾸지 않고 지정한 슬롯에 문자열을 저장합니다.</summary>
+        public static void SetString(string key, string value, string slot)
+        {
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("저장 키는 비어 있을 수 없습니다.", nameof(key));
+            string selectedSlot = NormalizeSlot(slot);
+            string plainValue = value ?? string.Empty;
+            string encryptedValue = Encrypt(plainValue);
+            if (encryptedValue == null || plainValue.Length > 0 && encryptedValue.Length == 0)
+                throw new InvalidOperationException("저장값 암호화에 실패했습니다.");
+            HashSet<string> keys = selectedSlot == currentSlot ? KeyIndex : ReadKeyIndex(selectedSlot);
+            PlayerPrefs.SetString(HashKey(key, selectedSlot), encryptedValue);
+            if (keys.Add(key)) WriteKeyIndex(selectedSlot, keys);
         }
 
         /// <summary>
@@ -331,11 +339,17 @@ namespace SW.Data
         /// <returns>복호화된 값</returns>
         public static string GetString(string key, string defaultValue = "")
         {
-            string encryptedKey = HashKey(key);
+            return GetString(key, defaultValue, currentSlot);
+        }
+
+        /// <summary>현재 선택을 바꾸지 않고 지정한 슬롯의 문자열을 읽습니다.</summary>
+        public static string GetString(string key, string defaultValue, string slot)
+        {
+            string encryptedKey = HashKey(key, slot);
             if (!PlayerPrefs.HasKey(encryptedKey)) return defaultValue;
             string encryptedValue = PlayerPrefs.GetString(encryptedKey, string.Empty);
             string decrypted = Decrypt(encryptedValue);
-            return string.IsNullOrEmpty(decrypted) ? defaultValue : decrypted;
+            return decrypted ?? defaultValue;
         }
 
         /// <summary>
@@ -424,8 +438,16 @@ namespace SW.Data
         /// <param name="key">삭제할 키</param>
         public static void DeleteKey(string key)
         {
-            PlayerPrefs.DeleteKey(HashKey(key));
-            RemoveFromIndex(key);
+            DeleteKey(key, currentSlot);
+        }
+
+        /// <summary>현재 선택을 바꾸지 않고 지정한 슬롯에서 하나의 키를 삭제합니다.</summary>
+        public static void DeleteKey(string key, string slot)
+        {
+            string selectedSlot = NormalizeSlot(slot);
+            HashSet<string> keys = selectedSlot == currentSlot ? KeyIndex : ReadKeyIndex(selectedSlot);
+            PlayerPrefs.DeleteKey(HashKey(key, selectedSlot));
+            if (keys.Remove(key)) WriteKeyIndex(selectedSlot, keys);
         }
 
         /// <summary>
@@ -440,6 +462,7 @@ namespace SW.Data
             }
             keyIndexCache?.Clear();
             PlayerPrefs.DeleteKey(KeyIndexName);
+            PlayerPrefs.DeleteKey(GetKeyIndexName(currentSlot));
             PlayerPrefs.Save();
         }
 
@@ -460,12 +483,19 @@ namespace SW.Data
         /// <returns>JSON 문자열 (복호화된 평문 상태)</returns>
         public static string ExportToJson(Predicate<string> keyFilter = null)
         {
-            var data = new PrefsData();
-            foreach (var key in KeyIndex)
+            return ExportSlotToJson(currentSlot, keyFilter);
+        }
+
+        /// <summary>지정한 슬롯을 현재 선택 변경 없이 내보냅니다.</summary>
+        public static string ExportSlotToJson(string slot, Predicate<string> keyFilter = null)
+        {
+            string selectedSlot = NormalizeSlot(slot);
+            var data = new PrefsData { entries = new List<PrefsEntry>() };
+            foreach (var key in ReadKeyIndex(selectedSlot))
             {
                 if (keyFilter != null && !keyFilter(key)) continue;
 
-                string value = GetString(key, null);
+                string value = GetString(key, null, selectedSlot);
                 if (value != null)
                 {
                     data.entries.Add(new PrefsEntry { key = key, value = value });
@@ -476,35 +506,20 @@ namespace SW.Data
 
         /// <summary>
         /// JSON 문자열로부터 데이터를 복원합니다.
-        /// 기존 데이터는 모두 삭제됩니다.
+        /// 입력을 검증한 뒤 현재 슬롯을 교체합니다. 적용 오류가 나면 이전 값을 복구합니다.
         /// </summary>
         /// <param name="json">ExportToJson으로 생성된 JSON</param>
         /// <returns>복원 성공 여부</returns>
         public static bool ImportFromJson(string json)
         {
-            if (string.IsNullOrEmpty(json)) return false;
-
-            try
-            {
-                var data = JsonUtility.FromJson<PrefsData>(json);
-                if (data == null || data.entries == null) return false;
-
-                DeleteAll();
-
-                foreach (var entry in data.entries)
-                {
-                    SetString(entry.key, entry.value);
-                }
-
-                Save();
-                return true;
-            }
-            catch (Exception exception)
-            {
-                SWLog.LogError($"[SWPlayerPrefs] ImportFromJson failed: {exception.Message}");
-                return false;
-            }
+            return ImportFromJson(json, currentSlot);
         }
+
+        /// <summary>모든 항목을 검증한 뒤 지정한 슬롯을 교체합니다. 적용 실패 시 이전 값을 복원합니다.</summary>
+        public static bool ImportFromJson(string json, string slot) => ApplyJson(json, NormalizeSlot(slot), false);
+
+        /// <summary>실제 저장값을 변경하지 않고 가져올 데이터와 암호화 가능 여부를 확인합니다.</summary>
+        public static bool CanImportJson(string json) => TryPrepareValues(json, out _);
 
         /// <summary>
         /// JSON 문자열을 기존 데이터에 병합합니다. 동일 키는 덮어씁니다.
@@ -513,25 +528,92 @@ namespace SW.Data
         /// <returns>병합 성공 여부</returns>
         public static bool MergeFromJson(string json)
         {
-            if (string.IsNullOrEmpty(json)) return false;
+            return ApplyJson(json, currentSlot, true);
+        }
 
+        /// <summary>현재 선택을 바꾸지 않고 지정한 슬롯에 검증된 값을 병합합니다.</summary>
+        public static bool MergeFromJson(string json, string slot) => ApplyJson(json, NormalizeSlot(slot), true);
+
+        /// <summary>항목 검증과 암호화를 저장소 변경 전에 완료합니다.</summary>
+        private static bool TryPrepareValues(string json, out Dictionary<string, string> values)
+        {
+            values = null;
+            if (string.IsNullOrWhiteSpace(json)) return false;
             try
             {
-                var data = JsonUtility.FromJson<PrefsData>(json);
-                if (data == null || data.entries == null) return false;
-
-                foreach (var entry in data.entries)
+                PrefsData data = JsonUtility.FromJson<PrefsData>(json);
+                if (data?.entries == null) return false;
+                Dictionary<string, string> prepared = new(StringComparer.Ordinal);
+                foreach (PrefsEntry entry in data.entries)
                 {
-                    SetString(entry.key, entry.value);
+                    if (entry == null || string.IsNullOrEmpty(entry.key) || entry.value == null || prepared.ContainsKey(entry.key))
+                        return false;
+                    string encrypted = Encrypt(entry.value);
+                    if (encrypted == null || entry.value.Length > 0 && encrypted.Length == 0) return false;
+                    prepared.Add(entry.key, encrypted);
                 }
-
-                Save();
+                values = prepared;
                 return true;
             }
             catch (Exception exception)
             {
-                SWLog.LogError($"[SWPlayerPrefs] MergeFromJson failed: {exception.Message}");
+                SWLog.LogError($"[SWPlayerPrefs] 가져오기 검증 실패: {exception.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>실행 중 적용 오류가 발생하면 변경 대상 키와 이름 목록을 복원합니다.</summary>
+        private static bool ApplyJson(string json, string slot, bool merge)
+        {
+            if (!TryPrepareValues(json, out Dictionary<string, string> values)) return false;
+            Dictionary<string, string> previousValues = new(StringComparer.Ordinal);
+            bool mutationStarted = false;
+            try
+            {
+                HashSet<string> previousKeys = ReadKeyIndex(slot);
+                HashSet<string> resultingKeys = merge ? new HashSet<string>(previousKeys) : new HashSet<string>();
+                resultingKeys.UnionWith(values.Keys);
+                HashSet<string> affectedKeys = new(previousKeys);
+                affectedKeys.UnionWith(values.Keys);
+                foreach (string key in affectedKeys)
+                {
+                    string encryptedKey = HashKey(key, slot);
+                    previousValues[encryptedKey] = PlayerPrefs.HasKey(encryptedKey) ? PlayerPrefs.GetString(encryptedKey) : null;
+                }
+                string indexKey = GetKeyIndexName(slot);
+                previousValues[indexKey] = PlayerPrefs.HasKey(indexKey) ? PlayerPrefs.GetString(indexKey) : null;
+                string serializedIndex = JsonUtility.ToJson(new KeyIndexData { keys = new List<string>(resultingKeys) });
+                mutationStarted = true;
+                foreach (KeyValuePair<string, string> pair in values)
+                    PlayerPrefs.SetString(HashKey(pair.Key, slot), pair.Value);
+                foreach (string key in previousKeys)
+                    if (!resultingKeys.Contains(key)) PlayerPrefs.DeleteKey(HashKey(key, slot));
+                PlayerPrefs.SetString(indexKey, serializedIndex);
+                PlayerPrefs.Save();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                if (mutationStarted)
+                {
+                    try
+                    {
+                        foreach (KeyValuePair<string, string> pair in previousValues)
+                            if (pair.Value == null) PlayerPrefs.DeleteKey(pair.Key);
+                            else PlayerPrefs.SetString(pair.Key, pair.Value);
+                        PlayerPrefs.Save();
+                    }
+                    catch (Exception rollbackException)
+                    {
+                        SWLog.LogError($"[SWPlayerPrefs] 이전 값 복원 실패: {rollbackException.Message}");
+                    }
+                }
+                SWLog.LogError($"[SWPlayerPrefs] 가져오기 적용 실패: {exception.Message}");
+                return false;
+            }
+            finally
+            {
+                if (slot == currentSlot) keyIndexCache = null;
             }
         }
         #endregion // JSON Export / Import

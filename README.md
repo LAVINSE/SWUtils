@@ -2,135 +2,84 @@
 
 [한국어](README.md) | [English](README.en.md)
 
-![Unity 6.0+](https://img.shields.io/badge/Unity-6.0%2B-222222)
-![Package 1.3.0](https://img.shields.io/badge/package-1.3.0-2f80ed)
-![Runtime and Editor](https://img.shields.io/badge/runtime%20%2B%20editor-tools-31a36c)
+Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 상태 머신, 행동 트리, 퀘스트, 스킬트리, 풀링과 팝업을 구성하고 인스펙터와 전용 편집기에서 데이터를 편집합니다.
 
-SWUtils는 Unity 프로젝트에서 반복적으로 사용하는 런타임 시스템, 인스펙터 워크플로, 디버깅 도구, 에디터 생산성 창을 모은 유틸리티 패키지입니다.
+현재 테스트 단계의 패키지입니다. 퀘스트·업적을 포함한 각 기능은 적용할 프로젝트에서 동작과 저장 호환성을 확인해야 합니다.
 
-> [!WARNING]
-> SWUtils에서 제공하는 기능은 현재 테스트 단계입니다. 사용 중 예기치 않은 동작이나 버그가 발생할 수 있으므로 실제 프로젝트에 적용하기 전에 충분히 검증하세요.
+## 설치
 
-## 개요
-
-| 영역 | 제공 기능 |
-| --- | --- |
-| 런타임 기반 | `SWMonoBehaviour`, `SWScriptableObject`, 코루틴 실행기, 퀘스트와 업적, 스킬트리, 풀링, 팝업 흐름, 해상도 보정, 능력치 데이터, 공통 유틸리티를 제공합니다. |
-| 그래프 런타임 | 다중 계층 및 스택 State Machine, Behaviour Tree, Blackboard, 그래프 에셋 팩터리와 Runtime Debug를 제공합니다. |
-| 데이터와 저장 | 암호화 PlayerPrefs, 저장 슬롯, 파일 저장, 클라우드 저장 진입점, JSON 가져오기와 내보내기 헬퍼를 제공합니다. |
-| 인스펙터 도구 | 그룹, 버튼, 조건 표시, 드롭다운, 읽기 전용 필드, `SerializeReference` 타입 선택, 표 가져오기 어트리뷰트를 제공합니다. |
-| 디버깅 | 런타임 디버그 콘솔, 명령 등록, 감시 값, 선택적 Input System 지원, 가벼운 성능 오버레이를 제공합니다. |
-| 에디터 워크플로 | Shader Graph 스타일 그래프 편집기, Graph List, 사용자 노드 카테고리, 디버그 창, PlayerPrefs 조회, 풀과 이벤트 모니터링, 표 가져오기와 참조 검색을 제공합니다. |
-
-빠른 링크:
-
-- [주요 기능 미리보기](#주요-기능-미리보기)
-- [변경 기록](CHANGELOG.ko.md)
-- [Git 주소로 설치](#git-주소로-설치)
-- [빠른 시작](#빠른-시작)
-- [네임스페이스 구조](#네임스페이스-구조)
-- [런타임 기능](#런타임-기능)
-- [에디터 기능](#에디터-기능)
-- [조립체 정의](#조립체-정의)
-
-## 주요 기능 미리보기
-
-### 인스펙터 어트리뷰트
-
-그룹, 읽기 전용 필드, 조건부 표시, 드롭다운과 메서드 실행 버튼을 기본 인스펙터에서 사용할 수 있습니다.
-
-<p align="center">
-  <img src="Documentation~/Media/SWAttribute.gif" alt="SWUtils 인스펙터 어트리뷰트 사용 화면" width="460">
-</p>
-
-### State Machine 그래프
-
-상태와 전이를 시각적으로 구성하고 실행 중인 상태와 최근 전이를 그래프에서 확인할 수 있습니다.
-
-![SWUtils State Machine 그래프 사용 화면](Documentation~/Media/SWStateMachine.gif)
-
-### Behaviour Tree
-
-Blackboard와 노드 인스펙터를 이용해 트리를 구성하고 실행 중인 노드 상태를 확인할 수 있습니다.
-
-![SWUtils Behaviour Tree 사용 화면](Documentation~/Media/SWBehaviourTree.gif)
-
-### 에디터 작업 도구
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <strong>Quick Asset Palette</strong><br>
-      자주 사용하는 에셋과 폴더를 등록하고 열기, 선택, 생성 작업을 빠르게 실행합니다.<br><br>
-      <img src="Documentation~/Media/SWAssetPalette.png" alt="SWUtils Quick Asset Palette 화면">
-    </td>
-    <td width="50%" valign="top">
-      <strong>Reference Finder</strong><br>
-      에셋의 역참조, 의존성과 미사용 후보를 검색합니다.<br><br>
-      <img src="Documentation~/Media/ReferenceFinder.png" alt="SWUtils Reference Finder 화면">
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <strong>Excel Table Importer</strong><br>
-      탭으로 구분된 표 데이터를 미리 확인한 뒤 ScriptableObject에 적용합니다.<br><br>
-      <img src="Documentation~/Media/ExcelTable.png" alt="SWUtils Excel Table Importer 화면">
-    </td>
-    <td width="50%" valign="top">
-      <strong>Amount Format</strong><br>
-      큰 숫자의 단위, 소수점과 반올림 방식을 프리셋으로 관리하고 결과를 미리 확인합니다.<br><br>
-      <img src="Documentation~/Media/AmountFormat.png" alt="SWUtils Amount Format 화면">
-    </td>
-  </tr>
-</table>
-
-## Git 주소로 설치
-
-Unity Package Manager에서 다음 순서로 설치합니다.
-
-1. Unity 메뉴에서 `Window > Package Manager`를 엽니다.
-2. 왼쪽 위의 `+` 버튼을 누릅니다.
-3. `Add package from git URL...`을 선택합니다.
-4. 다음 주소를 입력합니다.
+Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.3.0
+https://github.com/LAVINSE/SWUtils.git#v1.3.1
 ```
 
-특정 브랜치나 태그를 설치하려면 주소 뒤에 `#브랜치이름` 또는 `#태그이름`을 붙입니다.
+위 주소는 원격 저장소에 `v1.3.1` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
-## 의존성
+필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 
-SWUtils가 사용하는 Unity 패키지와 모듈은 Git 주소로 설치할 때 `package.json`을 통해 자동으로 연결됩니다.
+클라우드 연동은 별도 설정이 필요합니다. Google Play Games는 `SW_GOOGLEPLAY_ENABLE`, Steamworks.NET은 `SW_STEAMWORKS_NET`, 프로젝트에서 제공하는 iCloud 네이티브 연결은 `SW_ICLOUD_ENABLE`로 활성화합니다. [필요한 구현과 저장 규칙](Documentation~/Reliability.ko.md)을 확인하세요.
 
-- Localization
-- TextMeshPro
-- Unity UI
-- Physics
-- Physics 2D
+## 첫 사용
 
-Unity Input System은 자동 설치하지 않습니다. 디버그 콘솔은 프로젝트에 Input System이 이미 있으면 사용할 수 있지만, 필수 패키지 의존성이 생기지 않도록 선택 기능으로 유지합니다.
+1. 컴포넌트는 `SW.Base.SWMonoBehaviour`, 데이터 에셋은 `SW.Base.SWScriptableObject`를 상속합니다.
+2. 인스펙터 확장에는 `SW.Attributes`를 사용합니다.
+3. 프로젝트가 어셈블리 정의 파일을 사용한다면 `SWUtils.Runtime`을 참조합니다.
+4. 예제는 프로젝트 창의 `Packages > SWUtils > Samples`에서 확인합니다.
 
-다음 외부 라이브러리는 관련 기능을 사용할 때만 선택적으로 설치합니다.
+아래 컴포넌트를 게임 오브젝트에 추가하면 인스펙터에서 값을 편집하고 버튼으로 저장할 수 있습니다.
 
-- Google Play Games: Android 클라우드 저장
-- Steamworks.NET: 데스크톱 클라우드 저장
+```csharp
+using UnityEngine;
+using SW.Attributes;
+using SW.Base;
+using SW.Data;
 
-클라우드 저장 기능에 외부 라이브러리를 사용할 때는 다음 정의 심볼을 추가합니다.
+/// <summary>인스펙터에서 설정한 시작 점수를 저장하는 예제입니다.</summary>
+public sealed class ScoreSettings : SWMonoBehaviour
+{
+    [SerializeField] private int startingScore = 100;
 
-- `SW_GOOGLEPLAY_ENABLE`: Android에서 Google Play Games 저장 기능을 활성화합니다.
-- `SW_STEAMWORKS_NET`: 데스크톱에서 Steamworks.NET 저장 기능을 활성화합니다.
+    /// <summary>현재 저장 슬롯에 시작 점수를 기록합니다.</summary>
+    [SWButton("시작 점수 저장")]
+    private void SaveStartingScore()
+    {
+        SWPlayerPrefs.SetInt("StartingScore", startingScore);
+        SWPlayerPrefs.Save();
+    }
+}
+```
 
-## 빠른 시작
+관리자 컴포넌트의 씬 유지 여부는 해당 컴포넌트 설정으로 지정합니다. 저장 슬롯은 게임의 저장 흐름에서 정합니다.
 
-1. 예제가 필요하면 프로젝트 창의 `Packages > SWUtils > Samples` 폴더에서 확인합니다.
-2. `SWMonoBehaviour`와 `SWScriptableObject`를 사용할 때 `using SW.Base;`를 추가합니다.
-3. 인스펙터 어트리뷰트를 사용할 때 `using SW.Attributes;`를 추가합니다.
-4. 데이터, 팝업, 해상도, 유틸리티 기능은 각각 `SW.Data`, `SW.Popup`, `SW.ScreenResolution`, `SW.Util`을 사용합니다.
-5. 코루틴 실행기는 `using SW.Coroutines;`을 사용합니다.
-6. 조립체 정의 파일을 사용하는 프로젝트는 `SWUtils.Runtime` 참조를 추가합니다.
+## 전체 기능 찾아보기
 
-관리자 컴포넌트는 기본적으로 씬이 소유합니다. 씬 전환 후에도 필요한 관리자는 시작 씬에 배치하고 유지되도록 구성합니다.
+아래 링크는 이 README의 기능 설명으로 이동합니다. 각 절에서 제공 기능, 설정 방법과 사용 예제를 확인할 수 있습니다.
+
+| 기능 | README 본문 |
+| --- | --- |
+| 공통 기반·인스펙터 | [기본 타입](#runtime-base) · [어트리뷰트](#runtime-attributes) |
+| 코루틴·저장 | [코루틴](#runtime-coroutines) · [데이터와 저장](#runtime-storage) |
+| 게임 로직 | [스킬트리](#runtime-skilltree) · [퀘스트와 업적](#runtime-quests) · [능력치](#runtime-stats) |
+| 실행 흐름 | [상태 머신](#runtime-states) · [행동 트리](#runtime-behaviour) |
+| 오브젝트·화면 | [풀링](#runtime-pooling) · [팝업](#runtime-popups) · [해상도](#runtime-resolution) |
+| 시간·입력·오디오·씬·이벤트 | [공통 유틸리티](#runtime-utilities) |
+| 디버그·제작 도구 | [런타임 콘솔](#runtime-debug) · [편집기 기능과 메뉴](#editor-tools) |
+
+[네임스페이스](#네임스페이스-구조) · [샘플](#샘플) · [어셈블리](#조립체-정의) · [변경 기록](CHANGELOG.ko.md)
+
+## 화면 미리보기
+
+인스펙터에서 그룹과 조건 표시, 메서드 실행 버튼을 구성합니다.
+
+<img src="Documentation~/Media/SWAttribute.gif" alt="SWUtils 인스펙터 속성 예제" width="460">
+
+상태 머신과 행동 트리는 그래프에서 연결하고 실행 상태를 확인합니다.
+
+![상태 머신 편집기](Documentation~/Media/SWStateMachine.gif)
+![행동 트리 편집기](Documentation~/Media/SWBehaviourTree.gif)
+
+[에셋 팔레트](Documentation~/Media/SWAssetPalette.png) · [참조 검색](Documentation~/Media/ReferenceFinder.png) · [표 가져오기](Documentation~/Media/ExcelTable.png) · [숫자 표시 설정](Documentation~/Media/AmountFormat.png)
 
 ## 네임스페이스 구조
 
@@ -140,6 +89,7 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 | --- | --- |
 | `Runtime/Attribute` | `SW.Attributes` |
 | `Runtime/Base` | `SW.Base` |
+| `Runtime/Behaviour` | `SW.BehaviourTree` |
 | `Runtime/Coroutine` | `SW.Coroutines` |
 | `Runtime/Data` | `SW.Data` |
 | `Runtime/Debug` | `SW.Debugging` |
@@ -156,6 +106,8 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 
 ## 런타임 기능
 
+<a id="runtime-skilltree"></a>
+
 ### 스킬트리
 
 인크리멘탈 강화, 연구 해금과 특성 선택을 위한 스킬트리를 제공합니다. 노드별 선행 레벨, 모든 조건·하나 이상 조건, 선택 분기, 반복 강화, 여러 재화 구매, 환불, 저장 복원과 영구 노드를 유지하는 초기화를 구성할 수 있습니다. 정의와 소유자별 진행을 분리하며 조건, 비용, 지속 효과와 프로젝트 재화를 확장할 수 있습니다.
@@ -163,13 +115,19 @@ Runtime과 Editor 코드는 기능별 폴더와 같은 네임스페이스를 사
 - 제작 편집기: `SWTools > Utils > Data > Skill Tree Editor`
 - 기본 게임 화면: `Samples/Prefab/SWSkillTreeExample.prefab`
 - 화면 위치 편집: 예제 인스펙터의 `노드 생성 및 자동 배치`, `현재 위치 저장`, `저장 위치 불러오기`
-- [스킬트리 사용법, 확장 계약과 Kill AI Slop 적용](Documentation~/SkillTree.md)
+- [스킬트리 사용법과 확장 계약](Documentation~/SkillTree.md)
 
 MiningSkillTree 예제는 **81개 노드와 6개 확장 경로**로 구성되어 있습니다. 기본 배율로 시작해 드래그와 휠로 화면을 탐색하고, `Start`, `Selected`, `Fit All` 버튼으로 시작 지점·선택 노드·현재 표시 중인 노드를 확인합니다. 노드 선택 상세 정보와 구매·환불 조작도 포함합니다.
 
 TreeView의 **노드 배치 → 노드 크기**에서 크기를 직접 설정합니다. 별도의 ViewStyle 에셋은 사용하지 않으며, TextMeshProUGUI와 프로젝트의 기본 글꼴을 사용합니다. 별도 글꼴 데이터는 포함하지 않습니다.
 
 인스펙터의 `SWButton`으로 노드를 생성하며, 자동 배치도 저장 좌표를 우선 사용합니다. 직접 수정한 위치를 저장하면 Skill Tree Editor에도 반영되고, 연결선의 길이와 각도는 실제 노드 위치에 맞춰 갱신됩니다. **편집 미리보기 → 전체 노드 보기**로 숨겨진 노드도 배치할 수 있습니다. 실행 중에는 선행 진행에 따른 숨김·정보 가리기를 적용하며, 플레이어 진행 저장에 화면 배치 데이터를 추가하지 않습니다. 예제 생성과 재생성은 SWTools 메뉴에 노출하지 않습니다.
+
+`SWSkillTreeSystem`과 `ISWSkillTreeWallet`으로 플레이어별 진행과 재화를 연결합니다. `PreviewPurchase`는 구매 가능 여부와 비용을 확인하고, `Purchase`는 비용을 일괄 차감합니다. `Refund`는 마지막 레벨의 실제 지불 비용을 돌려주며 후속 조건이 깨지는 환불은 거절합니다. `Reset`에서 영구 노드 유지와 환급 여부를 지정합니다.
+
+조건·비용·효과는 `SWSkillTreeCondition`, `SWSkillTreeCost`, `SWSkillTreeEffect`로 확장합니다. 지속 효과는 `SWSkillTreeEffectBinding`으로 연결하고 현재 레벨 기준으로 적용합니다. `CaptureSaveData`와 `Restore`는 진행과 지불 기록을 다루며 지갑 잔액도 같은 게임 저장에 포함해야 합니다.
+
+<a id="runtime-attributes"></a>
 
 ### 어트리뷰트
 
@@ -181,8 +139,12 @@ TreeView의 **노드 배치 → 노드 크기**에서 크기를 직접 설정합
 - `SWGroup`: 인스펙터 필드를 접을 수 있는 그룹으로 묶습니다.
 - `SWReadOnly`: 필드를 읽기 전용으로 표시합니다.
 - `SWSubClassSelector`: `SerializeReference` 필드의 구현 타입을 검색하여 선택합니다.
+- `SWAddTypeMenu`, `SWHideInTypeMenu`: 구현 타입 선택 메뉴의 경로와 숨김 여부를 지정합니다.
+- `SWRequiresConstantRepaint`, `SWRequiresConstantRepaintOnlyWhenPlaying`: 인스펙터를 계속 갱신하거나 실행 중에만 갱신하도록 지정합니다.
 - `SWTable`, `SWTableSheet`: 표 데이터를 직렬화 필드에 연결합니다.
 - `SWCommand`: 메서드를 런타임 디버그 콘솔 명령으로 노출합니다.
+
+<a id="runtime-base"></a>
 
 ### 기본 타입
 
@@ -193,6 +155,8 @@ TreeView의 **노드 배치 → 노드 크기**에서 크기를 직접 설정합
 - `SWCategory`: 데이터 에셋 분류에 사용합니다.
 
 `SWIdentifiedObject`의 공통 필드는 기본으로 접힌 **기본 정의** 폴드아웃에 모아 표시합니다. 기존 에셋과 파생 타입에도 자동 적용하며, 사용자가 변경한 펼침 상태를 유지합니다.
+
+<a id="runtime-coroutines"></a>
 
 ### 코루틴
 
@@ -214,10 +178,14 @@ public class DelayExample : MonoBehaviour
 }
 ```
 
+`Wait(seconds)`는 같은 길이의 일반 시간 대기를 최대 128개까지 캐시합니다. `WaitRealtime(seconds)`는 호출마다 독립적인 실제 시간 대기 객체를 생성합니다. 실행 핸들을 보관하면 `Stop`으로 개별 코루틴을 멈출 수 있습니다.
+
+<a id="runtime-storage"></a>
+
 ### 데이터와 저장
 
 - `SWEncrypt<T>`: `SWPlayerPrefs`를 사용하는 암호화 값 래퍼입니다.
-- `SWPlayerPrefs`: 키와 값을 암호화하여 Unity PlayerPrefs에 저장합니다.
+- `SWPlayerPrefs`: 키 이름은 해시로 바꾸고 값은 암호화하여 Unity PlayerPrefs에 저장합니다.
 - `SWPlayerPrefsSettings`: 암호화 솔트 설정을 관리합니다.
 - `SWSaveDataManager`: 슬롯별 저장, 불러오기, 백업과 복원을 관리합니다.
 - `SWSaveSlot`: 기본 저장 슬롯 이름을 제공합니다.
@@ -232,6 +200,14 @@ SWPlayerPrefs.SetInt("coin", 100);
 int coin = SWPlayerPrefs.GetInt("coin");
 SWPlayerPrefs.Save();
 ```
+
+저장 슬롯은 `SetSlot`으로 선택하고, 비동기 작업에서는 `SetString`, `GetString`, `ImportFromJson`, `MergeFromJson`의 슬롯 인수를 명시합니다. `ExportSlotToJson`은 현재 선택을 바꾸지 않고 지정한 슬롯을 내보냅니다. 정수·실수·문자열·논리값과 `long`·`double`을 저장할 수 있습니다.
+
+`ImportFromJson`은 전체 입력을 검증한 뒤 슬롯 내용을 교체하며 `MergeFromJson`은 같은 키만 덮어씁니다. 빈 문자열과 구분자가 포함된 키도 보존합니다. 파일 저장은 임시 기록 후 교체하고, 등록된 데이터를 읽을 때 본 파일이 없거나 해석되지 않으면 백업을 확인합니다.
+
+`SWCloud`는 Google Play Games, Steam Cloud, 프로젝트에서 제공하는 iCloud 연결과 로컬 대체 저장을 제공합니다. 실제 연동에는 해당 라이브러리·인증·정의 심볼이 필요합니다. 파일과 PlayerPrefs를 함께 다루는 복원의 범위와 이전 캐시 호환은 [저장·실행 규칙](Documentation~/Reliability.ko.md)에 설명되어 있습니다.
+
+<a id="runtime-debug"></a>
 
 ### 디버그
 
@@ -282,6 +258,8 @@ public class DebugCommands
 }
 ```
 
+<a id="runtime-pooling"></a>
+
 ### 오브젝트 풀
 
 - `IPool`, `IPoolable`: 풀 구현과 풀링 대상의 계약입니다.
@@ -289,6 +267,13 @@ public class DebugCommands
 - `SWPoolCatalog`: 풀 이름, 그룹과 예열 수량을 데이터로 관리합니다.
 - `SWPoolRegistry`: 카탈로그를 실제 풀에 등록합니다.
 - `SWPoolSnapshot`: 에디터 모니터에서 사용하는 읽기 전용 상태입니다.
+- `SWPoolGroupSelectionMode`: 같은 그룹에 등록된 프리팹을 선택하는 방식을 지정합니다.
+
+시작 씬에 `SWPool`과 `SWPoolRegistry`를 배치하고 카탈로그를 연결합니다. 프리팹 참조 또는 등록된 이름·그룹으로 `Spawn`하고 `Release`로 즉시 또는 지연 반납합니다. `Prewarm`은 사용할 인스턴스를 미리 만들며 `TrimIdlePools`는 활성 객체가 없는 유휴 풀을 정리합니다.
+
+풀은 비활성 상태에서 부모·위치와 풀 참조를 설정하고 `OnSpawnFromPool`을 호출한 뒤 객체를 활성화합니다. `IPoolable` 구현은 재사용 상태를 초기화하고 `OnReturnToPool`에서 정리합니다. 미리 생성만 하는 동안에는 이 두 콜백을 호출하지 않습니다.
+
+<a id="runtime-popups"></a>
 
 ### 팝업
 
@@ -298,6 +283,13 @@ public class DebugCommands
 - `SWPopupShowEffect`, `SWPopupHideEffect`: 표시 및 숨김 연출 기본 타입입니다.
 - `SWPopupScaleShowEffect`, `SWPopupScaleHideEffect`: 크기 변경 기반 기본 연출입니다.
 - `SWPopupEffectHandle`: 실행 중인 팝업 연출을 제어합니다.
+- `SWPopupLifecycle`: 외부 비활성화·파괴를 감지하여 관리자에게 닫힘을 알립니다.
+
+프리팹, 기존 인스턴스 또는 카탈로그 키로 팝업을 표시할 수 있습니다. `Show<T>`의 초기화 콜백으로 표시할 데이터를 전달하고 `Hide`로 닫습니다. `ShowAsync`는 해당 팝업이 닫힐 때까지 기다리므로 확인창과 보상창을 순서대로 표시할 때 사용할 수 있습니다.
+
+기본 부모·Canvas와 표시 순서를 관리하며 카탈로그 설정으로 인스턴스를 캐시할 수 있습니다. 다시 표시한 팝업에는 이전 숨김 콜백이 적용되지 않습니다. 표시·숨김 연출은 기본 크기 변경 연출을 사용하거나 프로젝트에서 확장할 수 있습니다.
+
+<a id="runtime-resolution"></a>
 
 ### 해상도
 
@@ -305,12 +297,20 @@ public class DebugCommands
 - `SWSafeArea`: 노치와 화면 안전 구역에 맞춰 사용자 인터페이스를 배치합니다.
 - `SWResolution`: 화면 크기, 비율, 좌표 변환과 카메라 계산을 제공합니다.
 
+<a id="runtime-stats"></a>
+
 ### 능력치
 
 - `SWStat`: 기본값과 보너스 값을 조합하는 능력치 데이터입니다.
 - `SWStatOverride`: 개체별 기본값 재정의 설정입니다.
 - `SWStats`: 게임 오브젝트의 런타임 능력치 목록을 관리합니다.
 - `SWStatScaleFloat`: 능력치 비율을 적용한 값을 계산합니다.
+
+`SWStats`는 정의 에셋에서 개체별 실행 값을 준비합니다. `SWStat`의 보너스는 출처와 세부 키로 등록·교체·제거하므로 장비나 효과가 만든 값만 해제할 수 있습니다. 최종 값은 최소·최대 범위로 제한되며 값 변경과 상한·하한 도달을 이벤트로 알립니다.
+
+`SetRange(minimumValue, maximumValue)`로 최소·최대 값을 함께 설정합니다. 잘못된 범위를 거절하며, 범위 변경으로 최종 값이 달라졌을 때도 알림이 발생합니다.
+
+<a id="runtime-quests"></a>
 
 ### 퀘스트와 업적
 
@@ -360,6 +360,12 @@ if (runtimeQuest != null && runtimeQuest.IsWaitingForCompletion)
 프로젝트별 조건과 보상은 각각 `SWQuestCondition`, `SWQuestReward`를 상속합니다. 외부 게임 서비스가 필요하면 시작할 때 `SetContext`로 문맥을 연결하고 구현 안에서 `TryGetContext<TContext>`로 가져옵니다. 전체 예제는 `Samples/Scripts/SWQuestExample.cs`와 `SWQuestScoreRewardExample.cs`에 있습니다.
 
 에셋 구성, 확장 지점, 이벤트와 저장 구조는 [퀘스트와 업적 상세 문서](Documentation~/Quest.ko.md)를 참고하세요.
+
+완료 처리는 모든 보상 지급이 성공한 뒤 확정합니다. 예를 들어 골드 지급 후 아이템 지급이 실패하면 `WaitingForCompletion` 상태를 유지합니다. 다시 `Complete()`를 호출하면 성공 기록이 있는 골드는 건너뛰고 실패한 보상부터 재시도합니다. 일부 보상을 지급한 퀘스트는 취소할 수 없습니다.
+
+보상 구현의 `Grant`는 지급할 수 없을 때 데이터를 변경하기 전에 예외를 발생시켜야 합니다. 지급 성공 알림은 화면·효과음에 사용하고 실제 지급은 `Grant`에서 처리합니다. 재화·아이템과 퀘스트 지급 기록은 같은 게임 저장 단위에 포함해야 합니다.
+
+<a id="runtime-states"></a>
 
 ### 상태 머신
 
@@ -470,6 +476,12 @@ public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
 
 다중 계층 그래프 팩터리는 완성된 `SWStateMachine<TContext>`를 반환합니다. 스택 그래프 제어기는 `Tick`, `ExecuteCommand`, `SendMessage`, `Stop`을 제공하며 그래프에 지정된 상태 추가, 교체와 이전 상태 복귀 연결을 실행합니다.
 
+상태 전환 콜백에서 다시 전환을 요청하면 현재 전환을 마친 뒤 요청 순서대로 실행합니다. 전환 중 호출한 `Pop`과 `ExecuteCommand`의 `true`는 요청 접수를 뜻합니다. 실행 결과와 상태는 전환 알림에서 확인합니다. 한 호출에서 연속 작업이 1,024회를 넘으면 순환 요청으로 중단합니다.
+
+[상태 머신 제작과 전환 규칙](Documentation~/StateMachineGraph.ko.md)
+
+<a id="runtime-behaviour"></a>
+
 ### Behaviour Tree
 
 - `SWBehaviourTreeAsset`: 노드와 연결, Blackboard 기본값을 저장하고 `Running`, `Success`, `Failure`, `Aborted` 실행 결과를 관리합니다.
@@ -481,7 +493,7 @@ public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
 - `SWBehaviourNodeProperty<T>`: 고정값 또는 같은 타입의 Blackboard 키를 노드 필드에 연결합니다.
 - `SWBehaviourSubTreeNode`: 다른 Behaviour Tree 에셋을 현재 트리의 일부로 실행합니다.
 
-##### 편집 방법
+#### 편집 방법
 
 1. `Assets > Create > SWTools > Behaviour Tree`에서 에셋을 생성합니다.
 2. 에셋 Inspector의 `Behaviour Tree 편집` 또는 `SWTools > Utils > Behaviour > Tree Editor`를 엽니다.
@@ -492,7 +504,7 @@ public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
 7. 오른쪽 Node Inspector에서 표시 이름, 설명, 노드별 값을 편집하고 `Set as Root`로 시작 노드를 지정합니다.
 8. `SWBehaviourTreeRunner`에 에셋을 연결하면 활성화 시 독립 복제본을 실행합니다. Play Mode에서 해당 게임 오브젝트를 선택하면 Running은 노란색, Success는 초록색, Failure는 빨간색으로 표시됩니다.
 
-##### 편집 및 실행 기능
+#### 편집 및 실행 기능
 
 - `Graph List`: Behaviour Tree 에셋을 검색하고 빠르게 전환하며 패널을 접을 수 있습니다.
 - `Blackboard`: 기본 타입과 사용자 정의 타입의 키, 기본값과 Runner별 재정의 값을 관리합니다.
@@ -506,7 +518,7 @@ public sealed class IsMovingCondition : SWStateMachineGraphCondition<Player>
 
 `Set Property`와 `Compare Property`는 기본 타입과 사용자 정의 Blackboard 값을 처리합니다. `SWBehaviourTreeRunner`는 외부 `MonoBehaviour`에서 사용하는 `GetBlackboardValue`, `SetBlackboardValue`, `FindBlackboardKey`를 제공하며 사용자 정의 키도 Runner별 재정의에서 선택할 수 있습니다. 자세한 설명은 `Documentation~/BehaviourTree.ko.md`를 참고하세요.
 
-##### 사용자 정의 분류
+#### 사용자 정의 분류
 
 - `SWStateMachineNodeCategory`: 상태와 전이 조건을 슬래시 경로 기반 생성 메뉴 카테고리로 분류합니다.
 - `SWBehaviourNodeCategory`: Behaviour 노드를 슬래시 경로 기반 생성 메뉴 카테고리로 분류합니다.
@@ -532,6 +544,12 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 }
 ```
 
+블랙보드의 참조 값은 `null`로 지울 수 있습니다. 키 이름을 바꾸면 조회 캐시도 갱신됩니다. `Rename(identifier, newName)`은 빈 이름과 중복 이름을 검사하며 노드에 저장된 문자열 참조는 별도로 갱신해야 합니다.
+
+하위 트리는 실행 복제 전에 순환 연결과 64단계 중첩 한도를 검사합니다. 오류가 있으면 인스펙터에 표시하고 `CreateRuntimeInstance`가 `null`을 반환합니다. 코드에서는 `ValidateSubTrees(out error)`로 먼저 검사할 수 있습니다.
+
+<a id="runtime-utilities"></a>
+
 ### 유틸리티
 
 - `SWAmountFormat`, `SWAmountFormatProfile`: 큰 숫자의 단위와 소수점 표시를 관리합니다.
@@ -547,6 +565,34 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 - `SWTriggerDispatcher`: 2차원 및 3차원 트리거 이벤트를 외부로 전달합니다.
 - `SWVibration`: 플랫폼 진동 기능을 제공합니다.
 
+#### 오디오
+
+`SWAudioLibrary`에 키와 클립을 등록하고 `SWAudioManager`에서 음악·효과음을 재생합니다. 음악 페이드, 효과음 소스 재사용, 클립별 재생 간격 제한과 전체·음악·효과음 음량을 관리합니다. 전체·효과음 음량 변경은 재생 중인 효과음에도 적용하며 개별 재생 요청의 배율을 유지합니다.
+
+#### 시간과 타이머
+
+`SWTimer`는 `Tick`을 호출하여 갱신하고 시작·일시 정지·재개·반복·시간 기준을 지정합니다. 길이가 0이거나 실행 중 길이를 경과 시간 이하로 줄이면 다음 갱신에서 완료를 알립니다. `SWCooldown.TryUse`는 대기 시간이 지난 경우에만 사용을 허용합니다. `SWRefillTimer`는 사용 횟수와 오프라인 경과에 따른 회복을 저장하며 `SWTime`은 시간 표시와 날짜 변환을 제공합니다.
+
+#### 이벤트
+
+`SWEventBus.Subscribe<T>`, `Publish<T>`, `Unsubscribe<T>`로 같은 이벤트 타입을 주고받습니다. 리스너 수, 발행 횟수, 마지막 발행과 데이터 요약은 `SWEventBusEventSnapshot` 및 디버그 창에서 확인합니다. `IsDiagnosticsEnabled`는 진단 기록을, `IsLogOutputEnabled`는 로그 출력을 제어합니다. 진단용 문자열 변환 실패가 이벤트 발행자에게 전파되지는 않습니다.
+
+#### 씬 로딩
+
+`SWSceneLoader`는 이름·빌드 번호로 씬을 읽고 추가 로드, 언로드, 현재 씬 재로드와 활성 씬 설정을 제공합니다. 진행률·시작·완료·실패 알림을 받을 수 있습니다. `TryCancelCurrentLoad`는 다음 프레임의 엔진 작업 시작 전까지만 취소를 허용합니다. 활성화를 보류한 경우 `AllowSceneActivation = true`로 해제합니다. 완료 콜백에서 다음 씬을 요청할 수 있습니다.
+
+#### 숫자 표시와 무작위 선택
+
+`SWAmountFormatProfile`에 숫자 단위·소수점·반올림 방식을 저장하고 `SWAmountFormat`으로 표시합니다. `SWRandom`은 가중치 선택과 섞기를, `SWShuffleBag<T>`는 준비한 항목을 소진할 때까지 반복하지 않는 선택을 제공합니다. Amount Format Window와 Random Simulator에서 설정 결과를 확인할 수 있습니다.
+
+#### 입력과 공통 도구
+
+`SWButtonExtension`은 연타 방지, 길게 누르기, 누르는 동안 반복과 효과음을 구성합니다. 키보드·게임패드의 확정 입력도 지원합니다. `SWRectDummy`는 이미지를 그리지 않고 입력 영역을 만들며 `SWTriggerDispatcher`는 물리 트리거 진입·유지·종료를 이벤트로 전달합니다.
+
+`SWSingleton<T>`와 `SWSingletonScene<T>`는 각각 전역·씬 단위의 컴포넌트 조회를 제공합니다. `SWFactory`는 오브젝트 생성을, `SWExtension`·`SWString`·`SWUtility`는 공통 계산·확장 함수·문자열 처리를 제공합니다. `SWUtility.SetGaugeText`는 현재 값과 최대 값을 텍스트로 표시하며 기존 `SetGauge`도 같은 동작을 유지합니다. `SWVibration`은 지원 플랫폼의 진동을 호출합니다.
+
+<a id="editor-tools"></a>
+
 ## 에디터 기능
 
 ### 인스펙터
@@ -557,28 +603,29 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 
 디버깅 도구는 `SWTools/Debug`, 일반 도구는 `SWTools/Utils` 메뉴에서 엽니다.
 
-- `SWTools/Debug/Build/Build Report Viewer`
-- `SWTools/Debug/Console/Debug Console Settings`
-- `SWTools/Debug/Event/EventBus Debugger Window`
-- `SWTools/Debug/Input/Input Debugger Window`
-- `SWTools/Debug/PlayerPrefs/PlayerPrefs Viewer`
-- `SWTools/Debug/Pool/Pool Monitor Window`
-- `SWTools/Debug/Test/Test Tools Window`
-- `SWTools/Utils/Asset/Quick Asset Palette`
-- `SWTools/Utils/Behaviour/Tree Editor`
-- `SWTools/Utils/Asset/Reference Finder`
-- `SWTools/Utils/Asset/TMP Font Asset Manager`
-- `SWTools/Utils/Data/Amount Format Window`
-- `SWTools/Utils/Data/Excel Table Importer`
-- `SWTools/Utils/Data/Localization Tools`
+- `SWTools/Debug/Build/Build Report Viewer`: 빌드 결과와 포함된 에셋 크기를 확인합니다.
+- `SWTools/Debug/Console/Debug Console Settings`: 콘솔 입력, 성능 오버레이와 디버그 심볼을 설정합니다.
+- `SWTools/Debug/Event/EventBus Debugger Window`: 이벤트 타입별 구독자와 발행 기록을 확인합니다.
+- `SWTools/Debug/Input/Input Debugger Window`: EventSystem, 포인터, 레이캐스트와 입력 상태를 확인합니다.
+- `SWTools/Debug/PlayerPrefs/PlayerPrefs Viewer`: SWUtils 저장값과 일반 Unity 저장값을 조회·수정·삭제합니다.
+- `SWTools/Debug/Pool/Pool Monitor Window`: 프리팹별 풀 생성·활성·대기·반납 상태를 확인합니다.
+- `SWTools/Debug/Test/Test Tools Window`: 씬 이동과 실행 중 테스트 도구를 제공합니다.
+- `SWTools/Utils/Asset/Quick Asset Palette`: 자주 사용하는 에셋·폴더를 등록하고 열기·선택·생성을 실행합니다.
+- `SWTools/Utils/Behaviour/Tree Editor`: 행동 트리의 노드, 블랙보드와 하위 트리를 편집합니다.
+- `SWTools/Utils/Asset/Reference Finder`: 에셋 참조, 의존성과 미사용 후보를 검색합니다.
+- `SWTools/Utils/Asset/TMP Font Asset Manager`: TextMeshPro 글꼴 연결·교체와 메모리 사용을 확인합니다.
+- `SWTools/Utils/Data/Amount Format Window`: 숫자 단위·소수점·반올림 프리셋을 만들고 결과를 확인합니다.
+- `SWTools/Utils/Data/Excel Table Importer`: 표를 미리 확인하고 데이터 에셋에 적용합니다.
+- `SWTools/Utils/Data/Quest System Editor`: 퀘스트·업적·조건·보상과 데이터베이스를 관리합니다.
+- `SWTools/Utils/Data/Localization Tools`: 번역 컬렉션의 언어별 내보내기와 TSV 가져오기를 처리합니다.
 - `SWTools/Utils/Data/Skill Tree Editor`: 스킬트리의 노드, 선행 연결, 공개 조건과 저장 위치를 편집합니다.
 - `SWTools/Utils/Data/Stat System Editor`: `SWCategory`, `SWStat` 같은 `SWIdentifiedObject` 에셋을 생성, 편집, 정렬, 이름 변경하고 목록 아이콘과 표시 크기를 조정합니다.
-- `SWTools/Utils/Hierarchy/Hierarchy Tools`
-- `SWTools/Utils/Project/Define Symbol Window`
-- `SWTools/Utils/Project/PlayerPrefs Salt Settings`
-- `SWTools/Utils/Screen/Resolution Window`
-- `SWTools/Utils/Simulation/Random Simulator`
-- `SWTools/Utils/State Machine/Graph Editor`
+- `SWTools/Utils/Hierarchy/Hierarchy Tools`: 하이어라키의 배경색, 아이콘과 표시 방식을 설정합니다.
+- `SWTools/Utils/Project/Define Symbol Window`: 빌드 대상별 스크립트 정의 심볼을 관리합니다.
+- `SWTools/Utils/Project/PlayerPrefs Salt Settings`: SWPlayerPrefs 암호화 솔트 설정 에셋을 만들고 편집합니다.
+- `SWTools/Utils/Screen/Resolution Window`: 화면 크기와 비율을 확인합니다.
+- `SWTools/Utils/Simulation/Random Simulator`: 가중치·섞기 기반 선택 결과를 시뮬레이션합니다.
+- `SWTools/Utils/State Machine/Graph Editor`: 다중 계층·스택 상태 머신의 노드와 전이를 편집합니다.
 
 #### `SWTools/Debug/Console/Debug Console Settings`
 
@@ -598,9 +645,31 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 3. `SWTools > Utils > Data > Excel Table Importer`를 엽니다.
 4. 표 데이터를 붙여 넣고 미리보기 후 적용합니다.
 
+리스트·배열은 모든 행을 받고 일반 클래스 필드는 첫 행을 받습니다. 일반 클래스에는 필드명과 값을 세로로 나열하는 입력도 지원합니다. 필수 열 누락, 중복 헤더, 잘못된 논리값과 닫히지 않은 따옴표가 있으면 적용을 거절합니다. 인용된 셀의 탭·줄바꿈·따옴표를 보존합니다.
+
+### 번역 관리
+
+`SWTools > Utils > Data > Localization Tools`에서 Localization 문자열 테이블을 관리합니다. 선택한 언어를 CSV·TSV·JSON으로 내보내고 TSV를 미리 본 뒤 가져올 수 있습니다. 새 컬렉션 생성·기존 컬렉션 업데이트, 키 접두사, Smart String 사용과 빈 항목 내보내기를 설정하며 인용된 번역의 탭·줄바꿈·따옴표를 보존합니다.
+
+기존 컬렉션을 업데이트하면 입력에 없는 키는 삭제됩니다. **모든 기존 키 삭제 후 교체**를 켜면 기존 키를 먼저 전부 지우고 새 입력으로 구성합니다. 적용 전에 미리보기와 선택한 컬렉션을 확인합니다.
+
+### 에셋과 글꼴 도구
+
+Quick Asset Palette는 자주 사용하는 에셋·폴더를 등록해 열기·선택·생성을 지원합니다. Reference Finder는 선택 에셋의 참조·의존성과 미사용 후보를 찾습니다. TMP Font Asset Manager는 글꼴 연결과 교체, 아틀라스 메모리, 글리프·문자 수, 대체 글꼴 연결과 머티리얼 비용을 확인합니다.
+
+### 진단 창
+
+EventBus Debugger는 이벤트 리스너·발행 기록을, Pool Monitor는 풀별 생성·활성·대기·반납 수와 지연 반납을 표시합니다. PlayerPrefs Viewer는 암호화된 SWUtils 데이터와 일반 Unity 데이터를 별도 탭에서 조회·수정·삭제합니다. Build Report Viewer는 빌드 결과와 포함된 에셋 크기를, Input Debugger는 EventSystem·포인터·레이캐스트 상태를 보여줍니다.
+
+### 편집기 확장
+
+공유 인스펙터는 `SWMonoBehaviour`와 `SWScriptableObject`의 그룹·버튼·조건 표시·다시 그리기를 처리합니다. `Editor/StyleSheet`는 편집기 UI Toolkit 스타일을, `Editor/Util`은 창·인스펙터에서 사용하는 드래그, 아이콘, 설정 저장, 스타일 캐시와 에셋 선택 도구를 제공합니다.
+
 ### 하이어라키 도구
 
 게임 오브젝트의 배경색, 아이콘, 활성 상태와 누락된 컴포넌트 경고를 하이어라키에 표시합니다.
+
+표시 설정은 `SWHierarchyToolsWindow`에서 편집하고 프로젝트의 편집기 도구에 적용합니다.
 
 ## 샘플
 
@@ -622,6 +691,6 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - `SWUtils.Editor`: 에디터 코드
 - `SWUtils.Samples`: 샘플 코드
 - `SWUtils.SkillTree.Samples.Editor`: 편집기 전용 스킬트리 예제 생성 코드
-- `SWUtils.SkillTree.Tests`: 편집 모드 스킬트리 테스트
+- `SWUtils.SkillTree.Tests`: 스킬트리와 실행 안정성의 편집 모드 테스트
 
 스크립트 파일을 이동하거나 이름을 변경할 때는 Unity 메타 식별자를 유지해야 기존 씬과 프리팹 참조가 보존됩니다.

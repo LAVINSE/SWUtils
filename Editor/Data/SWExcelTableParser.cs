@@ -79,26 +79,34 @@ namespace SW.EditorTools.Data
                 return result;
             }
 
-            string normalized = tableText.Replace("\r\n", "\n").Replace('\r', '\n').Trim();
-            string[] lines = normalized.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length < 2)
+            List<string[]> lines;
+            try { lines = ReadTableRows(tableText); }
+            catch (FormatException exception)
+            {
+                result.Errors.Add(exception.Message);
+                return result;
+            }
+            if (lines.Count < 2)
             {
                 result.Errors.Add("헤더와 데이터 행이 모두 필요합니다.");
                 return result;
             }
 
-            string[] headers = SplitLine(lines[0]);
+            string[] headers = lines[0];
+            HashSet<string> headerNames = new(StringComparer.OrdinalIgnoreCase);
             for (int index = 0; index < headers.Length; index++)
             {
                 string header = headers[index].Trim();
                 if (string.IsNullOrEmpty(header))
                     result.Warnings.Add($"{index + 1}번째 헤더가 비어 있습니다.");
+                else if (!headerNames.Add(header))
+                    result.Errors.Add($"헤더 '{header}'이 중복되었습니다.");
                 result.Headers.Add(header);
             }
 
-            for (int lineIndex = 1; lineIndex < lines.Length; lineIndex++)
+            for (int lineIndex = 1; lineIndex < lines.Count; lineIndex++)
             {
-                string[] columns = SplitLine(lines[lineIndex]);
+                string[] columns = lines[lineIndex];
                 Dictionary<string, string> row = new(StringComparer.OrdinalIgnoreCase);
 
                 for (int columnIndex = 0; columnIndex < result.Headers.Count; columnIndex++)
@@ -133,13 +141,18 @@ namespace SW.EditorTools.Data
                 return result;
             }
 
-            string normalized = tableText.Replace("\r\n", "\n").Replace('\r', '\n').Trim('\n');
-            string[] lines = normalized.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string[]> lines;
+            try { lines = ReadTableRows(tableText); }
+            catch (FormatException exception)
+            {
+                result.Errors.Add(exception.Message);
+                return result;
+            }
             Dictionary<string, string> row = new(StringComparer.OrdinalIgnoreCase);
 
-            for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+            for (int lineIndex = 0; lineIndex < lines.Count; lineIndex++)
             {
-                string[] columns = SplitLine(lines[lineIndex]);
+                string[] columns = lines[lineIndex];
                 if (columns.Length != 2)
                 {
                     result.Errors.Add(
@@ -173,16 +186,15 @@ namespace SW.EditorTools.Data
         }
 
         /// <summary>
-        /// 한 줄을 컬럼 배열로 분리합니다. 탭을 우선 사용하고, 탭이 없으면 연속 공백을 보조로 사용합니다.
+        /// 인용된 셀을 읽습니다. 탭과 따옴표가 없는 입력은 기존 공백 구분 형식을 허용합니다.
         /// </summary>
-        /// <param name="line">분리할 줄.</param>
-        /// <returns>컬럼 배열.</returns>
-        private static string[] SplitLine(string line)
+        private static List<string[]> ReadTableRows(string tableText)
         {
-            if (line.Contains("\t"))
-                return line.Split('\t');
-
-            return line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string[]> rows = SWDelimitedText.Read(tableText);
+            if (tableText.Contains('\t') || tableText.Contains('"')) return rows;
+            for (int index = 0; index < rows.Count; index++)
+                rows[index] = rows[index][0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return rows;
         }
         #endregion // 파싱
 
@@ -315,11 +327,15 @@ namespace SW.EditorTools.Data
                     string columnName = mappedField.attribute.ColumnName;
                     if (!row.TryGetValue(columnName, out string rawValue))
                     {
-                        parseResult.Warnings.Add($"{rowIndex + 2}번째 줄: '{columnName}' 컬럼을 찾을 수 없습니다.");
+                        string message = $"{rowIndex + 2}번째 줄: '{columnName}' 열을 찾을 수 없습니다.";
+                        if (mappedField.attribute.Required)
+                            parseResult.Errors.Add(message);
+                        else
+                            parseResult.Warnings.Add(message);
                         continue;
                     }
 
-                    if (mappedField.attribute.Required && string.IsNullOrEmpty(rawValue))
+                    if (mappedField.attribute.Required && string.IsNullOrWhiteSpace(rawValue))
                     {
                         parseResult.Errors.Add($"{rowIndex + 2}번째 줄: 필수 컬럼 '{columnName}' 값이 비어 있습니다.");
                         continue;
@@ -417,8 +433,9 @@ namespace SW.EditorTools.Data
 
                 if (targetType == typeof(bool))
                 {
-                    value = ParseBool(source);
-                    return true;
+                    bool converted = TryParseBoolean(source, out bool booleanValue);
+                    value = booleanValue;
+                    return converted;
                 }
 
                 if (targetType.IsEnum)
@@ -438,12 +455,16 @@ namespace SW.EditorTools.Data
         /// <summary>
         /// 문자열을 Boolean 값으로 변환합니다.
         /// </summary>
-        private static bool ParseBool(string source)
+        private static bool TryParseBoolean(string source, out bool value)
         {
-            return source.Equals("true", StringComparison.OrdinalIgnoreCase)
+            value = source.Equals("true", StringComparison.OrdinalIgnoreCase)
                 || source.Equals("yes", StringComparison.OrdinalIgnoreCase)
                 || source.Equals("y", StringComparison.OrdinalIgnoreCase)
                 || source == "1";
+            return value || source.Equals("false", StringComparison.OrdinalIgnoreCase)
+                || source.Equals("no", StringComparison.OrdinalIgnoreCase)
+                || source.Equals("n", StringComparison.OrdinalIgnoreCase)
+                || source == "0";
         }
         #endregion // 적용
     }

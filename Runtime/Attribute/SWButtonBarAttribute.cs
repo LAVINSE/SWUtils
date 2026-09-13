@@ -16,8 +16,6 @@ namespace SW.Attributes
     [AttributeUsage(AttributeTargets.Field)]
     public class SWButtonBarAttribute : PropertyAttribute
     {
-        #region 필드
-        #endregion // 필드
 
         #region 프로퍼티
         /// <summary>

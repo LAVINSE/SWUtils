@@ -21,6 +21,8 @@ namespace SW.EditorTools.Behaviour
             SWBehaviourTreeAsset treeAsset = (SWBehaviourTreeAsset)target;
             EditorGUILayout.LabelField("Nodes", treeAsset.Nodes.Count.ToString());
             EditorGUILayout.LabelField("Blackboard Keys", treeAsset.Blackboard.Entries.Count.ToString());
+            if (!treeAsset.ValidateSubTrees(out string error))
+                EditorGUILayout.HelpBox(error, MessageType.Error);
             EditorGUILayout.Space(8f);
             if (GUILayout.Button("Behaviour Tree 편집", GUILayout.Height(28f)))
                 SWBehaviourTreeEditorWindow.OpenTree(treeAsset);

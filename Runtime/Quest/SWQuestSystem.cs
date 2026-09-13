@@ -802,11 +802,11 @@ namespace SW.Quest
         {
             if (quest is SWAchievement achievement)
             {
-                AchievementRegistered?.Invoke(achievement);
+                SW.Util.SWSafeEvent.Invoke(AchievementRegistered, handler => handler(achievement));
             }
             else
             {
-                QuestRegistered?.Invoke(quest);
+                SW.Util.SWSafeEvent.Invoke(QuestRegistered, handler => handler(quest));
             }
 
             SWEventBus.Publish(new SWQuestRegisteredEvent(this, quest), false);
@@ -825,7 +825,7 @@ namespace SW.Quest
                     completedAchievements.Add(achievement);
                 }
 
-                AchievementUnlocked?.Invoke(achievement);
+                SW.Util.SWSafeEvent.Invoke(AchievementUnlocked, handler => handler(achievement));
                 SWEventBus.Publish(new SWAchievementUnlockedEvent(this, achievement), false);
                 return;
             }
@@ -836,7 +836,7 @@ namespace SW.Quest
                 completedQuests.Add(quest);
             }
 
-            QuestCompleted?.Invoke(quest);
+            SW.Util.SWSafeEvent.Invoke(QuestCompleted, handler => handler(quest));
             SWEventBus.Publish(new SWQuestCompletedEvent(this, quest), false);
         }
 
@@ -851,7 +851,7 @@ namespace SW.Quest
             }
 
             activeQuests.Remove(quest);
-            QuestCanceled?.Invoke(quest);
+            SW.Util.SWSafeEvent.Invoke(QuestCanceled, handler => handler(quest));
             SWEventBus.Publish(new SWQuestCanceledEvent(this, quest), false);
 
             UnsubscribeRuntimeQuest(quest);
@@ -864,7 +864,7 @@ namespace SW.Quest
         private void HandleTaskProgressChanged(SWQuest quest, SWQuestTask task,
             int currentProgress, int previousProgress)
         {
-            TaskProgressChanged?.Invoke(quest, task, currentProgress, previousProgress);
+            SW.Util.SWSafeEvent.Invoke(TaskProgressChanged, handler => handler(quest, task, currentProgress, previousProgress));
             SWEventBus.Publish(new SWQuestTaskProgressChangedEvent(this, quest, task,
                 currentProgress, previousProgress), false);
         }
@@ -874,7 +874,7 @@ namespace SW.Quest
         /// </summary>
         private void HandleRewardGranted(SWQuest quest, SWQuestReward reward)
         {
-            RewardGranted?.Invoke(quest, reward);
+            SW.Util.SWSafeEvent.Invoke(RewardGranted, handler => handler(quest, reward));
             SWEventBus.Publish(new SWQuestRewardGrantedEvent(this, quest, reward), false);
         }
         #endregion // 목록과 이벤트 처리

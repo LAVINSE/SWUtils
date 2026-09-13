@@ -13,11 +13,7 @@ namespace SW.EditorTools.Attributes
     [CustomPropertyDrawer(typeof(SWReadOnlyAttribute))]
     public class SWReadOnlyAttributeDrawer : PropertyDrawer
     {
-        #region 필드
-        #endregion // 필드
 
-        #region 프로퍼티
-        #endregion // 프로퍼티
 
         /// <summary>
         /// 읽기 전용 필드의 기본 프로퍼티 높이를 반환합니다.

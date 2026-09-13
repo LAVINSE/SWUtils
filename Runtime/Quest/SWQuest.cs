@@ -73,6 +73,8 @@ namespace SW.Quest
         [SerializeField] private SWQuestCondition[] cancellationConditions = Array.Empty<SWQuestCondition>();
 
         private int currentTaskGroupIndex;
+        private HashSet<string> grantedRewardIdentifiers = new(StringComparer.Ordinal);
+        private bool isCompleting;
         #endregion // 필드
 
         #region 프로퍼티
@@ -125,7 +127,8 @@ namespace SW.Quest
 
         /// <summary>현재 상태와 취소 조건을 기준으로 취소할 수 있는지 여부입니다.</summary>
         public virtual bool CanCancel
-            => cancelable && IsActiveState(State) && AreConditionsMet(cancellationConditions, Owner);
+            => !isCompleting && grantedRewardIdentifiers.Count == 0
+                && cancelable && IsActiveState(State) && AreConditionsMet(cancellationConditions, Owner);
 
         /// <summary>퀘스트 상태가 변경될 때 발생합니다.</summary>
         public event StateChangedHandler StateChanged;
@@ -341,15 +344,23 @@ namespace SW.Quest
         /// <returns>완료 처리했으면 <see langword="true"/>입니다.</returns>
         public bool Complete()
         {
-            if (State != SWQuestState.WaitingForCompletion)
+            if (State != SWQuestState.WaitingForCompletion || isCompleting)
             {
                 return false;
             }
 
-            SetState(SWQuestState.Completed);
-            GrantRewards();
-            Completed?.Invoke(this);
-            return true;
+            isCompleting = true;
+            try
+            {
+                if (!GrantRewards()) return false;
+                SetState(SWQuestState.Completed);
+                SW.Util.SWSafeEvent.Invoke(Completed, handler => handler(this));
+                return true;
+            }
+            finally
+            {
+                isCompleting = false;
+            }
         }
 
         /// <summary>
@@ -358,7 +369,7 @@ namespace SW.Quest
         /// <returns>완료 처리했으면 <see langword="true"/>입니다.</returns>
         public bool ForceComplete()
         {
-            if (!IsActiveState(State))
+            if (!IsActiveState(State) || isCompleting)
             {
                 return false;
             }
@@ -396,7 +407,7 @@ namespace SW.Quest
             }
 
             SetState(SWQuestState.Canceled);
-            Canceled?.Invoke(this);
+            SW.Util.SWSafeEvent.Invoke(Canceled, handler => handler(this));
             return true;
         }
 
@@ -483,7 +494,7 @@ namespace SW.Quest
 
                 currentTaskGroupIndex++;
                 CurrentTaskGroup.StartGroup();
-                TaskGroupChanged?.Invoke(this, CurrentTaskGroup, previousTaskGroup);
+                SW.Util.SWSafeEvent.Invoke(TaskGroupChanged, handler => handler(this, CurrentTaskGroup, previousTaskGroup));
             }
         }
         #endregion // 진행
@@ -509,6 +520,7 @@ namespace SW.Quest
                 state = State,
                 currentTaskGroupIndex = currentTaskGroupIndex,
                 currentTaskGroupCodeName = CurrentTaskGroup?.CodeName,
+                grantedRewardIdentifiers = new List<string>(grantedRewardIdentifiers).ToArray(),
                 taskGroups = groupSaveData
             };
         }
@@ -563,6 +575,7 @@ namespace SW.Quest
                     : SWQuestState.Running;
 
             NormalizeRestoredGroupStates();
+            grantedRewardIdentifiers = new HashSet<string>(saveData.grantedRewardIdentifiers ?? Array.Empty<string>(), StringComparer.Ordinal);
         }
 
         /// <summary>
@@ -742,17 +755,17 @@ namespace SW.Quest
         /// </summary>
         private void HandleTaskProgressChanged(SWQuestTask task, int currentProgress, int previousProgress)
         {
-            TaskProgressChanged?.Invoke(this, task, currentProgress, previousProgress);
+            SW.Util.SWSafeEvent.Invoke(TaskProgressChanged, handler => handler(this, task, currentProgress, previousProgress));
         }
 
         /// <summary>
-        /// 모든 보상을 독립적으로 지급하여 한 보상의 예외가 다음 보상을 막지 않도록 합니다.
+        /// 아직 지급하지 않은 보상만 처리합니다. 실패한 경우 완료 대기를 유지하여 재시도할 수 있습니다.
         /// </summary>
-        private void GrantRewards()
+        private bool GrantRewards()
         {
             if (rewards == null)
             {
-                return;
+                return true;
             }
 
             for (int index = 0; index < rewards.Length; index++)
@@ -764,16 +777,32 @@ namespace SW.Quest
                     continue;
                 }
 
+                string rewardKey = GetRewardKey(index);
+                if (grantedRewardIdentifiers.Contains(rewardKey)) continue;
+
                 try
                 {
                     reward.Grant(Owner, this);
-                    RewardGranted?.Invoke(this, rewardAsset);
                 }
                 catch (Exception exception)
                 {
                     SWLog.LogError($"[SWQuest] 보상 지급 실패: {CodeName}, 보상: {rewardAsset.name}, 오류: {exception.Message}");
+                    return false;
                 }
+                grantedRewardIdentifiers.Add(rewardKey);
+                SW.Util.SWSafeEvent.Invoke(RewardGranted, handler => handler(this, rewardAsset));
             }
+            return true;
+        }
+
+        /// <summary>같은 보상 에셋을 여러 번 등록한 경우 등록 횟수로 각 지급을 구분합니다.</summary>
+        private string GetRewardKey(int rewardIndex)
+        {
+            string identifier = rewards[rewardIndex].Identifier;
+            int occurrence = 0;
+            for (int index = 0; index < rewardIndex; index++)
+                if (rewards[index] != null && rewards[index].Identifier == identifier) occurrence++;
+            return identifier + ":" + occurrence;
         }
 
         /// <summary>
@@ -788,7 +817,7 @@ namespace SW.Quest
 
             SWQuestState previousState = State;
             State = state;
-            StateChanged?.Invoke(this, State, previousState);
+            SW.Util.SWSafeEvent.Invoke(StateChanged, handler => handler(this, State, previousState));
         }
 
         /// <summary>
@@ -805,6 +834,8 @@ namespace SW.Quest
             Owner = null;
             State = SWQuestState.Inactive;
             currentTaskGroupIndex = 0;
+            grantedRewardIdentifiers = new HashSet<string>(StringComparer.Ordinal);
+            isCompleting = false;
             StateChanged = null;
             TaskGroupChanged = null;
             TaskProgressChanged = null;
