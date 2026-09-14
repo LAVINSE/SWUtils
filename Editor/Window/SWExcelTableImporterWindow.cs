@@ -101,7 +101,7 @@ namespace SW.EditorTools.Window
             DrawLeftPanel();
 
             Rect splitter = EditorGUILayout.GetControlRect(false, GUILayout.Width(SPLITTER_WIDTH), GUILayout.ExpandHeight(true));
-            EditorGUI.DrawRect(splitter, SWEditorUtils.HeaderLineColor);
+            EditorGUI.DrawRect(splitter, SW.EditorTools.SWEditorTheme.Border);
 
             DrawRightPanel();
 

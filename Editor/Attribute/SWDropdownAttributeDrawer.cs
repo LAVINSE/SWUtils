@@ -47,7 +47,6 @@ namespace SW.EditorTools.Attributes
         /// <param name="label">필드 라벨</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             // 최초 1회만 초기화 수행
             if (!isInitialized)
             {

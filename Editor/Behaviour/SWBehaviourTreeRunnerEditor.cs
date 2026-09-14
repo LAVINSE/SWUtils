@@ -23,7 +23,6 @@ namespace SW.EditorTools.Behaviour
 
         public override void OnInspectorGUI()
         {
-            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             serializedObject.Update();
             EditorGUILayout.PropertyField(treeAssetProperty, new GUIContent("Tree Asset"));
             EditorGUILayout.PropertyField(runOnEnableProperty, new GUIContent("Run On Enable"));

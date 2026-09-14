@@ -20,17 +20,20 @@ namespace SW.EditorTools.Util
     {
         #region 색상
         /// <summary> 헤더 구분선 색상 </summary>
-        public static readonly Color HeaderLineColor = SWEditorTheme.Border;
+        public static readonly Color HeaderLineColor = new(0.3f, 0.3f, 0.3f, 1f);
         /// <summary> 비활성 컴포넌트 아이콘 색상 </summary>
         public static readonly Color DisabledIconColor = new(1f, 1f, 1f, 0.5f);
         /// <summary> 에러/누락 항목 표시 색상 </summary>
         public static readonly Color ErrorColor = new(1f, 0.35f, 0.35f, 1f);
         /// <summary> 강조 표시 색상 </summary>
-        public static readonly Color HighlightColor = SWEditorTheme.Accent;
+        public static readonly Color HighlightColor = new(0.3f, 0.7f, 1f, 1f);
         /// <summary> 어두운 배경 (아이콘 placeholder 등) </summary>
-        public static readonly Color DarkBgColor = SWEditorTheme.Panel;
+        public static readonly Color DarkBgColor = new(0.2f, 0.2f, 0.2f, 1f);
         /// <summary> 성공/활성 상태 배경 색상 </summary>
-        public static readonly Color ActiveBgColor = SWEditorTheme.Selection;
+        public static readonly Color ActiveBgColor = Color.cyan;
+
+        /// <summary>편집기 창 안에서는 테마 구분선을, 일반 인스펙터에서는 기존 구분선을 사용합니다.</summary>
+        private static Color CurrentHeaderLineColor => SWEditorThemeScope.IsActive ? SWEditorTheme.Border : HeaderLineColor;
         #endregion // 색상
 
         #region 레이아웃 상수
@@ -57,7 +60,7 @@ namespace SW.EditorTools.Util
         {
             EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
             Rect rect = EditorGUILayout.GetControlRect(false, 1);
-            EditorGUI.DrawRect(rect, HeaderLineColor);
+            EditorGUI.DrawRect(rect, CurrentHeaderLineColor);
             EditorGUILayout.Space(3);
         }
 
@@ -82,7 +85,7 @@ namespace SW.EditorTools.Util
             if (isOpen)
             {
                 Rect rect = EditorGUILayout.GetControlRect(false, 1);
-                EditorGUI.DrawRect(rect, HeaderLineColor);
+                EditorGUI.DrawRect(rect, CurrentHeaderLineColor);
                 EditorGUILayout.Space(3);
             }
             return isOpen;
@@ -94,7 +97,7 @@ namespace SW.EditorTools.Util
         public static void DrawSeparator(float height = 1f)
         {
             Rect rect = EditorGUILayout.GetControlRect(false, height);
-            EditorGUI.DrawRect(rect, HeaderLineColor);
+            EditorGUI.DrawRect(rect, CurrentHeaderLineColor);
         }
 
         /// <summary>
@@ -132,10 +135,10 @@ namespace SW.EditorTools.Util
                 }
             }
 
-            EditorGUI.DrawRect(new Rect(rect.x, rect.y, rect.width, 1f), HeaderLineColor);
-            EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 1f, rect.width, 1f), HeaderLineColor);
-            EditorGUI.DrawRect(new Rect(rect.x, rect.y, 1f, rect.height), HeaderLineColor);
-            EditorGUI.DrawRect(new Rect(rect.xMax - 1f, rect.y, 1f, rect.height), HeaderLineColor);
+            EditorGUI.DrawRect(new Rect(rect.x, rect.y, rect.width, 1f), CurrentHeaderLineColor);
+            EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - 1f, rect.width, 1f), CurrentHeaderLineColor);
+            EditorGUI.DrawRect(new Rect(rect.x, rect.y, 1f, rect.height), CurrentHeaderLineColor);
+            EditorGUI.DrawRect(new Rect(rect.xMax - 1f, rect.y, 1f, rect.height), CurrentHeaderLineColor);
         }
         #endregion // 헤더 & 구분선
 
@@ -596,7 +599,6 @@ namespace SW.EditorTools.Util
             StyleSheet ss = GetStyleSheet();
             if (ss == null || root == null) return false;
             root.styleSheets.Add(ss);
-            SWEditorTheme.Apply(root);
             return true;
         }
 
@@ -608,7 +610,6 @@ namespace SW.EditorTools.Util
             StyleSheet ss = FindStyleSheet(stylesheetName);
             if (ss == null || root == null) return false;
             root.styleSheets.Add(ss);
-            SWEditorTheme.Apply(root);
             return true;
         }
 

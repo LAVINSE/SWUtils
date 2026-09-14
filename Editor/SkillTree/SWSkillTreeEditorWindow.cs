@@ -127,6 +127,7 @@ namespace SW.EditorTools.SkillTree
 
         private void DrawInspector()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             inspectorScroll = EditorGUILayout.BeginScrollView(inspectorScroll);
             try
             {

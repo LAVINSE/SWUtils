@@ -193,7 +193,7 @@ namespace SW.EditorTools.Window
                 }
                 else
                 {
-                    EditorGUI.DrawRect(iconRect, SWEditorUtils.DarkBgColor);
+                    EditorGUI.DrawRect(iconRect, SW.EditorTools.SWEditorTheme.Panel);
                 }
                 // SWEditorUtils 드래그 아웃 사용
                 if (item.exists)

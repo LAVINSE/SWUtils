@@ -336,7 +336,7 @@ namespace SW.EditorTools.Window
             string slowMoLabel = isSlowMoActive
                 ? $"■ Slow Motion ON ({slowMoScale}x) - 클릭해서 끄기"
                 : $"▶ Slow Motion OFF - 클릭해서 켜기 ({slowMoScale}x)";
-            if (SWEditorUtils.ToggleButton(slowMoLabel, isSlowMoActive, SWEditorUtils.ActiveBgColor, 32f))
+            if (SWEditorUtils.ToggleButton(slowMoLabel, isSlowMoActive, SW.EditorTools.SWEditorTheme.Selection, 32f))
             {
                 ToggleSlowMotion();
             }

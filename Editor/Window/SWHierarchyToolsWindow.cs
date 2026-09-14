@@ -100,7 +100,7 @@ namespace SW.EditorTools.Window
             DrawRegistryPanel();
 
             Rect splitter = EditorGUILayout.GetControlRect(false, GUILayout.Width(SplitterWidth), GUILayout.ExpandHeight(true));
-            EditorGUI.DrawRect(splitter, SWEditorUtils.HeaderLineColor);
+            EditorGUI.DrawRect(splitter, SW.EditorTools.SWEditorTheme.Border);
 
             DrawMainPanel();
 

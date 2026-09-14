@@ -2,6 +2,10 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [미배포]
+
+- 공통 테마를 편집기 창과 내장 편집 영역에만 적용하도록 분리했습니다. Unity 기본 Inspector 창은 기존 SWUtils 스타일을 유지합니다.
+
 ## [v1.4.0] - 2026-09-14
 
 - SWUtils Data Editor에 에셋 탐색, 카테고리, 즐겨찾기, 다중 탭, 인스펙터 잠금, 유형 설정, 생성 및 확장 인터페이스를 추가했습니다.

@@ -2,6 +2,10 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [Unreleased]
+
+- Scoped the shared theme to editor windows and embedded editing panels. Unity's standard Inspector window retains the existing SWUtils style.
+
 ## [v1.4.0] - 2026-09-14
 
 - Added SWUtils Data Editor with asset browsing, categories, favourites, inspector tabs, locking, type configuration, creation workflows and extension registration.

@@ -14,7 +14,6 @@ namespace SW.EditorTools.Behaviour
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             VisualElement root = new();
-            SW.EditorTools.SWEditorTheme.Apply(root);
             root.style.marginTop = 2f;
             Label label = new(property.displayName);
             label.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;

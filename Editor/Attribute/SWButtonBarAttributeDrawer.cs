@@ -37,7 +37,6 @@ namespace SW.EditorTools.Attributes
             System.Type eventOwnerType = property.serializedObject.targetObject.GetType();
 
             var root = new VisualElement();
-            SW.EditorTools.SWEditorTheme.Apply(root);
 
             Toolbar buttonBar = new();
             buttonBar.AddToClassList("sw-toolbar");

@@ -33,7 +33,6 @@ namespace SW.EditorTools.Behaviour
                 property.stringValue = changeEvent.newValue;
                 property.serializedObject.ApplyModifiedProperties();
             });
-            SW.EditorTools.SWEditorTheme.Apply(field);
             return field;
         }
     }
@@ -45,7 +44,6 @@ namespace SW.EditorTools.Behaviour
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             VisualElement root = new();
-            SW.EditorTools.SWEditorTheme.Apply(root);
             Label title = new(property.displayName);
             title.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
             root.Add(title);

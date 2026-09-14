@@ -6,7 +6,7 @@ Shared runtime systems and editor tools for Unity 6. SWUtils provides save slots
 
 The package is in testing. Validate the features you use, including quest and achievement persistence, in your project before release.
 
-Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories, favourites, search and inspector tabs. Existing tools and inspectors share its theme and navigation. See the [workspace guide and design analysis (Korean)](Documentation~/SWUtilsEditor.ko.md).
+Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories, favourites, search and inspector tabs. Editor windows and their embedded editing panels share its theme; Unity's standard Inspector window retains the existing SWUtils style. See the [workspace guide and design analysis (Korean)](Documentation~/SWUtilsEditor.ko.md).
 
 ## Installation
 
@@ -993,7 +993,7 @@ Open `SWTools > SWUtils Data Editor` to search, create, duplicate, rename and ca
 
 The defaults are `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest` and `Other`. They are added once, and later edits and deletions are preserved. Assets in SWUtils sample folders use `SWSamples` before type defaults. Package installation and imported sample paths are recognized; the asset types must be enabled.
 
-Settings are stored in the project's `ProjectSettings/SWUtilsEditorSettings.asset`. Existing editor tools and embedded inspectors share the theme while preserving explicitly assigned attribute group colors. See the [category and extension guide (Korean)](Documentation~/SWUtilsEditor.ko.md).
+Settings are stored in the project's `ProjectSettings/SWUtilsEditorSettings.asset`. Editor windows and embedded inspectors share the theme while preserving explicitly assigned attribute group colors. Unity's standard Inspector window retains its existing group, button and input field styles. See the [category and extension guide (Korean)](Documentation~/SWUtilsEditor.ko.md).
 
 ### Inspector drawers
 

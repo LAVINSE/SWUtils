@@ -7,10 +7,10 @@ using SW.EditorTools.Util;
 
 namespace SW.EditorTools
 {
-    /// <summary>SWUtils의 모든 에디터 화면에서 공유하는 디자인입니다.</summary>
+    /// <summary>SWUtils 편집기 창과 창 내부의 편집 영역에서 공유하는 디자인입니다.</summary>
     public static class SWEditorTheme
     {
-        /// <summary>인스펙터와 작업 영역 배경입니다.</summary>
+        /// <summary>편집기 창의 작업 영역과 내장 인스펙터 배경입니다.</summary>
         public static readonly Color Background = FromHex(0x13161A);
         /// <summary>탐색 목록과 패널 배경입니다.</summary>
         public static readonly Color Panel = FromHex(0x1B1F24);
@@ -35,7 +35,7 @@ namespace SW.EditorTools
         /// <summary>강조 색상입니다.</summary>
         public static readonly Color Accent = FromHex(0x80BFFF);
         private static StyleSheet sharedStyleSheet;
-        /// <summary>현재 루트에 재사용 가능한 공통 스타일을 적용합니다.</summary>
+        /// <summary>편집기 창의 루트에 공통 스타일을 적용합니다. 일반 인스펙터에서는 호출하지 않습니다.</summary>
         public static void Apply(VisualElement root)
         {
             if (root == null)
@@ -77,7 +77,7 @@ namespace SW.EditorTools
         }
     }
 
-    /// <summary>그리는 동안만 공통 스타일을 적용하고 Unity의 원래 스타일을 복원합니다.</summary>
+    /// <summary>편집기 창과 내장 인스펙터를 그리는 동안 공통 스타일을 적용하고 원래 스타일을 복원합니다.</summary>
     public sealed class SWEditorThemeScope : IDisposable
     {
         private sealed class StylePair
@@ -91,6 +91,9 @@ namespace SW.EditorTools
         private static readonly List<Texture2D> textures = new();
         private static GUISkin themedSkin;
         private static int nesting;
+        /// <summary>현재 그리는 코드가 편집기 창의 테마 적용 범위 안에 있는지 나타냅니다.</summary>
+        internal static bool IsActive => nesting > 0;
+
         private readonly GUISkin originalSkin;
         private bool disposed;
         /// <summary>현재 그리는 범위에만 공통 테마를 적용합니다.</summary>

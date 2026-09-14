@@ -6,7 +6,7 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 
 현재 테스트 단계의 패키지입니다. 퀘스트·업적을 포함한 각 기능은 적용할 프로젝트에서 동작과 저장 호환성을 확인해야 합니다.
 
-`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 분류·즐겨찾기·다중 탭으로 편집합니다. 기존 도구와 인스펙터에도 같은 디자인을 적용합니다. [사용법과 디자인 분석](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
+`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 분류·즐겨찾기·다중 탭으로 편집합니다. 편집기 창과 창 내부의 편집 영역에 공통 디자인을 적용하며, Unity 기본 Inspector 창은 기존 SWUtils 스타일을 유지합니다. [사용법과 디자인 분석](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
 
 ## 설치
 
@@ -607,7 +607,7 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 
 기본 분류는 `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest`, `Other`입니다. 최초 한 번만 추가되며 이후 수정과 삭제를 유지합니다. SWUtils의 Samples 폴더에 있는 에셋은 유형 기본값보다 우선해 `SWSamples`에 표시합니다. 패키지 설치 경로와 가져온 샘플 경로도 인식하며, 해당 유형은 활성화되어 있어야 합니다.
 
-설정은 프로젝트의 `ProjectSettings/SWUtilsEditorSettings.asset`에 저장합니다. 기존 편집기와 내장 인스펙터는 공통 테마를 사용하며 어트리뷰트에 직접 지정한 그룹 색상은 유지합니다. [분류 추가와 확장 방법](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
+설정은 프로젝트의 `ProjectSettings/SWUtilsEditorSettings.asset`에 저장합니다. 편집기 창과 내장 인스펙터는 공통 테마를 사용하며 어트리뷰트에 직접 지정한 그룹 색상은 유지합니다. Unity 기본 Inspector 창에는 기존 그룹·버튼·입력 필드 스타일을 적용합니다. [분류 추가와 확장 방법](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
 
 ### 인스펙터
 

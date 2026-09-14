@@ -45,7 +45,6 @@ namespace SW.EditorTools.Attributes
         /// <param name="label">프로퍼티 라벨 (필드 이름)</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             SWConditionAttribute conditionAttribute = (SWConditionAttribute)attribute;
 
             bool enabled = GetConditionAttributeResult(conditionAttribute, property);

@@ -103,7 +103,7 @@ namespace SW.EditorTools.Window
                 }
 
                 Rect separator = GUILayoutUtility.GetRect(1f, 1f, GUILayout.Width(1f), GUILayout.ExpandHeight(true));
-                EditorGUI.DrawRect(separator, SWEditorUtils.HeaderLineColor);
+                EditorGUI.DrawRect(separator, SW.EditorTools.SWEditorTheme.Border);
 
                 using (new EditorGUILayout.VerticalScope(GUILayout.MinWidth(360f), GUILayout.ExpandHeight(true)))
                 {
