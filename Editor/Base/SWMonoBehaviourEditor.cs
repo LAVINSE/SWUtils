@@ -360,6 +360,8 @@ namespace SW.EditorTools.Base
 
             VisualElement root = new();
             if (EditorStyleSheet != null) root.styleSheets.Add(EditorStyleSheet);
+            SW.EditorTools.SWEditorTheme.Apply(root);
+            root.AddToClassList("sw-inspector-root");
 
             SerializedProperty scriptProperty = serializedObject.FindProperty("m_Script");
 
@@ -536,6 +538,7 @@ namespace SW.EditorTools.Base
         /// <summary>제작 창에 삽입된 즉시 모드 인스펙터에도 같은 그룹과 기본 접힘 상태를 적용합니다.</summary>
         protected void DrawGroupedInspector()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             Initialized();
             serializedObject.Update();
             foreach (SerializedProperty property in PropertiesList)

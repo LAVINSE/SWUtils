@@ -16,7 +16,7 @@ namespace SW.EditorTools
         private readonly Action<UnityEngine.Object> selectedAssetChanged;
         private readonly List<UnityEngine.Object> allAssets = new List<UnityEngine.Object>();
         private readonly List<UnityEngine.Object> visibleAssets = new List<UnityEngine.Object>();
-        private readonly ToolbarSearchField searchField;
+        private readonly TextField searchField;
         private readonly ListView assetListView;
         private readonly TextField assetNameField;
         private readonly Button pingButton;
@@ -42,9 +42,9 @@ namespace SW.EditorTools
 
             style.flexGrow = 1f;
             style.minWidth = 210f;
-            style.backgroundColor = new Color(0.095f, 0.10f, 0.11f);
+            style.backgroundColor = SW.EditorTools.SWEditorTheme.Panel;
             style.borderRightWidth = 1f;
-            style.borderRightColor = new Color(0.24f, 0.26f, 0.28f);
+            style.borderRightColor = SW.EditorTools.SWEditorTheme.Border;
 
             Label titleLabel = new Label(title);
             titleLabel.style.height = 30f;
@@ -71,7 +71,8 @@ namespace SW.EditorTools
             commandRow.Add(refreshButton);
             Add(commandRow);
 
-            searchField = new ToolbarSearchField();
+            searchField = new TextField();
+            searchField.textEdition.placeholder = "Search for assets...";
             searchField.tooltip = "그래프 이름 또는 경로 검색";
             searchField.style.marginLeft = 6f;
             searchField.style.marginRight = 6f;
@@ -84,7 +85,7 @@ namespace SW.EditorTools
             resultCount.style.marginLeft = 8f;
             resultCount.style.marginBottom = 5f;
             resultCount.style.fontSize = 11f;
-            resultCount.style.color = new Color(0.68f, 0.71f, 0.75f);
+            resultCount.style.color = SW.EditorTools.SWEditorTheme.MutedText;
             Add(resultCount);
 
             emptyNotice = new Label();
@@ -92,7 +93,7 @@ namespace SW.EditorTools
             emptyNotice.style.marginLeft = 10f;
             emptyNotice.style.marginRight = 10f;
             emptyNotice.style.marginTop = 12f;
-            emptyNotice.style.color = new Color(0.68f, 0.71f, 0.75f);
+            emptyNotice.style.color = SW.EditorTools.SWEditorTheme.MutedText;
             Add(emptyNotice);
 
             assetListView = new ListView
@@ -113,7 +114,7 @@ namespace SW.EditorTools
             selectedAssetPanel.style.paddingTop = 5f;
             selectedAssetPanel.style.paddingBottom = 6f;
             selectedAssetPanel.style.borderTopWidth = 1f;
-            selectedAssetPanel.style.borderTopColor = new Color(0.24f, 0.26f, 0.28f);
+            selectedAssetPanel.style.borderTopColor = SW.EditorTools.SWEditorTheme.Border;
             assetNameField = new TextField("에셋 이름") { isDelayed = true, tooltip = "파일 이름을 변경합니다. Enter 키로 적용합니다." };
             assetNameField.RegisterValueChangedCallback(changeEvent =>
                 RenameSelectedAsset(changeEvent.newValue));
@@ -194,7 +195,7 @@ namespace SW.EditorTools
             collapseButton.style.height = 24f;
             collapseButton.style.paddingLeft = 0f;
             collapseButton.style.paddingRight = 0f;
-            collapseButton.style.backgroundColor = new Color(0.12f, 0.13f, 0.14f, 0.96f);
+            collapseButton.style.backgroundColor = SW.EditorTools.SWEditorTheme.Toolbar;
             return collapseButton;
         }
 
@@ -222,7 +223,7 @@ namespace SW.EditorTools
             nameLabel.style.whiteSpace = WhiteSpace.NoWrap;
             Label pathLabel = new Label { name = "asset-path" };
             pathLabel.style.fontSize = 10f;
-            pathLabel.style.color = new Color(0.68f, 0.71f, 0.75f);
+            pathLabel.style.color = SW.EditorTools.SWEditorTheme.MutedText;
             pathLabel.style.overflow = Overflow.Hidden;
             pathLabel.style.textOverflow = TextOverflow.Ellipsis;
             pathLabel.style.whiteSpace = WhiteSpace.NoWrap;

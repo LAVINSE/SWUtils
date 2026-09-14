@@ -23,7 +23,7 @@
 }
 
 /* Foldout contents */
-.sw-foldout #unity-content {
+.sw-foldout > #unity-content {
     padding-top: 5px;
     margin-top: 0;
     margin-left: 10px;

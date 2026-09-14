@@ -20,17 +20,17 @@ namespace SW.EditorTools.Util
     {
         #region 색상
         /// <summary> 헤더 구분선 색상 </summary>
-        public static readonly Color HeaderLineColor = new(0.3f, 0.3f, 0.3f, 1f);
+        public static readonly Color HeaderLineColor = SWEditorTheme.Border;
         /// <summary> 비활성 컴포넌트 아이콘 색상 </summary>
         public static readonly Color DisabledIconColor = new(1f, 1f, 1f, 0.5f);
         /// <summary> 에러/누락 항목 표시 색상 </summary>
         public static readonly Color ErrorColor = new(1f, 0.35f, 0.35f, 1f);
         /// <summary> 강조 표시 색상 </summary>
-        public static readonly Color HighlightColor = new(0.3f, 0.7f, 1f, 1f);
+        public static readonly Color HighlightColor = SWEditorTheme.Accent;
         /// <summary> 어두운 배경 (아이콘 placeholder 등) </summary>
-        public static readonly Color DarkBgColor = new(0.2f, 0.2f, 0.2f, 1f);
+        public static readonly Color DarkBgColor = SWEditorTheme.Panel;
         /// <summary> 성공/활성 상태 배경 색상 </summary>
-        public static readonly Color ActiveBgColor = Color.cyan;
+        public static readonly Color ActiveBgColor = SWEditorTheme.Selection;
         #endregion // 색상
 
         #region 레이아웃 상수
@@ -147,6 +147,7 @@ namespace SW.EditorTools.Util
         /// <returns>선택된 탭 인덱스</returns>
         public static int DrawTabBar(int selectedTab, string[] tabNames)
         {
+            if (SWEditorWindowLayoutScope.TryGetNavigation(tabNames, out int navigationIndex)) return navigationIndex;
             EditorGUILayout.Space(TabBarTopSpace);
             selectedTab = GUILayout.Toolbar(selectedTab, tabNames, GUILayout.Height(TabBarHeight));
             EditorGUILayout.Space(TabBarBottomSpace);
@@ -158,6 +159,7 @@ namespace SW.EditorTools.Util
         /// </summary>
         public static int DrawTabBar(int selectedTab, string[] tabNames, float height)
         {
+            if (SWEditorWindowLayoutScope.TryGetNavigation(tabNames, out int navigationIndex)) return navigationIndex;
             EditorGUILayout.Space(TabBarTopSpace);
             selectedTab = GUILayout.Toolbar(selectedTab, tabNames, GUILayout.Height(height));
             EditorGUILayout.Space(TabBarBottomSpace);
@@ -594,6 +596,7 @@ namespace SW.EditorTools.Util
             StyleSheet ss = GetStyleSheet();
             if (ss == null || root == null) return false;
             root.styleSheets.Add(ss);
+            SWEditorTheme.Apply(root);
             return true;
         }
 
@@ -605,6 +608,7 @@ namespace SW.EditorTools.Util
             StyleSheet ss = FindStyleSheet(stylesheetName);
             if (ss == null || root == null) return false;
             root.styleSheets.Add(ss);
+            SWEditorTheme.Apply(root);
             return true;
         }
 

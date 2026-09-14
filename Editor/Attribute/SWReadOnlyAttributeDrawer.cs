@@ -34,6 +34,7 @@ namespace SW.EditorTools.Attributes
         /// <param name="label">필드 라벨입니다.</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             GUI.enabled = false;
             EditorGUI.PropertyField(position, property, label, true);
             GUI.enabled = true;

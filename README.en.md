@@ -1,4 +1,4 @@
-# SWUtils
+# SWUtils 1.4.0
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -6,15 +6,17 @@ Shared runtime systems and editor tools for Unity 6. SWUtils provides save slots
 
 The package is in testing. Validate the features you use, including quest and achievement persistence, in your project before release.
 
+Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories, favourites, search and inspector tabs. Existing tools and inspectors share its theme and navigation. See the [workspace guide and design analysis (Korean)](Documentation~/SWUtilsEditor.ko.md).
+
 ## Installation
 
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.3.1
+https://github.com/LAVINSE/SWUtils.git#v1.4.0
 ```
 
-The URL above requires the `v1.3.1` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.0` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 
@@ -981,6 +983,18 @@ Volume changes also update currently playing sound effects while preserving each
 
 ## Editor Features
 
+### SWUtils Data Editor
+
+Open `SWTools > SWUtils Data Editor` to search, create, duplicate, rename and categorize ScriptableObjects, with favourites and inspector tabs. Lock the inspector to keep its target or open referenced assets in another tab.
+
+1. Add, rename and reorder categories in `Settings > Categories`. Navigation and type selection use this saved list; rescanning does not restore deleted categories.
+2. Enable types and choose their default categories in `Configure asset types`. Changes are saved automatically. `Back to settings` returns to settings, and `Done` returns to browsing. Initial setup uses `Start browsing`.
+3. Creation and filter menus follow `SWUtils / Other assets → category → type`. Search text, foldouts and scroll positions are restored.
+
+The defaults are `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest` and `Other`. They are added once, and later edits and deletions are preserved. Assets in SWUtils sample folders use `SWSamples` before type defaults. Package installation and imported sample paths are recognized; the asset types must be enabled.
+
+Settings are stored in the project's `ProjectSettings/SWUtilsEditorSettings.asset`. Existing editor tools and embedded inspectors share the theme while preserving explicitly assigned attribute group colors. See the [category and extension guide (Korean)](Documentation~/SWUtilsEditor.ko.md).
+
 ### Inspector drawers
 
 A collection of PropertyDrawers that render the Inspector features defined in `Runtime/Attribute`.
@@ -989,6 +1003,7 @@ A collection of PropertyDrawers that render the Inspector features defined in `R
 
 Editor windows available from the `SWTools` menu. Debugging tools are under `SWTools/Debug`, while general utilities are under `SWTools/Utils`.
 
+- `SWTools/SWUtils Data Editor`: Browses and categorizes ScriptableObjects with creation, type filters and inspector tabs.
 - `SWTools/Debug/Build/Build Report Viewer`: Inspects build reports and included asset sizes.
 - `SWTools/Debug/Console/Debug Console Settings`: Configures the runtime debug console, performance overlay, debug define symbol, and play-mode controls.
 - `SWTools/Debug/Event/EventBus Debugger Window`: Inspects registered `SWEventBus` event types, listener counts, publication counts, and the latest published data.

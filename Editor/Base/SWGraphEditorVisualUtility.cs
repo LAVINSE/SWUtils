@@ -16,9 +16,9 @@ namespace SW.EditorTools
             toolbar.style.paddingLeft = 8f;
             toolbar.style.paddingRight = 8f;
             toolbar.style.alignItems = Align.Center;
-            toolbar.style.backgroundColor = new Color(0.149f, 0.157f, 0.173f);
+            toolbar.style.backgroundColor = SW.EditorTools.SWEditorTheme.Toolbar;
             toolbar.style.borderBottomWidth = 1f;
-            toolbar.style.borderBottomColor = new Color(0.282f, 0.298f, 0.322f);
+            toolbar.style.borderBottomColor = SW.EditorTools.SWEditorTheme.Border;
         }
 
         /// <summary>그래프 편집기에서 동일하게 사용할 도구 모음 버튼을 생성합니다.</summary>

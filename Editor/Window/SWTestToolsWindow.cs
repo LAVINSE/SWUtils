@@ -245,6 +245,8 @@ namespace SW.EditorTools.Window
 
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, tabNames, selectedTab);
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
             selectedTab = SWEditorUtils.DrawTabBar(selectedTab, tabNames);

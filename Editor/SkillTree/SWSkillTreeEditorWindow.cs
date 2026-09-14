@@ -69,7 +69,8 @@ namespace SW.EditorTools.SkillTree
         public void CreateGUI()
         {
             rootVisualElement.Clear();
-            rootVisualElement.style.backgroundColor = new Color(0.075f, 0.08f, 0.09f);
+            SW.EditorTools.SWEditorTheme.Apply(rootVisualElement);
+            rootVisualElement.style.backgroundColor = SW.EditorTools.SWEditorTheme.Background;
             Toolbar toolbar = new();
             SWGraphEditorVisualUtility.ApplyToolbar(toolbar);
             titleLabel = new Label("SW Skill Tree");
@@ -89,7 +90,7 @@ namespace SW.EditorTools.SkillTree
             inner.Add(graph);
             IMGUIContainer inspector = new(DrawInspector);
             inspector.style.minWidth = 280;
-            inspector.style.backgroundColor = new Color(0.149f, 0.157f, 0.173f);
+            inspector.style.backgroundColor = SW.EditorTools.SWEditorTheme.Toolbar;
             inner.Add(inspector);
             outer.Add(inner);
             rootVisualElement.Add(outer);

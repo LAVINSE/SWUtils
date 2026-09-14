@@ -63,6 +63,8 @@ namespace SW.EditorTools.Window
 
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, tabNamesArray, (int)currentTab);
             DrawHeader();
             DrawTabs();
 
@@ -93,7 +95,7 @@ namespace SW.EditorTools.Window
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                int newTab = GUILayout.Toolbar((int)currentTab, tabNamesArray);
+                int newTab = SWEditorUtils.DrawTabBar((int)currentTab, tabNamesArray);
                 currentTab = (Tab)newTab;
             }
         }

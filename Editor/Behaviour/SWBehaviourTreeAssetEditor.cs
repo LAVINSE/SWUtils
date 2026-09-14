@@ -18,6 +18,7 @@ namespace SW.EditorTools.Behaviour
     {
         public override void OnInspectorGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             SWBehaviourTreeAsset treeAsset = (SWBehaviourTreeAsset)target;
             EditorGUILayout.LabelField("Nodes", treeAsset.Nodes.Count.ToString());
             EditorGUILayout.LabelField("Blackboard Keys", treeAsset.Blackboard.Entries.Count.ToString());

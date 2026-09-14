@@ -1,4 +1,4 @@
-# SWUtils
+# SWUtils 1.4.0
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -6,15 +6,17 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 
 현재 테스트 단계의 패키지입니다. 퀘스트·업적을 포함한 각 기능은 적용할 프로젝트에서 동작과 저장 호환성을 확인해야 합니다.
 
+`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 분류·즐겨찾기·다중 탭으로 편집합니다. 기존 도구와 인스펙터에도 같은 디자인을 적용합니다. [사용법과 디자인 분석](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
+
 ## 설치
 
 Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.3.1
+https://github.com/LAVINSE/SWUtils.git#v1.4.0
 ```
 
-위 주소는 원격 저장소에 `v1.3.1` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
+위 주소는 원격 저장소에 `v1.4.0` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
 필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 
@@ -595,6 +597,18 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 
 ## 에디터 기능
 
+### SWUtils Data Editor
+
+`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 생성·복제·이름 변경·분류·즐겨찾기와 다중 탭으로 관리합니다. 인스펙터를 잠가 편집 대상을 유지하거나 참조 에셋을 다른 탭에서 열 수 있습니다.
+
+1. `Settings > Categories`에서 분류를 추가하거나 이름·순서를 변경합니다. 왼쪽 목록과 유형 선택창은 이 설정만 사용하며 삭제한 분류는 재검색으로 복구되지 않습니다.
+2. `Configure asset types`에서 표시할 유형을 활성화하고 기본 분류를 선택합니다. 변경은 자동 저장되며 `Back to settings`로 설정에, `Done`으로 탐색기에 돌아갑니다. 최초 설정에서는 `Start browsing`을 표시합니다.
+3. 생성 메뉴와 필터는 `SWUtils / Other assets → 카테고리 → 유형` 순서입니다. 검색어, 그룹 펼침 상태와 스크롤 위치를 복원합니다.
+
+기본 분류는 `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest`, `Other`입니다. 최초 한 번만 추가되며 이후 수정과 삭제를 유지합니다. SWUtils의 Samples 폴더에 있는 에셋은 유형 기본값보다 우선해 `SWSamples`에 표시합니다. 패키지 설치 경로와 가져온 샘플 경로도 인식하며, 해당 유형은 활성화되어 있어야 합니다.
+
+설정은 프로젝트의 `ProjectSettings/SWUtilsEditorSettings.asset`에 저장합니다. 기존 편집기와 내장 인스펙터는 공통 테마를 사용하며 어트리뷰트에 직접 지정한 그룹 색상은 유지합니다. [분류 추가와 확장 방법](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
+
 ### 인스펙터
 
 Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`, `SWScriptableObject` 사용자 지정 인스펙터를 제공합니다.
@@ -603,6 +617,7 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 
 디버깅 도구는 `SWTools/Debug`, 일반 도구는 `SWTools/Utils` 메뉴에서 엽니다.
 
+- `SWTools/SWUtils Data Editor`: ScriptableObject 탐색, 분류, 생성, 유형 필터와 인스펙터 탭을 제공합니다.
 - `SWTools/Debug/Build/Build Report Viewer`: 빌드 결과와 포함된 에셋 크기를 확인합니다.
 - `SWTools/Debug/Console/Debug Console Settings`: 콘솔 입력, 성능 오버레이와 디버그 심볼을 설정합니다.
 - `SWTools/Debug/Event/EventBus Debugger Window`: 이벤트 타입별 구독자와 발행 기록을 확인합니다.

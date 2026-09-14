@@ -61,6 +61,7 @@ namespace SW.EditorTools.Util
         /// </summary>
         public override void OnInspectorGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             serializedObject.Update();
 
             SerializedProperty raycastTargetProperty = serializedObject.FindProperty("m_RaycastTarget");

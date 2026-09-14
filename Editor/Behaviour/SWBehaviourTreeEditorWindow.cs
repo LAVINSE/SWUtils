@@ -50,13 +50,14 @@ namespace SW.EditorTools.Behaviour
         {
             editorSettings = SWBehaviourTreeEditorSettings.instance;
             rootVisualElement.Clear();
+            SW.EditorTools.SWEditorTheme.Apply(rootVisualElement);
             StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 AssetDatabase.GUIDToAssetPath("c1902963a6ec47b49e068b3713d1464d"));
             if (styleSheet != null)
                 rootVisualElement.styleSheets.Add(styleSheet);
             rootVisualElement.AddToClassList("sw-behaviour-window");
             rootVisualElement.style.flexDirection = FlexDirection.Column;
-            rootVisualElement.style.backgroundColor = new Color(0.075f, 0.08f, 0.09f);
+            rootVisualElement.style.backgroundColor = SW.EditorTools.SWEditorTheme.Background;
             CreateToolbar();
             CreateGraphArea();
             SetTree(treeAsset);
@@ -144,9 +145,9 @@ namespace SW.EditorTools.Behaviour
         {
             validationPanel = new VisualElement();
             validationPanel.style.flexShrink = 0f;
-            validationPanel.style.backgroundColor = new Color(0.095f, 0.1f, 0.11f);
+            validationPanel.style.backgroundColor = SW.EditorTools.SWEditorTheme.Panel;
             validationPanel.style.borderTopWidth = 1f;
-            validationPanel.style.borderTopColor = new Color(0.25f, 0.27f, 0.29f);
+            validationPanel.style.borderTopColor = SW.EditorTools.SWEditorTheme.Border;
 
             validationHeaderButton = new Button(() =>
             {
@@ -197,7 +198,7 @@ namespace SW.EditorTools.Behaviour
             panel.style.paddingRight = 10f;
             panel.style.paddingTop = 8f;
             panel.style.paddingBottom = 10f;
-            panel.style.backgroundColor = new Color(0.115f, 0.12f, 0.13f, 0.97f);
+            panel.style.backgroundColor = SW.EditorTools.SWEditorTheme.Panel;
             panel.style.borderTopLeftRadius = 4f;
             panel.style.borderTopRightRadius = 4f;
             panel.style.borderBottomLeftRadius = 4f;
@@ -229,7 +230,7 @@ namespace SW.EditorTools.Behaviour
             handle.style.width = 18f;
             handle.style.height = 18f;
             handle.style.unityTextAlign = TextAnchor.MiddleCenter;
-            handle.style.color = new Color(0.58f, 0.60f, 0.63f);
+            handle.style.color = SW.EditorTools.SWEditorTheme.MutedText;
             if (resizeFromLeft) handle.style.left = 1f;
             else handle.style.right = 1f;
             panel.hierarchy.Add(handle);
@@ -468,7 +469,7 @@ namespace SW.EditorTools.Behaviour
                 row.style.paddingRight = 6f;
                 row.style.paddingTop = 5f;
                 row.style.paddingBottom = 5f;
-                row.style.backgroundColor = new Color(0.15f, 0.16f, 0.17f);
+                row.style.backgroundColor = SW.EditorTools.SWEditorTheme.Card;
                 VisualElement header = new();
                 header.style.flexDirection = FlexDirection.Row;
                 PropertyField nameField = new(entryProperty.FindPropertyRelative("name"), string.Empty);
@@ -613,7 +614,7 @@ namespace SW.EditorTools.Behaviour
             if (!hasVisibleProperty)
             {
                 Label emptyLabel = new("추가 설정이 없는 노드입니다.");
-                emptyLabel.style.color = new Color(0.58f, 0.60f, 0.63f);
+                emptyLabel.style.color = SW.EditorTools.SWEditorTheme.MutedText;
                 inspectorPanel.Add(emptyLabel);
             }
         }
@@ -785,7 +786,7 @@ namespace SW.EditorTools.Behaviour
             if (treeAsset == null)
             {
                 validationHeaderButton.text = "  Graph Validation · Behaviour Tree 에셋을 선택하세요.";
-                validationHeaderButton.style.color = new Color(0.62f, 0.65f, 0.68f);
+                validationHeaderButton.style.color = SW.EditorTools.SWEditorTheme.MutedText;
                 SetValidationExpanded(false);
                 return;
             }

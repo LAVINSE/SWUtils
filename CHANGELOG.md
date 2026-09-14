@@ -2,6 +2,19 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.0] - 2026-09-14
+
+- Added SWUtils Data Editor with asset browsing, categories, favourites, inspector tabs, locking, type configuration, creation workflows and extension registration.
+- Applied a shared theme to the 23 existing editor windows and inspectors. Refined sidebar navigation, text contrast, input fields and attribute group spacing while preserving explicitly assigned group colors.
+- Removed repeated accent colors from ordinary headings and nested borders from validation messages, and replaced category placeholder characters with folder icons.
+- Made saved settings the source for categories. Added the eight defaults once, preserving later edits and deletions.
+- Prioritized SWSamples for sample folders, including Git package installations and imported samples, while excluding similarly named packages and folders.
+- Preserved search, foldouts and scroll positions in type setup and creation/filter lists. Added Back to settings and Done with automatic saving.
+- Grouped creation options by SWUtils or other assets, then by searchable, collapsible categories. SWUtils samples without namespaces are identified by their assembly.
+- Grouped filters by source, category and type, added group selection, and removed disabled types from saved filters.
+- Fixed scrollbar input-style interference, icon centering, narrow inspector clipping and the Cell size input. Small cards accommodate names, icons and badges without overlap.
+- Added sixteen workspace tests covering classification, search, identity, extensions, duplication, inspector locking and view restoration, plus a guide with category setup instructions and public reference analysis.
+
 ## [v1.3.1] - 2026-09-13
 
 - Validate save input before applying it and restore preferences on failure. Replace files after temporary writes, check backups when loading fails, and restore asynchronous responses to the requested slot.

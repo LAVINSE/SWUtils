@@ -10,11 +10,11 @@ namespace SW.EditorTools.StateMachine
     internal static class SWStateMachineGraphStyles
     {
         #region 색상
-        private static readonly Color WindowBackground = new Color(0.075f, 0.08f, 0.09f);
-        private static readonly Color CardBackground = new Color(0.157f, 0.165f, 0.18f);
-        private static readonly Color BorderColor = new Color(0.282f, 0.298f, 0.322f);
-        private static readonly Color MutedTextColor = new Color(0.62f, 0.65f, 0.68f);
-        private static readonly Color PrimaryColor = new Color(0.22f, 0.58f, 0.92f);
+        private static readonly Color WindowBackground = SW.EditorTools.SWEditorTheme.Background;
+        private static readonly Color CardBackground = SW.EditorTools.SWEditorTheme.Card;
+        private static readonly Color BorderColor = SW.EditorTools.SWEditorTheme.Border;
+        private static readonly Color MutedTextColor = SW.EditorTools.SWEditorTheme.MutedText;
+        private static readonly Color PrimaryColor = SW.EditorTools.SWEditorTheme.Selection;
         private static readonly Color StateColor = new Color(0.25f, 0.67f, 0.48f);
         private static readonly Color AnyStateColor = new Color(0.68f, 0.45f, 0.88f);
         private static readonly Color ReturnColor = new Color(0.29f, 0.68f, 0.82f);
@@ -53,8 +53,8 @@ namespace SW.EditorTools.StateMachine
             button.style.marginLeft = 0f;
             button.style.marginRight = 0f;
             button.style.backgroundColor = isSelected
-                ? new Color(0.22f, 0.25f, 0.29f)
-                : new Color(0.12f, 0.125f, 0.135f);
+                ? SW.EditorTools.SWEditorTheme.Selection
+                : SW.EditorTools.SWEditorTheme.Toolbar;
             button.style.borderBottomWidth = isSelected ? 2f : 1f;
             button.style.borderBottomColor = isSelected ? PrimaryColor : BorderColor;
         }
@@ -63,7 +63,7 @@ namespace SW.EditorTools.StateMachine
         public static void ApplyFloatingPanel(VisualElement panel)
         {
             panel.style.position = Position.Absolute;
-            panel.style.backgroundColor = new Color(0.114f, 0.122f, 0.133f, 0.98f);
+            panel.style.backgroundColor = SW.EditorTools.SWEditorTheme.Panel;
             panel.style.paddingLeft = 10f;
             panel.style.paddingRight = 10f;
             panel.style.paddingTop = 10f;

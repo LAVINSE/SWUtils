@@ -32,6 +32,8 @@ namespace SW.EditorTools.Window
         #region 화면
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, NavigationNames, navigationIndex);
             PrepareStyles();
             if (Event.current.type == EventType.MouseMove)
             {
@@ -94,7 +96,7 @@ namespace SW.EditorTools.Window
         {
             using (new EditorGUILayout.HorizontalScope(GUILayout.ExpandHeight(true)))
             {
-                float availableListWidth = Mathf.Clamp(listWidth, 260f, Mathf.Max(260f, position.width - 420f));
+                float availableListWidth = Mathf.Clamp(listWidth, 260f, Mathf.Max(260f, SW.EditorTools.SWEditorWindowLayoutScope.GetContentWidth(position.width) - 420f));
                 using (new EditorGUILayout.VerticalScope(GUILayout.Width(availableListWidth), GUILayout.ExpandHeight(true)))
                 {
                     DrawAssetListPanel(kind);

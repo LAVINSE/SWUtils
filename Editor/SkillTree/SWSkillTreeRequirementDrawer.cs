@@ -12,6 +12,7 @@ namespace SW.EditorTools.SkillTree
         /// <inheritdoc />
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             EditorGUI.BeginProperty(position, label, property);
             SWSkillTreeDefinition tree = property.serializedObject.targetObject as SWSkillTreeDefinition;
             if (tree == null)

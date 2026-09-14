@@ -23,6 +23,7 @@ namespace SW.EditorTools.StateMachine
         /// <summary>기본 속성과 그래프 편집 버튼을 표시합니다.</summary>
         public override void OnInspectorGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new();
             DrawDefaultInspector();
             GUILayout.Space(8f);
 

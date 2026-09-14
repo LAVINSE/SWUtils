@@ -374,6 +374,8 @@ namespace SW.EditorTools.Window
         #region GUI
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, tabNames, selectedTab);
             // SWEditorUtils 탭바 사용
             int newTab = SWEditorUtils.DrawTabBar(selectedTab, tabNames);
             if (newTab != selectedTab)

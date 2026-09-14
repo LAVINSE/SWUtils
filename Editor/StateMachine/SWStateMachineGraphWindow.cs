@@ -79,6 +79,7 @@ namespace SW.EditorTools.StateMachine
         public void CreateGUI()
         {
             rootVisualElement.Clear();
+            SW.EditorTools.SWEditorTheme.Apply(rootVisualElement);
             editorSettings = SWStateMachineGraphEditorSettings.Load();
             StyleSheet sharedStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 AssetDatabase.GUIDToAssetPath("c1902963a6ec47b49e068b3713d1464d"));
@@ -212,9 +213,9 @@ namespace SW.EditorTools.StateMachine
         {
             validationPanel = new VisualElement();
             validationPanel.style.flexShrink = 0f;
-            validationPanel.style.backgroundColor = new Color(0.095f, 0.1f, 0.11f);
+            validationPanel.style.backgroundColor = SW.EditorTools.SWEditorTheme.Panel;
             validationPanel.style.borderTopWidth = 1f;
-            validationPanel.style.borderTopColor = new Color(0.25f, 0.27f, 0.29f);
+            validationPanel.style.borderTopColor = SW.EditorTools.SWEditorTheme.Border;
 
             validationHeaderButton = new Button(() =>
             {
@@ -265,7 +266,7 @@ namespace SW.EditorTools.StateMachine
             handle.style.width = 18f;
             handle.style.height = 18f;
             handle.style.unityTextAlign = TextAnchor.MiddleCenter;
-            handle.style.color = new Color(0.55f, 0.58f, 0.62f);
+            handle.style.color = SW.EditorTools.SWEditorTheme.MutedText;
             if (resizeFromLeft)
                 handle.style.left = 1f;
             else
@@ -1331,7 +1332,7 @@ namespace SW.EditorTools.StateMachine
             if (graphAsset == null)
             {
                 validationHeaderButton.text = "  Graph Validation · 그래프 에셋을 선택하세요.";
-                validationHeaderButton.style.color = new Color(0.62f, 0.65f, 0.68f);
+                validationHeaderButton.style.color = SW.EditorTools.SWEditorTheme.MutedText;
                 SetValidationExpanded(false);
                 return;
             }

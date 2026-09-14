@@ -40,6 +40,8 @@ namespace SW.EditorTools.Window
 
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this);
             DrawAssetSection();
             EditorGUILayout.Space(8);
             DrawSaltSection();

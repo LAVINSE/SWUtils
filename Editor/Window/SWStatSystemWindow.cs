@@ -208,6 +208,8 @@ namespace SW.EditorTools.Window
         #region GUI
         private void OnGUI()
         {
+            using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, toolbarNames, toolbarIndex);
             toolbarIndex = SWEditorUtils.DrawTabBar(toolbarIndex, toolbarNames);
 
             if (toolbarIndex >= ManagedTypes.Length)
@@ -277,7 +279,7 @@ namespace SW.EditorTools.Window
         /// </summary>
         private void DrawListToolButtons(Type dataType, int typeIndex)
         {
-            using (new SWEditorUtils.GUIBgColorScope(new Color(0.6f, 1f, 0.6f)))
+            using (new SWEditorUtils.GUIBgColorScope(Color.white))
             {
                 if (GUILayout.Button($"New {dataType.Name}", GUILayout.Height(24f)))
                     CreateNewAsset(dataType, typeIndex);
