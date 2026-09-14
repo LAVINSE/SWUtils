@@ -2,7 +2,7 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
-## [미배포]
+## [v1.4.1] - 2026-09-14
 
 - 공통 테마를 편집기 창과 내장 편집 영역에만 적용하도록 분리했습니다. Unity 기본 Inspector 창은 기존 SWUtils 스타일을 유지합니다.
 

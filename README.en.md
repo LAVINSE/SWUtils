@@ -1,4 +1,4 @@
-# SWUtils 1.4.0
+# SWUtils 1.4.1
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.0
+https://github.com/LAVINSE/SWUtils.git#v1.4.1
 ```
 
-The URL above requires the `v1.4.0` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.1` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 

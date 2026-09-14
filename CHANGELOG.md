@@ -2,7 +2,7 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
-## [Unreleased]
+## [v1.4.1] - 2026-09-14
 
 - Scoped the shared theme to editor windows and embedded editing panels. Unity's standard Inspector window retains the existing SWUtils style.
 
