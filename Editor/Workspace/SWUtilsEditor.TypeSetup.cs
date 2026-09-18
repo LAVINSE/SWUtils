@@ -15,6 +15,8 @@ namespace SW.EditorTools.Window
         /// </summary>
         private void BuildTypeSetup()
         {
+            catalog.CancelRefresh();
+            searchWasRunning = false;
             configuringTypes = true;
             browserContent = null;
             inspectorHost = null;
@@ -31,6 +33,7 @@ namespace SW.EditorTools.Window
             description.AddToClassList("sw-muted");
             description.AddToClassList("sw-wrap");
             setup.Add(description);
+            BuildFolderSettings(setup);
             VisualElement bar = Element("sw-setup-toolbar");
             TextField search = new() { value = state.SearchText };
             search.AddToClassList("sw-setup-search");
@@ -41,7 +44,7 @@ namespace SW.EditorTools.Window
             SWEditorScrollKeeper keeper = new(groups, () => state.ScrollPosition, value => state.ScrollPosition = value);
             bar.Add(new Button(() =>
             {
-                catalog.Refresh();
+                catalog.RefreshTypes();
                 RenderGroups();
             }) { text = "Rescan types" });
             setup.Add(bar);
@@ -124,7 +127,8 @@ namespace SW.EditorTools.Window
                                 settings.Persist();
                             });
                             row.Add(choice);
-                            Label count = new(type.AssetCount + " assets");
+                            Label count = new(type.AssetCountLabel);
+                            count.tooltip = "유형을 선택하고 탐색을 시작하면 해당 유형의 에셋 수를 조회합니다.";
                             count.AddToClassList("sw-type-count");
                             row.Add(count);
                             row.Add(CategoryPicker(type.Settings.CategoryIdentifier, identifier =>

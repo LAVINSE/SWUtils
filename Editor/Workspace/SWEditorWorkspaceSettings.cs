@@ -12,6 +12,7 @@ namespace SW.EditorTools.Workspace
     {
         private string persistedState;
         [SerializeField] private bool categoriesInitialized;
+        [SerializeField] private bool searchFoldersInitialized;
         /// <summary>
         /// 설정 화면과 팝업에서 마지막으로 사용한 검색, 펼침 및 스크롤 상태입니다.
         /// </summary>
@@ -95,6 +96,8 @@ namespace SW.EditorTools.Workspace
         public List<string> RecentTypes = new();
         /// <summary>제외할 Assets 하위 폴더입니다.</summary>
         public List<string> ExcludedFolders = new();
+        /// <summary>하위 폴더를 포함해 탐색할 프로젝트 상대 경로입니다. 비어 있으면 검색하지 않습니다.</summary>
+        public List<string> SearchFolders = new();
         /// <summary>필터에서 선택한 유형 이름입니다.</summary>
         public List<string> FilteredTypes = new();
         /// <summary>전체 에셋을 표시하는 가상 분류입니다.</summary>
@@ -148,11 +151,38 @@ namespace SW.EditorTools.Workspace
             Persist();
         }
 
+        #region 탐색 범위
+        /// <summary>기존 사용자 설정을 보존하며 SWUtils 데이터 폴더를 최초 한 번 기본 탐색 범위로 등록합니다.</summary>
+        public void InitializeSearchFolders()
+        {
+            if (searchFoldersInitialized)
+            {
+                return;
+            }
+
+            SearchFolders ??= new List<string>();
+            if (SearchFolders.Count == 0)
+            {
+                SearchFolders.AddRange(SWEditorSearchFolders.GetDefaults());
+            }
+
+            searchFoldersInitialized = true;
+            Persist();
+        }
+
+        /// <summary>지정한 탐색 폴더에 포함되고 제외 폴더 밖에 있는 경로인지 확인합니다.</summary>
+        public bool IsInSearchScope(string assetPath)
+        {
+            return SearchFolders.Any(folder => SWEditorSearchFolders.Contains(folder, assetPath)) &&
+                !IsExcluded(assetPath);
+        }
+
         /// <summary>폴더 경계를 포함해 제외 여부를 검사합니다.</summary>
         public bool IsExcluded(string assetPath)
         {
-            return ExcludedFolders.Any(folder => string.Equals(assetPath, folder, StringComparison.OrdinalIgnoreCase) || assetPath.StartsWith(folder.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
+            return ExcludedFolders.Any(folder => SWEditorSearchFolders.Contains(folder, assetPath));
         }
+        #endregion // 탐색 범위
 
         /// <summary>배치 설정을 기본값으로 되돌립니다.</summary>
         public void ResetLayout()
@@ -181,12 +211,15 @@ namespace SW.EditorTools.Workspace
             OpenAssets.Clear();
             RecentTypes.Clear();
             ExcludedFolders.Clear();
+            SearchFolders.Clear();
+            searchFoldersInitialized = false;
             FilteredTypes.Clear();
             ActiveAsset = LockedAsset = SearchText = "";
             SelectedCategory = AllCategory;
             IsConfigured = false;
             SortByName = false;
             InitializeCategories();
+            InitializeSearchFolders();
             ResetLayout();
         }
     }

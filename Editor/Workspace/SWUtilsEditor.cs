@@ -65,6 +65,7 @@ namespace SW.EditorTools.Window
 
         private void OnDisable()
         {
+            catalog?.CancelRefresh();
             EditorApplication.projectChanged -= RequestRefresh;
             EditorApplication.update -= UpdateWorkspace;
             Undo.undoRedoPerformed -= RequestRefresh;
@@ -76,14 +77,15 @@ namespace SW.EditorTools.Window
         /// <summary>공통 테마를 사용하는 세 영역의 작업 공간을 생성합니다.</summary>
         public void CreateGUI()
         {
+            catalog.CancelRefresh();
             DisposeInspector();
             rootVisualElement.Clear();
             SWEditorTheme.Apply(rootVisualElement);
-            StyleSheet style = Util.SWEditorUtils.FindStyleSheet("SWUtilsEditor");
+            StyleSheet style = Util.SWEditorUtils.LoadStyleSheetByIdentifier("cb734bb9b20f06f48bb59be35351f534");
             if (style != null)
                 rootVisualElement.styleSheets.Add(style);
             rootVisualElement.AddToClassList("sw-workspace");
-            catalog.Refresh();
+            catalog.RefreshTypes();
             if (!settings.IsConfigured || configuringTypes)
             {
                 BuildTypeSetup();
@@ -91,6 +93,7 @@ namespace SW.EditorTools.Window
             }
 
             BuildWorkspace();
+            RequestRefresh();
         }
 
         private void BuildWorkspace()
@@ -112,17 +115,13 @@ namespace SW.EditorTools.Window
             toolbar = Element("sw-workspace-toolbar", "sw-row");
             workspace.Add(toolbar);
             BuildToolbar();
+            BuildSearchStatus(workspace);
             float browserWidth = Mathf.Clamp(settings.BrowserWidth, 220, Mathf.Max(220, position.width - 246 - 301));
             splitView = new TwoPaneSplitView(0, browserWidth, TwoPaneSplitViewOrientation.Horizontal);
             splitView.AddToClassList("sw-workspace-split");
             workspace.Add(splitView);
             VisualElement browserPanel = Element("sw-browser-panel");
-            browserScroll = new ScrollView(ScrollViewMode.Vertical);
-            browserScroll.AddToClassList("sw-browser-scroll");
-            browserScrollKeeper = new SWEditorScrollKeeper(browserScroll, () => settings.BrowserScroll, value => settings.BrowserScroll = value);
-            browserPanel.Add(browserScroll);
-            browserContent = Element("sw-browser-content");
-            browserScroll.Add(browserContent);
+            BuildBrowserViewport(browserPanel);
             browserPanel.RegisterCallback<GeometryChangedEvent>(eventData =>
             {
                 if (eventData.newRect.width > 0)
@@ -218,15 +217,18 @@ namespace SW.EditorTools.Window
             if (refreshScheduled && EditorApplication.timeSinceStartup >= nextRefreshTime && !EditorApplication.isCompiling && !EditorApplication.isUpdating)
             {
                 refreshScheduled = false;
-                catalog.Refresh();
                 if (configuringTypes)
                 {
+                    catalog.RefreshTypes();
                     refreshTypeSetup?.Invoke();
                 }
                 else if (settings.IsConfigured && browserContent != null)
-                    RefreshViews();
+                {
+                    catalog.BeginRefresh();
+                }
             }
 
+            UpdateAssetSearch();
             UpdatePendingState();
             if (EditorApplication.timeSinceStartup - lastPersistenceTime > 5)
             {
@@ -256,13 +258,23 @@ namespace SW.EditorTools.Window
 
         private void OpenCreated(ScriptableObject asset)
         {
-            catalog.Refresh();
+            catalog.CancelRefresh();
+            if (!catalog.TryRegisterAsset(asset))
+            {
+                if (asset != null && !settings.IsInSearchScope(AssetDatabase.GetAssetPath(asset)))
+                {
+                    ShowNotification(new GUIContent("에셋을 생성했습니다. 목록에서 보려면 Settings에 해당 탐색 폴더를 추가하세요."));
+                }
+                RequestRefresh();
+                return;
+            }
             SWEditorAssetEntry entry = catalog.Find(SWEditorAssetCatalog.GetIdentifier(asset));
             if (entry == null)
                 return;
             OpenAsset(entry, true);
             RefreshCategories();
             RefreshBrowser();
+            RequestRefresh();
         }
 
         private void OpenAsset(SWEditorAssetEntry entry, bool additive = false, bool range = false)

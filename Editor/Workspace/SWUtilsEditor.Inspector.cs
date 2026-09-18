@@ -59,11 +59,7 @@ namespace SW.EditorTools.Window
                             BuildToolbar();
                             RefreshCategories();
                             RefreshBrowser();
-                            browserScroll.schedule.Execute(() =>
-                            {
-                                if (assetElements.TryGetValue(identifier, out VisualElement item))
-                                    browserScroll.ScrollTo(item);
-                            });
+                            ScrollToBrowserAsset(identifier);
                         }
 
                         settings.Persist();

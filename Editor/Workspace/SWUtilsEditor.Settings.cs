@@ -56,42 +56,8 @@ namespace SW.EditorTools.Window
                 RefreshInspector();
             }) { text = "Reset layout" });
             VisualElement browser = Section(parent, "Asset browser");
-            browser.Add(new Button(() =>
-            {
-                string absolute = EditorUtility.OpenFolderPanel("Exclude folder", Application.dataPath, "");
-                if (string.IsNullOrEmpty(absolute))
-                    return;
-                string dataPath = Application.dataPath.Replace('\\', '/').TrimEnd('/');
-                absolute = absolute.Replace('\\', '/');
-                if (!absolute.StartsWith(dataPath + "/", StringComparison.OrdinalIgnoreCase))
-                {
-                    EditorUtility.DisplayDialog("Exclude folder", "Assets 폴더 내부의 하위 폴더를 선택하세요.", "OK");
-                    return;
-                }
-
-                string relative = "Assets" + absolute.Substring(dataPath.Length);
-                if (!settings.ExcludedFolders.Contains(relative))
-                    settings.ExcludedFolders.Add(relative);
-                settings.Persist();
-                RequestRefresh();
-            }) { text = "Exclude folder" });
-            foreach (string folder in settings.ExcludedFolders.ToArray())
-            {
-                VisualElement row = Element("sw-settings-category-row");
-                Label label = new(folder)
-                {
-                    tooltip = folder
-                };
-                label.AddToClassList("sw-grow");
-                row.Add(label);
-                row.Add(new Button(() =>
-                {
-                    settings.ExcludedFolders.Remove(folder);
-                    settings.Persist();
-                    RequestRefresh();
-                }) { text = "Remove" });
-                browser.Add(row);
-            }
+            BuildFolderSettings(browser);
+            BuildFolderSettings(browser, true);
 
             VisualElement categories = Section(parent, "Categories");
             VisualElement addRow = Element("sw-row");
@@ -349,7 +315,7 @@ namespace SW.EditorTools.Window
             Label name = new(type.DisplayName);
             name.AddToClassList("sw-picker-option-name");
             button.Add(name);
-            Label count = new(settings.RecentTypes.FirstOrDefault() == type.Settings.TypeName ? "Last created" : type.AssetCount + " assets");
+            Label count = new(settings.RecentTypes.FirstOrDefault() == type.Settings.TypeName ? "Last created" : type.AssetCountLabel);
             count.AddToClassList("sw-picker-option-count");
             button.Add(count);
             return button;
@@ -394,7 +360,7 @@ namespace SW.EditorTools.Window
         public void CreateGUI()
         {
             SWEditorTheme.Apply(rootVisualElement);
-            StyleSheet style = Util.SWEditorUtils.FindStyleSheet("SWUtilsEditor");
+            StyleSheet style = Util.SWEditorUtils.LoadStyleSheetByIdentifier("cb734bb9b20f06f48bb59be35351f534");
             if (style != null)
                 rootVisualElement.styleSheets.Add(style);
             rootVisualElement.AddToClassList("sw-picker");

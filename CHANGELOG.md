@@ -2,6 +2,15 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.2] - 2026-09-18
+
+- Limited SWUtils Data Editor searches to multiple user-selected folders and their descendants. SWUtils's `Samples/Data` is the default. Initial setup and Settings support adding, editing, removing and excluding folders. Empty or missing folders never fall back to a whole-project search.
+- Removed asset preloading from type setup and applied enabled types before loading search results. Editor window and inspector types are excluded from data asset discovery.
+- Spread asset loading across editor updates and added progress, cancellation and retry controls. Cancellation and loading failures preserve the previous list and open asset state.
+- Grid and list views create only visible rows. Workspace and shared theme stylesheets are resolved directly, and native asset creation monitoring is limited to the destination folder to reduce whole-project searches.
+- Removed `Temp`, `Tests` and test metadata from the package. Kept samples, documentation and the functional `SWRectDummy` and Test Tools Window utilities.
+- Documented search folder setup and upgrade steps in both READMEs. Existing project data appears after its folders are added to the search scope.
+
 ## [v1.4.1] - 2026-09-14
 
 - Scoped the shared theme to editor windows and embedded editing panels. Unity's standard Inspector window retains the existing SWUtils style.

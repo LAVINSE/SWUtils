@@ -118,83 +118,90 @@ namespace SW.EditorTools.Window
             browserScrollKeeper.Rebuild(BuildBrowser);
         }
 
+        /// <summary>검색 결과의 행 위치만 준비하고 실제 항목은 화면에 보일 때 생성합니다.</summary>
         private void BuildBrowser()
         {
-            browserContent.Clear();
-            assetElements.Clear();
             visibleAssets = catalog.Query();
-            browserContent.EnableInClassList("sw-grid", !settings.UseListView);
-            browserContent.EnableInClassList("sw-list", settings.UseListView);
-            if (visibleAssets.Count == 0)
+            browserColumnCount = GetBrowserColumnCount();
+            browserRowStarts.Clear();
+            for (int index = 0; index < visibleAssets.Count; index += browserColumnCount)
             {
-                VisualElement empty = Element("sw-empty");
-                empty.Add(new Label("No assets found"));
-                Label description = new("검색어와 유형 필터를 확인하거나 + 버튼으로 에셋을 만드세요.");
-                description.AddToClassList("sw-wrap");
-                description.AddToClassList("sw-muted");
-                empty.Add(description);
-                browserContent.Add(empty);
+                browserRowStarts.Add(index);
             }
 
-            foreach (SWEditorAssetEntry entry in visibleAssets)
-            {
-                SWEditorAssetContext context = catalog.Context(entry);
-                VisualElement item = Element(settings.UseListView ? "sw-asset-row" : "sw-asset-card");
-                item.name = "asset-" + entry.Identifier;
-                item.tooltip = entry.Asset.name + "\n" + entry.AssetType.Type.FullName + "\n" + entry.Path + (context.CategoryIdentifier == SWEditorWorkspaceSettings.UncategorizedCategory ? "\nUncategorized" : "");
-                if (!settings.UseListView)
-                {
-                    item.style.width = Mathf.Clamp(settings.CellSize, 72, 156);
-                    item.style.minHeight = Mathf.Max(108, settings.CellSize + 8);
-                }
-
-                Image icon = AssetImage(entry);
-                icon.AddToClassList("sw-asset-icon");
-                item.Add(icon);
-                Label name = new(entry.Asset.name);
-                name.AddToClassList("sw-asset-name");
-                item.Add(name);
-                if (settings.UseListView)
-                {
-                    Label type = new(entry.AssetType.DisplayName);
-                    type.AddToClassList("sw-asset-type");
-                    item.Add(type);
-                }
-
-                SWEditorAssetBadge[] badges = SWEditorRegistry.GetBadges(context).Take(settings.UseListView ? 3 : 2).ToArray();
-                if (badges.Length > 0)
-                {
-                    VisualElement badgeRow = Element("sw-badges", "sw-row");
-                    foreach (SWEditorAssetBadge badge in badges)
-                    {
-                        Label label = new(badge.Text)
-                        {
-                            tooltip = badge.Tooltip
-                        };
-                        label.AddToClassList("sw-badge");
-                        label.style.color = badge.Color;
-                        if (badge.Icon != null)
-                            badgeRow.Add(new Image { image = badge.Icon });
-                        badgeRow.Add(label);
-                    }
-
-                    item.Add(badgeRow);
-                }
-
-                item.AddManipulator(new SWEditorAssetPointerManipulator(eventData =>
-                {
-                    if (eventData.clickCount == 2)
-                        EditorGUIUtility.PingObject(entry.Asset);
-                    else
-                        OpenAsset(entry, eventData.actionKey, eventData.shiftKey);
-                }, () => BeginAssetDrag(entry)));
-                item.AddManipulator(new ContextualMenuManipulator(eventData => PopulateAssetMenu(eventData.menu, entry)));
-                assetElements[entry.Identifier] = item;
-                browserContent.Add(item);
-            }
-
+            browserEmptyState.EnableInClassList("sw-hidden", visibleAssets.Count > 0);
+            browserListView.EnableInClassList("sw-hidden", visibleAssets.Count == 0);
+            browserListView.fixedItemHeight = settings.UseListView ? 43f : Mathf.Max(108, settings.CellSize + 8) + 6f;
+            browserListView.Rebuild();
             RefreshBrowserSelection();
             SWEditorEvents.RaiseBrowserRefreshed(settings.SelectedCategory, visibleAssets.Count);
+        }
+
+        /// <summary>보이는 에셋의 카드와 아이콘, 입력 처리를 생성합니다.</summary>
+        private VisualElement CreateBrowserItem(SWEditorAssetEntry entry)
+        {
+            SWEditorAssetContext context = catalog.Context(entry);
+            VisualElement item = Element(settings.UseListView ? "sw-asset-row" : "sw-asset-card");
+            item.name = "asset-" + entry.Identifier;
+            item.tooltip = entry.Asset.name + "\n" + entry.AssetType.Type.FullName + "\n" + entry.Path + (context.CategoryIdentifier == SWEditorWorkspaceSettings.UncategorizedCategory ? "\nUncategorized" : "");
+            if (!settings.UseListView)
+            {
+                item.style.width = Mathf.Clamp(settings.CellSize, 72, 156);
+                item.style.minHeight = Mathf.Max(108, settings.CellSize + 8);
+            }
+
+            Image icon = AssetImage(entry);
+            icon.AddToClassList("sw-asset-icon");
+            item.Add(icon);
+            Label name = new(entry.Asset.name);
+            name.AddToClassList("sw-asset-name");
+            item.Add(name);
+            if (settings.UseListView)
+            {
+                Label type = new(entry.AssetType.DisplayName);
+                type.AddToClassList("sw-asset-type");
+                item.Add(type);
+            }
+
+            SWEditorAssetBadge[] badges = SWEditorRegistry.GetBadges(context).Take(settings.UseListView ? 3 : 2).ToArray();
+            if (badges.Length > 0)
+            {
+                VisualElement badgeRow = Element("sw-badges", "sw-row");
+                foreach (SWEditorAssetBadge badge in badges)
+                {
+                    Label label = new(badge.Text)
+                    {
+                        tooltip = badge.Tooltip
+                    };
+                    label.AddToClassList("sw-badge");
+                    label.style.color = badge.Color;
+                    if (badge.Icon != null)
+                    {
+                        badgeRow.Add(new Image { image = badge.Icon });
+                    }
+                    badgeRow.Add(label);
+                }
+
+                item.Add(badgeRow);
+            }
+
+            item.AddManipulator(new SWEditorAssetPointerManipulator(eventData =>
+            {
+                if (eventData.clickCount == 2)
+                {
+                    EditorGUIUtility.PingObject(entry.Asset);
+                }
+                else
+                {
+                    OpenAsset(entry, eventData.actionKey, eventData.shiftKey);
+                }
+            }, () => BeginAssetDrag(entry)));
+            item.AddManipulator(new ContextualMenuManipulator(eventData => PopulateAssetMenu(eventData.menu, entry)));
+            assetElements[entry.Identifier] = item;
+            item.userData = entry.Identifier;
+            item.EnableInClassList("sw-selected", entry.Identifier == settings.ActiveAsset);
+            item.EnableInClassList("sw-open", settings.OpenAssets.Contains(entry.Identifier) && entry.Identifier != settings.ActiveAsset);
+            return item;
         }
 
         private void RefreshBrowserSelection()

@@ -40,7 +40,7 @@ namespace SW.EditorTools
         {
             if (root == null)
                 return;
-            sharedStyleSheet ??= SWEditorUtils.FindStyleSheet("SWEditorTheme");
+            sharedStyleSheet ??= SWEditorUtils.LoadStyleSheetByIdentifier("ad56e70652fd2fd45aa2c17f8094bfc1");
             root.AddToClassList("sw-theme");
             if (sharedStyleSheet != null && !root.styleSheets.Contains(sharedStyleSheet))
                 root.styleSheets.Add(sharedStyleSheet);

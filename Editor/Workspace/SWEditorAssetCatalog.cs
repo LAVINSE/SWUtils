@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
+using SW.Util;
 
 namespace SW.EditorTools.Workspace
 {
@@ -27,6 +27,10 @@ namespace SW.EditorTools.Workspace
         public SWEditorTypePolicy Policy { get; internal set; }
         /// <summary>현재 발견한 에셋 수입니다.</summary>
         public int AssetCount { get; internal set; }
+        /// <summary>해당 유형의 에셋 수를 실제로 조회했는지 나타냅니다.</summary>
+        public bool HasAssetCount { get; internal set; }
+        /// <summary>조회 전 상태를 0개로 잘못 표시하지 않는 에셋 수 문구입니다.</summary>
+        public string AssetCountLabel => HasAssetCount ? AssetCount + " assets" : "Not scanned";
         /// <summary>SWUtils 어셈블리, 네임스페이스 또는 생성 메뉴에 속한 유형인지 확인합니다.</summary>
         public bool IsSWUtils => SWEditorTypeOrigin.IsSWUtils(Type, CreationMenu);
     }
@@ -47,25 +51,41 @@ namespace SW.EditorTools.Workspace
     /// <summary>Unity 에셋 검색과 유형 발견을 화면 코드와 분리합니다.</summary>
     public sealed class SWEditorAssetCatalog
     {
+        #region 필드
         private readonly SWEditorWorkspaceSettings settings;
         private readonly List<SWEditorAssetType> types = new();
         private readonly List<SWEditorAssetEntry> assets = new();
         private readonly Dictionary<string, SWEditorAssetEntry> assetsByIdentifier = new();
+        private SWEditorAssetSearch pendingSearch;
+        #endregion // 필드
+
+        #region 프로퍼티
         /// <summary>발견한 구체적인 ScriptableObject 유형입니다.</summary>
         public IReadOnlyList<SWEditorAssetType> Types => types;
         /// <summary>현재 활성화되어 표시 가능한 에셋입니다.</summary>
         public IReadOnlyList<SWEditorAssetEntry> Assets => assets;
+        /// <summary>분할 검색이 진행 중인지 나타냅니다.</summary>
+        public bool IsRefreshing => pendingSearch != null;
+        /// <summary>진행 중인 검색의 로딩 진행률입니다.</summary>
+        public float RefreshProgress => pendingSearch?.Progress ?? 0f;
+        /// <summary>검색 진행 상태 또는 마지막 실패 안내입니다.</summary>
+        public string RefreshStatus { get; private set; } = string.Empty;
+        #endregion // 프로퍼티
 
+        #region 초기화
         /// <summary>프로젝트 설정을 사용하는 목록을 생성합니다.</summary>
         public SWEditorAssetCatalog(SWEditorWorkspaceSettings settings)
         {
             this.settings = settings;
         }
+        #endregion // 초기화
 
-        /// <summary>유형과 에셋을 다시 검색하며 기존 사용자 선택은 유지합니다.</summary>
-        public void Refresh()
+        #region 유형 검색
+        /// <summary>에셋 파일을 불러오지 않고 유형과 사용자 선택만 갱신합니다.</summary>
+        public void RefreshTypes()
         {
             settings.InitializeCategories();
+            settings.InitializeSearchFolders();
             if (settings.SelectedCategory != SWEditorWorkspaceSettings.AllCategory &&
                 settings.SelectedCategory != SWEditorWorkspaceSettings.FavouriteCategory &&
                 !settings.HasCategory(settings.SelectedCategory))
@@ -73,17 +93,22 @@ namespace SW.EditorTools.Workspace
                 settings.SelectedCategory = SWEditorWorkspaceSettings.AllCategory;
             }
             types.Clear();
-            assets.Clear();
-            assetsByIdentifier.Clear();
             Dictionary<string, SWEditorTypeSettings> savedTypes = settings.Types.GroupBy(item => item.TypeName).ToDictionary(group => group.Key, group => group.First());
-            Dictionary<Type, SWEditorAssetType> lookup = new();
             Dictionary<Assembly, string> groups = new();
             foreach (Type type in TypeCache.GetTypesDerivedFrom<ScriptableObject>())
             {
                 if (type.IsAbstract || type.IsGenericType || type.ContainsGenericParameters)
+                {
                     continue;
+                }
                 if (!type.IsPublic && !type.IsNestedPublic)
+                {
                     continue;
+                }
+                if (typeof(EditorWindow).IsAssignableFrom(type) || typeof(UnityEditor.Editor).IsAssignableFrom(type))
+                {
+                    continue;
+                }
                 CreateAssetMenuAttribute menu = type.GetCustomAttribute<CreateAssetMenuAttribute>();
                 SWEditorTypePolicy policy = SWEditorRegistry.GetTypePolicy(type);
                 SWEditorTypeClassification classification = policy?.Classification ?? (LooksLikeSupportingAsset(type) ? SWEditorTypeClassification.Other : menu != null ? SWEditorTypeClassification.CreateAssetMenu : SWEditorRegistry.GetCreationWorkflow(type) != null || SWEditorRegistry.GetCreator(type) != null ? SWEditorTypeClassification.Provider : SWEditorTypeClassification.Other);
@@ -117,47 +142,133 @@ namespace SW.EditorTools.Workspace
                     Policy = policy
                 };
                 types.Add(item);
-                lookup[type] = item;
             }
 
             types.Sort((left, right) => string.Compare(left.Group + left.DisplayName, right.Group + right.DisplayName, StringComparison.OrdinalIgnoreCase));
             HashSet<string> enabledTypes = new(types.Where(type => type.Settings.Enabled).Select(type => type.Settings.TypeName));
             settings.FilteredTypes.RemoveAll(typeName => !enabledTypes.Contains(typeName));
-            foreach (string assetGuid in AssetDatabase.FindAssets("t:ScriptableObject"))
+            settings.Persist();
+        }
+        #endregion // 유형 검색
+
+        #region 에셋 검색
+        /// <summary>선택된 유형을 동기 검색합니다. 편집기 창에서는 BeginRefresh와 AdvanceRefresh를 사용합니다.</summary>
+        public void Refresh()
+        {
+            BeginRefresh();
+            while (IsRefreshing)
             {
-                string path = AssetDatabase.GUIDToAssetPath(assetGuid);
-                if (settings.IsExcluded(path))
-                    continue;
-                foreach (ScriptableObject asset in AssetDatabase.LoadAllAssetsAtPath(path).OfType<ScriptableObject>())
+                AdvanceRefresh();
+            }
+        }
+
+        /// <summary>기존 결과를 유지한 채 선택한 유형의 분할 검색을 준비합니다.</summary>
+        public void BeginRefresh()
+        {
+            CancelRefresh();
+            RefreshTypes();
+            pendingSearch = SWEditorAssetSearch.Create(types, settings.SearchFolders, settings.ExcludedFolders);
+            RefreshStatus = pendingSearch?.Status ?? "검색을 준비하지 못했습니다.";
+        }
+
+        /// <summary>한 번에 약 5밀리초씩 로딩합니다. 성공적으로 완료된 경우에만 true를 반환합니다.</summary>
+        public bool AdvanceRefresh()
+        {
+            if (pendingSearch == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (!pendingSearch.Advance(5d))
                 {
-                    if (asset == null || !lookup.TryGetValue(asset.GetType(), out SWEditorAssetType type))
-                        continue;
-                    type.AssetCount++;
-                    if (!type.Settings.Enabled)
-                        continue;
-                    string identifier = GetIdentifier(asset);
-                    if (string.IsNullOrEmpty(identifier) || assetsByIdentifier.ContainsKey(identifier))
-                        continue;
-                    SWEditorAssetEntry entry = new()
-                    {
-                        Identifier = identifier,
-                        Asset = asset,
-                        Path = path,
-                        AssetType = type
-                    };
-                    assets.Add(entry);
-                    assetsByIdentifier[identifier] = entry;
+                    RefreshStatus = pendingSearch.Status;
+                    return false;
                 }
             }
+            catch (Exception exception)
+            {
+                CancelRefresh();
+                RefreshStatus = "에셋 검색에 실패했습니다. 이전 목록을 유지합니다.";
+                SWLog.LogError($"[SWEditorAssetCatalog] 검색 실패: {exception}");
+                return false;
+            }
+
+            assets.Clear();
+            assetsByIdentifier.Clear();
+            foreach (SWEditorAssetEntry entry in pendingSearch.Assets)
+            {
+                assets.Add(entry);
+                assetsByIdentifier.Add(entry.Identifier, entry);
+            }
+
+            foreach (SWEditorAssetType type in types)
+            {
+                type.HasAssetCount = pendingSearch.Counts.TryGetValue(type.Type, out int count);
+                type.AssetCount = count;
+            }
+
+            pendingSearch.Dispose();
+            pendingSearch = null;
+            RefreshStatus = string.Empty;
 
             settings.OpenAssets.RemoveAll(identifier => !assetsByIdentifier.ContainsKey(identifier));
             if (!assetsByIdentifier.ContainsKey(settings.ActiveAsset ?? ""))
+            {
                 settings.ActiveAsset = settings.OpenAssets.LastOrDefault() ?? "";
+            }
             if (!assetsByIdentifier.ContainsKey(settings.LockedAsset ?? ""))
+            {
                 settings.LockedAsset = "";
+            }
             settings.Persist();
+            return true;
         }
 
+        /// <summary>진행 중인 검색만 취소하며 기존 목록과 열린 에셋 상태를 보존합니다.</summary>
+        public void CancelRefresh()
+        {
+            pendingSearch?.Dispose();
+            pendingSearch = null;
+            RefreshStatus = string.Empty;
+        }
+
+        /// <summary>새로 만든 에셋 하나를 등록합니다. 저장되지 않았거나 비활성 유형 또는 탐색 범위 밖이면 false를 반환합니다.</summary>
+        public bool TryRegisterAsset(ScriptableObject asset)
+        {
+            if (asset == null)
+            {
+                return false;
+            }
+
+            SWEditorAssetType type = types.Find(item => item.Type == asset.GetType() && item.Settings.Enabled);
+            string identifier = GetIdentifier(asset);
+            string path = AssetDatabase.GetAssetPath(asset);
+            if (type == null || string.IsNullOrEmpty(identifier) || !settings.IsInSearchScope(path))
+            {
+                return false;
+            }
+
+            if (!assetsByIdentifier.ContainsKey(identifier))
+            {
+                SWEditorAssetEntry entry = new()
+                {
+                    Identifier = identifier,
+                    Asset = asset,
+                    Path = path,
+                    AssetType = type
+                };
+                assets.Add(entry);
+                assetsByIdentifier.Add(identifier, entry);
+                type.AssetCount++;
+            }
+
+            return true;
+        }
+        #endregion // 에셋 검색
+
+        #region 목록 조회
         /// <summary>식별자로 활성 에셋을 찾습니다.</summary>
         public SWEditorAssetEntry Find(string identifier)
         {
@@ -215,6 +326,7 @@ namespace SW.EditorTools.Workspace
             return asset != null && AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string assetGuid, out long localIdentifier) ? assetGuid + ":" + localIdentifier : "";
         }
 
+        /// <summary>이름 접미사를 기준으로 기본 탐색에서 제외할 보조 데이터 유형인지 확인합니다.</summary>
         private static bool LooksLikeSupportingAsset(Type type)
         {
             string[] suffixes =
@@ -229,5 +341,6 @@ namespace SW.EditorTools.Workspace
             };
             return suffixes.Any(suffix => type.Name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
         }
+        #endregion // 목록 조회
     }
 }

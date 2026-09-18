@@ -1,7 +1,0 @@
-{
-    "name": "SWUtils.SkillTree.Tests",
-    "references": ["SWUtils.Runtime", "SWUtils.Editor", "SWUtils.Samples", "SWUtils.SkillTree.Samples.Editor", "Unity.ugui", "Unity.TextMeshPro"],
-    "includePlatforms": ["Editor"],
-    "optionalUnityReferences": ["TestAssemblies"],
-    "autoReferenced": false
-}

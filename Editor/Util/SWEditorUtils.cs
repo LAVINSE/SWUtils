@@ -571,6 +571,28 @@ namespace SW.EditorTools.Util
         }
 
         /// <summary>
+        /// 고정된 에셋 식별자로 스타일시트를 불러옵니다.
+        /// 식별자나 에셋이 없으면 전체 프로젝트를 검색하지 않고 null을 반환합니다.
+        /// </summary>
+        public static StyleSheet LoadStyleSheetByIdentifier(string assetIdentifier)
+        {
+            if (string.IsNullOrWhiteSpace(assetIdentifier))
+            {
+                SWLog.LogWarning("[SWEditorUtils] 스타일시트 로딩 실패: 에셋 식별자가 없습니다.");
+                return null;
+            }
+
+            string path = AssetDatabase.GUIDToAssetPath(assetIdentifier);
+            if (string.IsNullOrEmpty(path))
+            {
+                SWLog.LogWarning($"[SWEditorUtils] 스타일시트를 찾을 수 없습니다: {assetIdentifier}");
+                return null;
+            }
+
+            return AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
+        }
+
+        /// <summary>
         /// 이름으로 특정 StyleSheet를 로드합니다.
         /// SWMonoBehaviourEditorStylesheet 등 다른 USS를 로드할 때 사용합니다.
         /// </summary>

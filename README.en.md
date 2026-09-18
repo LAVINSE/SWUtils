@@ -1,4 +1,4 @@
-# SWUtils 1.4.1
+# SWUtils 1.4.2
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.1
+https://github.com/LAVINSE/SWUtils.git#v1.4.2
 ```
 
-The URL above requires the `v1.4.1` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.2` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 
@@ -987,11 +987,18 @@ Volume changes also update currently playing sound effects while preserving each
 
 Open `SWTools > SWUtils Data Editor` to search, create, duplicate, rename and categorize ScriptableObjects, with favourites and inspector tabs. Lock the inspector to keep its target or open referenced assets in another tab.
 
-1. Add, rename and reorder categories in `Settings > Categories`. Navigation and type selection use this saved list; rescanning does not restore deleted categories.
+1. Choose folders in `Search folders` during initial setup or under `Settings > Asset browser > Search folders`. The default is SWUtils's `Samples/Data` folder and its descendants, resolved at the package's installation location. Enter a path or select a folder from the Project window, then click `Add`. You can register multiple folders, edit their paths or remove them with `Remove`.
 2. Enable types and choose their default categories in `Configure asset types`. Changes are saved automatically. `Back to settings` returns to settings, and `Done` returns to browsing. Initial setup uses `Start browsing`.
-3. Creation and filter menus follow `SWUtils / Other assets → category → type`. Search text, foldouts and scroll positions are restored.
+3. Add, rename and reorder categories in `Settings > Categories`. Navigation and type selection use this saved list; rescanning does not restore deleted categories.
+4. Creation and filter menus follow `SWUtils / Other assets → category → type`. Search text, foldouts and scroll positions are restored.
 
-The defaults are `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest` and `Other`. They are added once, and later edits and deletions are preserved. Assets in SWUtils sample folders use `SWSamples` before type defaults. Package installation and imported sample paths are recognized; the asset types must be enabled.
+Search is limited to enabled types in the registered folders and their descendants. Use `Excluded folders` to omit particular subfolders. Empty or missing search folders never trigger a whole-project search. `Add SWUtils data folders` restores the default folder while retaining user folders. In projects with large asset collections, register only the folders containing the data you want to manage.
+
+**Upgrading from 1.4.1 or earlier:** Existing type and category settings are preserved, and the default search folder is added once. Add the folders containing your existing project assets to `Search folders` to continue browsing them. Assets created outside the search scope also appear after their folders are registered.
+
+Opening type setup does not preload asset files. Browsing displays search progress and spreads asset loading across editor updates. Cancelling a search or encountering a loading failure preserves the previous list. Grid and list views create only the visible rows.
+
+The defaults are `SWUtility`, `SWSamples`, `SWSkillTree`, `SWStat`, `SWBehaviour Tree`, `SWStateMachine`, `SWQuest` and `Other`. They are added once, and later edits and deletions are preserved. Assets in SWUtils sample folders use `SWSamples` before type defaults. Package installation and imported sample paths are recognized; their folders must be included in the search scope and their asset types must be enabled.
 
 Settings are stored in the project's `ProjectSettings/SWUtilsEditorSettings.asset`. Editor windows and embedded inspectors share the theme while preserving explicitly assigned attribute group colors. Unity's standard Inspector window retains its existing group, button and input field styles. See the [category and extension guide (Korean)](Documentation~/SWUtilsEditor.ko.md).
 
@@ -1154,9 +1161,9 @@ Provides sample prefabs and example scripts.
 - `Samples/Example/SWGraphAssetsExample.cs`: Consolidated Behaviour Tree, layered state machine, stack state machine, and custom node-category example.
 - `Samples/Scripts/SWQuestExample.cs`, `SWQuestScoreRewardExample.cs`: Quest initialization, progress reporting, completion and achievement events, and a project reward example.
 - `Samples/Prefab/SWSkillTreeExample.prefab`, `SWSkillTreeNode.prefab`, and `Samples/Data/SkillTree/MiningSkillTree.asset`: An 81-node example with navigation, purchases, refunds, persistence, and layout editing.
-- `Samples/Example/SWExampleBehaviourTree.asset`: Ready-to-run Behaviour Tree graph.
-- `Samples/Example/SWExampleStateMachine.asset`: Ready-to-run layered State Machine graph.
-- `Samples/Example/SWExampleStackStateMachine.asset`: Ready-to-run Stack State Machine graph using Gameplay, Pause, and Return State.
+- `Samples/Data/SWExampleBehaviourTree.asset`: Ready-to-run Behaviour Tree graph.
+- `Samples/Data/SWExampleStateMachine.asset`: Ready-to-run layered State Machine graph.
+- `Samples/Data/SWExampleStackStateMachine.asset`: Ready-to-run Stack State Machine graph using Gameplay, Pause, and Return State.
 - `Samples/Prefab/AtrributeExample.prefab`: Attribute example prefab.
 - `Samples/Prefab/SWPool.prefab`: Pool manager prefab.
 - `Samples/Prefab/SWPoolRegistry.prefab`: Pool registry prefab.
@@ -1169,6 +1176,5 @@ After installation, inspect the examples directly in `Packages > SWUtils > Sampl
 - `SWUtils.Editor`: Editor code assembly.
 - `SWUtils.Samples`: Sample code assembly.
 - `SWUtils.SkillTree.Samples.Editor`: Editor-only skill tree sample generation.
-- `SWUtils.SkillTree.Tests`: Edit Mode skill tree and reliability tests.
 
 Sample prefabs are serialized using the assembly name that contains each script.

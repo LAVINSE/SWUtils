@@ -34,7 +34,10 @@ namespace SW.EditorTools.Workspace
                 return;
             SWEditorCreationWorkflow workflow = SWEditorRegistry.GetCreationWorkflow(type.Type);
             string defaultName = SWEditorRegistry.Protect(() => workflow?.DefaultFileName?.Invoke(type.Type)) ?? type.FileName;
-            string path = EditorUtility.SaveFilePanelInProject("Create asset", Path.GetFileNameWithoutExtension(defaultName), "asset", "새 에셋을 저장할 위치를 선택하세요.");
+            string initialFolder = SWEditorSearchFolders.GetValidFolders(SWEditorWorkspaceSettings.instance.SearchFolders)
+                .FirstOrDefault(folder => folder == "Assets" || folder.StartsWith("Assets/", StringComparison.Ordinal)) ?? "Assets";
+            string path = EditorUtility.SaveFilePanelInProject("Create asset", Path.GetFileNameWithoutExtension(defaultName),
+                "asset", "새 에셋을 저장할 위치를 선택하세요.", initialFolder);
             if (string.IsNullOrEmpty(path))
                 return;
             if (AssetDatabase.LoadMainAssetAtPath(path) != null)
@@ -61,7 +64,7 @@ namespace SW.EditorTools.Workspace
 
                 if (!string.IsNullOrEmpty(type.CreationMenu))
                 {
-                    previousAssets = new HashSet<string>(AssetDatabase.FindAssets("t:" + type.Type.Name));
+                    previousAssets = new HashSet<string>(FindPendingFolderAssets());
                     startedAt = EditorApplication.timeSinceStartup;
                     Selection.activeObject = AssetDatabase.LoadMainAssetAtPath(Path.GetDirectoryName(path).Replace('\\', '/'));
                     if (EditorApplication.ExecuteMenuItem(type.CreationMenu))
@@ -116,7 +119,7 @@ namespace SW.EditorTools.Workspace
             nextObservationTime = EditorApplication.timeSinceStartup + 0.3;
             if (EditorApplication.isCompiling || EditorApplication.isUpdating || EditorGUIUtility.editingTextField)
                 return;
-            foreach (string identifier in AssetDatabase.FindAssets("t:" + pendingType.Type.Name))
+            foreach (string identifier in FindPendingFolderAssets())
             {
                 if (previousAssets.Contains(identifier))
                     continue;
@@ -136,6 +139,18 @@ namespace SW.EditorTools.Workspace
                 Complete(asset);
                 return;
             }
+        }
+
+        /// <summary>생성을 요청한 폴더에서만 새 에셋을 감시합니다. 폴더가 사라졌으면 검색하지 않습니다.</summary>
+        private static string[] FindPendingFolderAssets()
+        {
+            string folder = Path.GetDirectoryName(pendingPath)?.Replace('\\', '/');
+            if (pendingType == null || !AssetDatabase.IsValidFolder(folder))
+            {
+                return Array.Empty<string>();
+            }
+
+            return AssetDatabase.FindAssets("t:" + pendingType.Type.Name, new[] { folder });
         }
 
         private static void Complete(ScriptableObject asset)

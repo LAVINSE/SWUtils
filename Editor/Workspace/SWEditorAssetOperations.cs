@@ -87,7 +87,6 @@ namespace SW.EditorTools.Workspace
                 return;
             settings.AssignCategory(SWEditorAssetCatalog.GetIdentifier(copy), catalog.Context(entry).CategoryIdentifier);
             AssetDatabase.SaveAssets();
-            catalog.Refresh();
             open(copy);
             SWEditorAssetEntry created = catalog.Find(SWEditorAssetCatalog.GetIdentifier(copy));
             if (created != null)

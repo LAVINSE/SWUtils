@@ -19,6 +19,8 @@
 .sw-browser-panel { min-width: 220px; background-color: var(--sw-panel); }
 .sw-browser-scroll { flex-grow: 1; min-height: 0; }
 .sw-browser-content { padding: 6px; }
+.sw-browser-viewport { flex-grow: 1; min-height: 0; }
+.sw-browser-virtual-row { flex-shrink: 0; padding-left: 6px; padding-right: 6px; }
 .sw-grid { flex-direction: row; flex-wrap: wrap; align-content: flex-start; }
 .sw-list { flex-direction: column; }
 .sw-asset-card { background-color: var(--sw-card); border-width: 1px; border-color: var(--sw-border); border-radius: 5px; margin: 3px; align-items: center; padding: 10px 5px 6px 5px; justify-content: space-between; }

@@ -87,7 +87,7 @@ namespace SW.EditorTools.Window
                                 {
                                     Toggle toggle = new()
                                     {
-                                        text = type.DisplayName + "  (" + type.AssetCount + ")",
+                                        text = type.DisplayName + "  (" + (type.HasAssetCount ? type.AssetCount.ToString() : "?") + ")",
                                         value = settings.FilteredTypes.Contains(type.Settings.TypeName),
                                         tooltip = type.Type.FullName
                                     };
