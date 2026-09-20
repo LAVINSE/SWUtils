@@ -59,6 +59,10 @@ namespace SW.EditorTools.Window
         private int firstHitMedian;
         private int firstHitPercentile90;
         private int firstHitWorst;
+        private string resultTargetName;
+        private int resultSessionCount;
+        private bool resultUsePity;
+        private int resultPityCount;
 
         private Vector2 scrollPosition;
         #endregion // 필드
@@ -101,30 +105,39 @@ namespace SW.EditorTools.Window
 
             float totalWeight = GetTotalWeight();
 
-            for (int index = 0; index < entries.Count; index++)
+            using (EditorGUI.ChangeCheckScope changeScope = new())
             {
-                TableEntry entry = entries[index];
-
-                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                entry.name = EditorGUILayout.TextField(entry.name);
-                entry.weight = EditorGUILayout.FloatField(entry.weight, GUILayout.Width(70f));
-
-                float probability = totalWeight > 0f && entry.weight > 0f
-                    ? entry.weight / totalWeight * 100f
-                    : 0f;
-                EditorGUILayout.LabelField($"{probability:F3}%", GUILayout.Width(70f));
-
-                if (GUILayout.Button("✕", GUILayout.Width(22f)))
+                for (int index = 0; index < entries.Count; index++)
                 {
-                    entries.RemoveAt(index);
-                    ClearResults();
-                    GUIUtility.ExitGUI();
+                    TableEntry entry = entries[index];
+
+                    using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                    {
+                        entry.name = EditorGUILayout.TextField(entry.name, GUILayout.MinWidth(40f));
+                        entry.weight = EditorGUILayout.FloatField(entry.weight, GUILayout.Width(70f));
+
+                        float probability = totalWeight > 0f && entry.weight > 0f
+                            ? entry.weight / totalWeight * 100f
+                            : 0f;
+                        EditorGUILayout.LabelField($"{probability:F3}%", GUILayout.Width(70f));
+
+                        if (GUILayout.Button("×", GUILayout.Width(28f)))
+                        {
+                            entries.RemoveAt(index);
+                            ClearResults();
+                            GUIUtility.ExitGUI();
+                        }
+                    }
                 }
-                EditorGUILayout.EndHorizontal();
+
+                if (changeScope.changed)
+                {
+                    ClearResults();
+                }
             }
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("항목 추가", GUILayout.Height(22f)))
+            if (GUILayout.Button("항목 추가", GUILayout.Height(SWEditorTheme.ControlHeight)))
             {
                 entries.Add(new TableEntry());
                 ClearResults();
@@ -133,7 +146,7 @@ namespace SW.EditorTools.Window
             EditorGUILayout.EndHorizontal();
 
             if (totalWeight <= 0f)
-                EditorGUILayout.HelpBox("유효한(0보다 큰) 가중치가 하나 이상 필요합니다.", MessageType.Warning);
+                SWEditorUtils.DrawHelpBox("유효한(0보다 큰) 가중치가 하나 이상 필요합니다.", MessageType.Warning);
         }
         #endregion // 테이블 섹션
 
@@ -156,7 +169,7 @@ namespace SW.EditorTools.Window
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(4);
-            EditorGUILayout.LabelField("획득 통계 (대상 항목을 처음 얻기까지)", EditorStyles.miniBoldLabel);
+            GUILayout.Label("획득 통계 (대상 항목을 처음 얻기까지)", SWEditorUtils.WrappedLabelStyle);
 
             string[] entryNames = GetEntryNames();
             targetIndex = EditorGUILayout.Popup("대상 항목", Mathf.Clamp(targetIndex, 0, Mathf.Max(0, entryNames.Length - 1)), entryNames);
@@ -195,8 +208,7 @@ namespace SW.EditorTools.Window
             float totalWeight = GetTotalWeight();
 
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            EditorGUILayout.LabelField("항목", EditorStyles.miniBoldLabel);
-            GUILayout.FlexibleSpace();
+            GUILayout.Label("항목", EditorStyles.miniBoldLabel, GUILayout.MinWidth(40f));
             EditorGUILayout.LabelField("기대", EditorStyles.miniBoldLabel, GUILayout.Width(70f));
             EditorGUILayout.LabelField("실제", EditorStyles.miniBoldLabel, GUILayout.Width(70f));
             EditorGUILayout.LabelField("획득 수", EditorStyles.miniBoldLabel, GUILayout.Width(80f));
@@ -212,8 +224,7 @@ namespace SW.EditorTools.Window
                     : 0f;
 
                 EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-                EditorGUILayout.LabelField(entries[index].name);
-                GUILayout.FlexibleSpace();
+                GUILayout.Label(entries[index].name, SWEditorUtils.WrappedLabelStyle, GUILayout.MinWidth(40f));
                 EditorGUILayout.LabelField($"{expectedRate:F3}%", GUILayout.Width(70f));
                 EditorGUILayout.LabelField($"{actualRate:F3}%", GUILayout.Width(70f));
                 EditorGUILayout.LabelField($"{resultCounts[index]:N0}", GUILayout.Width(80f));
@@ -228,15 +239,26 @@ namespace SW.EditorTools.Window
         {
             if (!hasFirstHitResult) return;
 
-            string targetName = targetIndex < entries.Count ? entries[targetIndex].name : "?";
-            SWEditorUtils.DrawHeader($"'{targetName}' 획득 통계 ({sessionCount:N0} 세션)");
+            SWEditorUtils.DrawHeader($"'{resultTargetName}' 획득 통계 ({resultSessionCount:N0} 세션)");
 
-            string pityText = usePity ? $" (천장 {pityCount}회)" : " (천장 없음)";
-            EditorGUILayout.HelpBox(
-                $"평균 시도: {firstHitAverage:F1}회{pityText}\n" +
-                $"중앙값: {firstHitMedian}회 / 상위 90%: {firstHitPercentile90}회 이내\n" +
-                $"최악 케이스: {firstHitWorst}회",
-                MessageType.Info);
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                GUILayout.Space(6f);
+                DrawResultLine($"평균 시도: {firstHitAverage:F1}회");
+                DrawResultLine($"중앙값: {firstHitMedian:N0}회");
+                DrawResultLine($"상위 90%: {firstHitPercentile90:N0}회 이내");
+                DrawResultLine($"최악 케이스: {firstHitWorst:N0}회");
+                DrawResultLine(resultUsePity ? $"천장: {resultPityCount:N0}회" : "천장 없음");
+                GUILayout.Space(6f);
+            }
+        }
+
+        /// <summary>통계의 각 줄에 충분한 높이를 확보하고 긴 내용은 다음 줄로 넘깁니다.</summary>
+        private static void DrawResultLine(string text)
+        {
+            GUILayout.Space(3f);
+            GUILayout.Label(text, SWEditorUtils.WrappedLabelStyle);
+            GUILayout.Space(3f);
         }
         #endregion // 결과 섹션
 
@@ -296,6 +318,10 @@ namespace SW.EditorTools.Window
                 firstHitMedian = attempts[sessionCount / 2];
                 firstHitPercentile90 = attempts[Mathf.Min(sessionCount - 1, Mathf.FloorToInt(sessionCount * 0.9f))];
                 firstHitWorst = attempts[sessionCount - 1];
+                resultTargetName = entries[targetIndex].name;
+                resultSessionCount = sessionCount;
+                resultUsePity = usePity;
+                resultPityCount = pityCount;
                 hasFirstHitResult = true;
             }
 

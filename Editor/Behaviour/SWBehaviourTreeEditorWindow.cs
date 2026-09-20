@@ -69,7 +69,7 @@ namespace SW.EditorTools.Behaviour
         {
             Toolbar toolbar = new();
             toolbar.AddToClassList("sw-behaviour-toolbar");
-            toolbar.style.height = 34f;
+            SWGraphEditorVisualUtility.ApplyToolbar(toolbar);
 
             titleLabel = new Label("Behaviour Tree");
             SWGraphEditorVisualUtility.ApplyToolbarTitle(titleLabel);
@@ -112,9 +112,6 @@ namespace SW.EditorTools.Behaviour
             graphView = new SWBehaviourGraphView(ShowNodeInspector, OnGraphChanged);
             host.Add(graphView);
 
-            welcomeOverlay = CreateWelcomeOverlay();
-            host.Add(welcomeOverlay);
-
             blackboardPanel = CreateFloatingPanel(
                 12f, null, editorSettings.BlackboardWidth, editorSettings.PanelHeight);
             blackboardPanel.style.top = 42f;
@@ -134,6 +131,8 @@ namespace SW.EditorTools.Behaviour
                 editorSettings.PanelHeight = size.y;
                 editorSettings.SaveSettings();
             });
+            welcomeOverlay = CreateWelcomeOverlay();
+            host.Add(welcomeOverlay);
             host.Add(graphAssetListPanel.CreateCollapseButton(splitView));
             splitView.Add(host);
             rootVisualElement.Add(splitView);

@@ -2,6 +2,15 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.3] - 2026-09-20
+
+- Updated the shared theme across the data workspace, editor windows and graphs with gray-purple colors, consistent text and control sizing, and clearer selection, active tab and creation button states. Moved the shared stylesheet to `Editor/StyleSheet/SWEditorThemeStylesheet.uss`, preserving its asset identifier.
+- Applied a dedicated theme with separate colors and sizing to `SWMonoBehaviour` and `SWScriptableObject` in the standard Inspector. Embedded inspectors follow the editor window theme, while explicitly assigned group colors and graph execution state colors are preserved.
+- Added UI Toolkit fields for read-only, dropdown, Boolean condition and enum condition attributes. Dropdown values and condition changes are tracked, with existing IMGUI paths retained.
+- Preserved content width in narrow windows, wrapped tabs across rows and reduced clipping of long titles, descriptions and help messages. Added scrolling to the input debugger and TextMeshPro manager, and improved navigation selection and window title restoration after script reloads.
+- Updated the input debugger to read mouse, keyboard and touch state through the project's Input System or legacy Input Manager configuration. Missing input packages or devices return default values.
+- Cleared random simulator results when entry names or weights change, and made acquisition statistics display the target, session count and pity settings captured when the simulation ran.
+
 ## [v1.4.2] - 2026-09-18
 
 - Limited SWUtils Data Editor searches to multiple user-selected folders and their descendants. SWUtils's `Samples/Data` is the default. Initial setup and Settings support adding, editing, removing and excluding folders. Empty or missing folders never fall back to a whole-project search.

@@ -137,7 +137,7 @@ namespace SW.EditorTools.Window
 
             if (!hasSymbol)
             {
-                EditorGUILayout.HelpBox(
+                SWEditorUtils.DrawHelpBox(
                     $"{DebugSymbol} 심볼이 없으면 콘솔과 오버레이가 컴파일에서 제거됩니다.\n" +
                     $"현재 빌드 타겟: {buildTarget.TargetName}", MessageType.Info);
             }
@@ -158,7 +158,7 @@ namespace SW.EditorTools.Window
 
             if (settings == null)
             {
-                EditorGUILayout.HelpBox(
+                SWEditorUtils.DrawHelpBox(
                     "설정 에셋이 없으면 런타임에서 기본값으로 동작합니다.\n" +
                     "값을 변경하려면 Resources 폴더에 에셋을 생성하세요.", MessageType.Info);
 
@@ -170,7 +170,7 @@ namespace SW.EditorTools.Window
             string assetPath = AssetDatabase.GetAssetPath(settings);
             if (!assetPath.Contains("/Resources/"))
             {
-                EditorGUILayout.HelpBox(
+                SWEditorUtils.DrawHelpBox(
                     "에셋이 Resources 폴더 밖에 있어 런타임에서 불러올 수 없습니다.\n" +
                     $"경로: {assetPath}", MessageType.Warning);
             }
@@ -241,7 +241,7 @@ namespace SW.EditorTools.Window
 
             if (!Application.isPlaying)
             {
-                EditorGUILayout.HelpBox("플레이 중에만 콘솔과 오버레이를 제어할 수 있습니다.", MessageType.None);
+                SWEditorUtils.DrawHelpBox("플레이 중에만 콘솔과 오버레이를 제어할 수 있습니다.", MessageType.None);
                 return;
             }
 

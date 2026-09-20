@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 namespace SW.EditorTools.StateMachine
 {
     /// <summary>
-    /// Shader Graph 편집기 계열의 색상, 간격과 공통 크기를 상태 머신 그래프에 적용합니다.
+    /// SWUtils 공통 테마의 색상, 간격과 크기를 상태 머신 그래프에 적용합니다.
     /// </summary>
     internal static class SWStateMachineGraphStyles
     {
@@ -14,7 +14,7 @@ namespace SW.EditorTools.StateMachine
         private static readonly Color CardBackground = SW.EditorTools.SWEditorTheme.Card;
         private static readonly Color BorderColor = SW.EditorTools.SWEditorTheme.Border;
         private static readonly Color MutedTextColor = SW.EditorTools.SWEditorTheme.MutedText;
-        private static readonly Color PrimaryColor = SW.EditorTools.SWEditorTheme.Selection;
+        private static readonly Color PrimaryColor = SW.EditorTools.SWEditorTheme.Accent;
         private static readonly Color StateColor = new Color(0.25f, 0.67f, 0.48f);
         private static readonly Color AnyStateColor = new Color(0.68f, 0.45f, 0.88f);
         private static readonly Color ReturnColor = new Color(0.29f, 0.68f, 0.82f);
@@ -25,7 +25,7 @@ namespace SW.EditorTools.StateMachine
         public static void ApplyWindow(VisualElement root)
         {
             root.style.backgroundColor = WindowBackground;
-            root.style.color = new StyleColor(Color.white);
+            root.style.color = SWEditorTheme.Text;
         }
 
         /// <summary>상단 도구 모음의 크기와 구분선을 적용합니다.</summary>
@@ -37,11 +37,10 @@ namespace SW.EditorTools.StateMachine
         /// <summary>도구 모음의 주요 작업 버튼을 강조합니다.</summary>
         public static void ApplyPrimaryButton(Button button)
         {
-            button.style.height = 24f;
+            button.style.height = SWEditorTheme.ControlHeight;
             button.style.paddingLeft = 10f;
             button.style.paddingRight = 10f;
-            button.style.backgroundColor = PrimaryColor;
-            button.style.color = Color.white;
+            button.AddToClassList("sw-primary");
             button.style.unityFontStyleAndWeight = FontStyle.Bold;
             SetRoundedCorners(button, 4f);
         }
@@ -49,7 +48,7 @@ namespace SW.EditorTools.StateMachine
         /// <summary>그래프 인스펙터 탭의 선택 상태를 일관된 크기와 색상으로 표시합니다.</summary>
         public static void ApplyTabButton(Button button, bool isSelected)
         {
-            button.style.height = 26f;
+            button.style.height = SWEditorTheme.ControlHeight;
             button.style.marginLeft = 0f;
             button.style.marginRight = 0f;
             button.style.backgroundColor = isSelected
@@ -205,13 +204,13 @@ namespace SW.EditorTools.StateMachine
 
             foreach (Label badge in node.Query<Label>(className: "sw-node-badge").ToList())
             {
-                badge.style.fontSize = 9f;
+                badge.style.fontSize = SWEditorTheme.SecondaryFontSize;
                 badge.style.marginLeft = 3f;
                 badge.style.paddingLeft = 5f;
                 badge.style.paddingRight = 5f;
                 badge.style.paddingTop = 2f;
                 badge.style.paddingBottom = 2f;
-                badge.style.backgroundColor = new Color(0.08f, 0.09f, 0.1f, 0.8f);
+                badge.style.backgroundColor = SWEditorTheme.Background;
                 SetRoundedCorners(badge, 6f);
             }
         }
@@ -221,15 +220,17 @@ namespace SW.EditorTools.StateMachine
         {
             Label label = edge.Q<Label>(className: "sw-transition-label");
             if (label == null)
+            {
                 return;
+            }
 
             label.style.position = Position.Absolute;
-            label.style.fontSize = 9f;
+            label.style.fontSize = SWEditorTheme.SecondaryFontSize;
             label.style.paddingLeft = 6f;
             label.style.paddingRight = 6f;
             label.style.paddingTop = 3f;
             label.style.paddingBottom = 3f;
-            label.style.backgroundColor = new Color(0.11f, 0.12f, 0.13f, 0.95f);
+            label.style.backgroundColor = SWEditorTheme.Panel;
             label.style.borderTopWidth = 1f;
             label.style.borderBottomWidth = 1f;
             label.style.borderLeftWidth = 1f;

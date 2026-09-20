@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,6 +16,7 @@ namespace SW.EditorTools.Window
     {
         #region 필드
         private Vector2 scrollPosition;
+        private readonly List<string> touchDescriptions = new();
 
         // 탭바
         private int selectedTab = 0;
@@ -76,7 +76,8 @@ namespace SW.EditorTools.Window
 
             if (SWEditorUtils.DrawPlayModeOnlyNotice()) { /* 안내만 표시 */ }
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            using var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPosition);
+            scrollPosition = scrollScope.scrollPosition;
 
             switch (selectedTab)
             {
@@ -86,7 +87,6 @@ namespace SW.EditorTools.Window
                 case 3: DrawInputTab(); break;
             }
 
-            EditorGUILayout.EndScrollView();
         }
 
         #region EventSystem 탭
@@ -128,27 +128,26 @@ namespace SW.EditorTools.Window
         {
             SWEditorUtils.DrawHeader("Mouse");
 
-            Vector2 mousePos = Input.mousePosition;
-            EditorGUILayout.LabelField("Mouse Position", mousePos.ToString("F0"));
+            Vector2 mousePosition = SWEditorInputUtility.ReadMousePosition();
+            EditorGUILayout.LabelField("Mouse Position", mousePosition.ToString("F0"));
             EditorGUILayout.LabelField("Mouse Normalized",
-                new Vector2(mousePos.x / Mathf.Max(1, Screen.width),
-                           mousePos.y / Mathf.Max(1, Screen.height)).ToString("F2"));
+                new Vector2(mousePosition.x / Mathf.Max(1, Screen.width),
+                           mousePosition.y / Mathf.Max(1, Screen.height)).ToString("F2"));
 
             EditorGUILayout.Space(10);
             SWEditorUtils.DrawHeader("Touch");
 
-            int touchCount = Input.touchCount;
+            int touchCount = SWEditorInputUtility.ReadTouchDescriptions(touchDescriptions);
             EditorGUILayout.LabelField("Touch Count", touchCount.ToString());
-            for (int i = 0; i < touchCount && i < 5; i++)
+            for (int index = 0; index < touchDescriptions.Count; index++)
             {
-                Touch t = Input.GetTouch(i);
-                EditorGUILayout.LabelField($"  Touch[{i}]", $"{t.phase} @ {t.position:F0} (fid={t.fingerId})");
+                GUILayout.Label($"Touch[{index}]: {touchDescriptions[index]}", SWEditorUtils.WrappedLabelStyle);
             }
 
             // 클릭 감지
-            if (Application.isPlaying && Input.GetMouseButtonDown(0))
+            if (Application.isPlaying && SWEditorInputUtility.IsMouseButtonPressed(0, true))
             {
-                lastClickPosition = mousePos;
+                lastClickPosition = mousePosition;
                 lastClickTime = EditorApplication.timeSinceStartup;
 
                 EventSystem es = EventSystem.current;
@@ -182,7 +181,7 @@ namespace SW.EditorTools.Window
             {
                 cachedPointerData = new PointerEventData(es);
             }
-            cachedPointerData.position = Input.mousePosition;
+            cachedPointerData.position = SWEditorInputUtility.ReadMousePosition();
 
             raycastResults.Clear();
             es.RaycastAll(cachedPointerData, raycastResults);
@@ -233,23 +232,33 @@ namespace SW.EditorTools.Window
                 DrawMouseButton("MMB", 2);
                 EditorGUILayout.EndHorizontal();
 
-                EditorGUILayout.LabelField("Mouse ScrollDelta", Input.mouseScrollDelta.ToString("F2"));
-                EditorGUILayout.LabelField("Any Key", Input.anyKey ? "● 눌림" : "○");
+                EditorGUILayout.LabelField("Mouse ScrollDelta", SWEditorInputUtility.ReadMouseScroll().ToString("F2"));
+                EditorGUILayout.LabelField("Any Key", SWEditorInputUtility.IsKeyboardControlPressed("anyKey") ? "● 눌림" : "○");
 
                 string modifiers = "";
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) modifiers += "Shift ";
-                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) modifiers += "Ctrl ";
-                if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) modifiers += "Alt ";
+                if (SWEditorInputUtility.IsKeyboardControlPressed("shiftKey"))
+                {
+                    modifiers += "Shift ";
+                }
+                if (SWEditorInputUtility.IsKeyboardControlPressed("ctrlKey"))
+                {
+                    modifiers += "Ctrl ";
+                }
+                if (SWEditorInputUtility.IsKeyboardControlPressed("altKey"))
+                {
+                    modifiers += "Alt ";
+                }
                 EditorGUILayout.LabelField("Modifiers", string.IsNullOrEmpty(modifiers) ? "(없음)" : modifiers);
             }
         }
 
         private void DrawMouseButton(string label, int button)
         {
-            bool pressed = Input.GetMouseButton(button);
-            GUI.backgroundColor = pressed ? Color.green : Color.white;
-            GUILayout.Button(pressed ? $"{label} ●" : $"{label} ○", GUILayout.Height(22));
-            GUI.backgroundColor = Color.white;
+            bool pressed = SWEditorInputUtility.IsMouseButtonPressed(button);
+            using (new SWEditorUtils.GUIBgColorScope(pressed ? SWEditorTheme.Accent : Color.white))
+            {
+                GUILayout.Button(pressed ? $"{label} ●" : $"{label} ○", GUILayout.Height(26f));
+            }
         }
 
         #endregion

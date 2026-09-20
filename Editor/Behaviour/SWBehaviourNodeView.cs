@@ -53,25 +53,28 @@ namespace SW.EditorTools.Behaviour
             }
 
             descriptionLabel = new Label(data.Description);
+            descriptionLabel.AddToClassList("sw-secondary-text");
             descriptionLabel.style.whiteSpace = WhiteSpace.Normal;
             descriptionLabel.style.marginLeft = 8f;
             descriptionLabel.style.marginRight = 8f;
             descriptionLabel.style.marginBottom = 6f;
             extensionContainer.Add(descriptionLabel);
 
+            titleContainer.style.minHeight = 48f;
+            titleContainer.style.paddingTop = 18f;
             statusLabel = new Label();
             statusLabel.style.position = Position.Absolute;
             statusLabel.style.right = 6f;
             statusLabel.style.top = 6f;
-            statusLabel.style.fontSize = 10f;
+            statusLabel.style.fontSize = SWEditorTheme.SecondaryFontSize;
             titleContainer.Add(statusLabel);
 
             rootLabel = new Label("ROOT");
             rootLabel.style.position = Position.Absolute;
             rootLabel.style.left = 7f;
             rootLabel.style.top = 6f;
-            rootLabel.style.fontSize = 9f;
-            rootLabel.style.color = new Color(0.35f, 0.75f, 1f);
+            rootLabel.style.fontSize = SWEditorTheme.SecondaryFontSize;
+            rootLabel.style.color = SWEditorTheme.Accent;
             rootLabel.style.display = DisplayStyle.None;
             titleContainer.Add(rootLabel);
 

@@ -12,7 +12,7 @@
 }
 
 /* Foldout header bar */
-.sw-foldout Toggle.sw-foldout-toggle {
+.sw-foldout > Toggle.sw-foldout-toggle {
     background-color: rgba(0, 0, 0, 0.12);
     padding-top: 5px;
     padding-left: 10px;
@@ -23,7 +23,7 @@
 }
 
 /* Foldout contents */
-.sw-foldout #unity-content {
+.sw-foldout > #unity-content {
     padding-top: 5px;
     margin-top: 0;
     margin-left: 10px;
@@ -40,6 +40,113 @@
     padding-left: 20px;
     -unity-font-style: bold;
     background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Iris Line: 공통 컨트롤의 색상과 크기를 인스펙터에 맞춥니다. */
+.sw-theme.sw-inspector-theme {
+    --sw-background: #24252b;
+    --sw-panel: #2c2e38;
+    --sw-toolbar: #2c2e38;
+    --sw-card: #2c2e38;
+    --sw-input: #373a47;
+    --sw-border: #494c5b;
+    --sw-text: #eaeaf2;
+    --sw-muted: #b5b8cb;
+    --sw-accent: #b3acee;
+    --sw-hover: #3e4050;
+    --sw-selection: #46425f;
+    --sw-font-body: 13px;
+    --sw-control-height: 28px;
+    padding: 6px 8px 10px 8px;
+    min-width: 0;
+}
+
+.sw-theme.sw-inspector-theme .sw-foldout {
+    margin: 8px 0;
+    border-radius: 3px;
+    border-left-width: 3px;
+}
+
+.sw-theme.sw-inspector-theme .sw-foldout > Toggle.sw-foldout-toggle {
+    min-height: 32px;
+    padding: 5px 8px;
+}
+
+.sw-theme.sw-inspector-theme .sw-foldout > Toggle.sw-foldout-toggle .unity-foldout__text {
+    font-size: 14px;
+}
+
+.sw-theme.sw-inspector-theme .sw-foldout > #unity-content {
+    padding: 6px 8px 8px 8px;
+    margin-left: 0;
+}
+
+.sw-theme.sw-inspector-theme .unity-base-field {
+    margin: 3px 0;
+}
+
+.sw-theme.sw-inspector-theme .unity-base-field__label {
+    min-width: 64px;
+    white-space: normal;
+    -unity-text-align: middle-left;
+}
+
+.sw-theme.sw-inspector-theme .unity-base-text-field__input,
+.sw-theme.sw-inspector-theme .unity-popup-field__input,
+.sw-theme.sw-inspector-theme .unity-enum-field__input,
+.sw-theme.sw-inspector-theme .unity-object-field__input {
+    padding: 3px 6px;
+    border-radius: 3px;
+}
+
+.sw-theme.sw-inspector-theme .unity-object-field__input {
+    padding-right: 0;
+}
+
+.sw-theme.sw-inspector-theme .unity-composite-field__field .unity-base-field__label {
+    min-width: 12px;
+    padding: 0 3px;
+    white-space: nowrap;
+}
+
+.sw-theme.sw-inspector-theme .unity-foldout__toggle {
+    min-height: 28px;
+}
+
+.sw-theme.sw-inspector-theme .unity-button,
+.sw-theme.sw-inspector-theme .unity-toolbar-button {
+    height: auto;
+    min-height: 28px;
+    padding: 4px 8px;
+    white-space: normal;
+}
+
+.sw-theme.sw-inspector-theme .sw-attribute-toolbar {
+    height: auto;
+    min-height: 32px;
+    flex-wrap: wrap;
+    padding: 2px 0;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.sw-theme.sw-inspector-theme .sw-attribute-toolbar .unity-toolbar-button {
+    min-width: 72px;
+    flex-basis: 0;
+    flex-shrink: 1;
+}
+
+.sw-theme.sw-inspector-theme .unity-list-view__footer {
+    min-height: 30px;
+}
+
+.sw-theme.sw-inspector-theme .unity-list-view__footer .unity-button {
+    min-height: 26px;
+    padding: 2px 8px;
+}
+
+.sw-theme.sw-inspector-theme .unity-help-box {
+    padding: 8px;
 }
 
 /* Button toolbars */

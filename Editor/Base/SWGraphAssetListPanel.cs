@@ -54,7 +54,8 @@ namespace SW.EditorTools
             Add(titleLabel);
 
             Button createButton = new Button(createAssetRequested) { text = createButtonText };
-            createButton.style.height = 25f;
+            createButton.style.height = SWEditorTheme.ControlHeight;
+            createButton.AddToClassList("sw-primary");
             createButton.style.marginLeft = 6f;
             createButton.style.marginRight = 6f;
             Add(createButton);
@@ -84,8 +85,7 @@ namespace SW.EditorTools
             resultCount = new Label();
             resultCount.style.marginLeft = 8f;
             resultCount.style.marginBottom = 5f;
-            resultCount.style.fontSize = 11f;
-            resultCount.style.color = SW.EditorTools.SWEditorTheme.MutedText;
+            resultCount.AddToClassList("sw-secondary-text");
             Add(resultCount);
 
             emptyNotice = new Label();
@@ -100,7 +100,7 @@ namespace SW.EditorTools
             {
                 selectionType = SelectionType.Single,
                 virtualizationMethod = CollectionVirtualizationMethod.FixedHeight,
-                fixedItemHeight = 40f,
+                fixedItemHeight = 46f,
                 makeItem = CreateAssetRow,
                 bindItem = BindAssetRow,
             };
@@ -191,8 +191,8 @@ namespace SW.EditorTools
             collapseButton.style.position = Position.Absolute;
             collapseButton.style.left = 5f;
             collapseButton.style.top = 5f;
-            collapseButton.style.width = 25f;
-            collapseButton.style.height = 24f;
+            collapseButton.style.width = SWEditorTheme.ControlHeight;
+            collapseButton.style.height = SWEditorTheme.ControlHeight;
             collapseButton.style.paddingLeft = 0f;
             collapseButton.style.paddingRight = 0f;
             collapseButton.style.backgroundColor = SW.EditorTools.SWEditorTheme.Toolbar;
@@ -222,8 +222,7 @@ namespace SW.EditorTools
             nameLabel.style.textOverflow = TextOverflow.Ellipsis;
             nameLabel.style.whiteSpace = WhiteSpace.NoWrap;
             Label pathLabel = new Label { name = "asset-path" };
-            pathLabel.style.fontSize = 10f;
-            pathLabel.style.color = SW.EditorTools.SWEditorTheme.MutedText;
+            pathLabel.AddToClassList("sw-secondary-text");
             pathLabel.style.overflow = Overflow.Hidden;
             pathLabel.style.textOverflow = TextOverflow.Ellipsis;
             pathLabel.style.whiteSpace = WhiteSpace.NoWrap;
@@ -232,8 +231,10 @@ namespace SW.EditorTools
             row.Add(textGroup);
             Button rowDeleteButton = new Button(() =>
                 DeleteAsset(row.userData as UnityEngine.Object)) { text = "×" };
-            rowDeleteButton.style.width = 22f;
-            rowDeleteButton.style.height = 20f;
+            rowDeleteButton.style.width = SWEditorTheme.ControlHeight;
+            rowDeleteButton.style.height = SWEditorTheme.ControlHeight;
+            rowDeleteButton.style.paddingLeft = 0f;
+            rowDeleteButton.style.paddingRight = 0f;
             rowDeleteButton.style.flexShrink = 0f;
             rowDeleteButton.tooltip = "이 에셋 삭제";
             row.Add(rowDeleteButton);

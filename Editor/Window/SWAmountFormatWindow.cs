@@ -61,7 +61,7 @@ namespace SW.EditorTools.Window
 
             if (activeProfile == null || activeSerializedObject == null)
             {
-                EditorGUILayout.HelpBox("사용할 Amount Format Profile을 생성하세요.", MessageType.Info);
+                SWEditorUtils.DrawHelpBox("사용할 Amount Format Profile을 생성하세요.", MessageType.Info);
                 if (GUILayout.Button("기본 프리셋 생성", GUILayout.Height(SWEditorUtils.DefaultButtonHeight)))
                 {
                     CreateDefaultProfile();
@@ -146,7 +146,7 @@ namespace SW.EditorTools.Window
             }
             else
             {
-                EditorGUILayout.HelpBox("숫자를 입력하세요.", MessageType.Warning);
+                SWEditorUtils.DrawHelpBox("숫자를 입력하세요.", MessageType.Warning);
             }
         }
 

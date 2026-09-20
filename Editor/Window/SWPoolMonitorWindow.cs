@@ -157,7 +157,7 @@ namespace SW.EditorTools.Window
             EditorGUILayout.EndHorizontal();
 
             if (!Application.isPlaying)
-                EditorGUILayout.HelpBox("플레이 중에 생성된 풀 상태를 확인하는 창입니다.", MessageType.Info);
+                SWEditorUtils.DrawHelpBox("플레이 중에 생성된 풀 상태를 확인하는 창입니다.", MessageType.Info);
         }
         #endregion // 툴바
 

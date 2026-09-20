@@ -513,7 +513,7 @@ namespace SW.EditorTools.Window
         private void DrawImportTab()
         {
             SWEditorUtils.DrawHeader("TSV Input");
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "스프레드시트에서 복사한 TSV 데이터를 붙여넣으세요.\n" +
                 "첫 번째 열은 키, 나머지 열들은 각 언어별 번역입니다.", MessageType.Info);
 
@@ -558,13 +558,13 @@ namespace SW.EditorTools.Window
                     importReplaceAllKeys = EditorGUILayout.Toggle("모든 기존 키 삭제 후 교체", importReplaceAllKeys);
                     if (importReplaceAllKeys)
                     {
-                        EditorGUILayout.HelpBox(
+                        SWEditorUtils.DrawHelpBox(
                             "주의: 기존의 모든 키가 삭제되고 새로운 키들로 완전히 교체됩니다.",
                             MessageType.Warning);
                     }
                     else
                     {
-                        EditorGUILayout.HelpBox(
+                        SWEditorUtils.DrawHelpBox(
                             "TSV에 없는 기존 키는 삭제되고, 새 키가 추가되거나 기존 키의 값이 업데이트됩니다.",
                             MessageType.Info);
                     }
@@ -581,7 +581,7 @@ namespace SW.EditorTools.Window
                 importEnableSmartString = EditorGUILayout.Toggle("Smart String 활성화", importEnableSmartString);
                 if (importEnableSmartString)
                 {
-                    EditorGUILayout.HelpBox(
+                    SWEditorUtils.DrawHelpBox(
                         "Smart String을 활성화하면 런타임에 동적 포맷팅이 가능합니다. (예: {0}, {name})",
                         MessageType.Info);
                 }
@@ -972,7 +972,7 @@ namespace SW.EditorTools.Window
         #region Smart String 탭
         private void DrawSmartStringTab()
         {
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "기존 Localization 항목들의 Smart String 설정을 일괄 변경할 수 있습니다.",
                 MessageType.Info);
 
@@ -1132,7 +1132,7 @@ namespace SW.EditorTools.Window
             int selectedCount = smartKeySelections.Count(kv => kv.Value);
             if (selectedCount > 0)
             {
-                EditorGUILayout.HelpBox($"{selectedCount}개 키가 선택됨", MessageType.None);
+                SWEditorUtils.DrawHelpBox($"{selectedCount}개 키가 선택됨", MessageType.None);
             }
 
             EditorGUILayout.EndVertical();
@@ -1529,7 +1529,7 @@ namespace SW.EditorTools.Window
                     _ => "[INFO]"
                 };
 
-                EditorGUILayout.LabelField($"{icon} {result.message}", EditorStyles.wordWrappedLabel);
+                EditorGUILayout.LabelField($"{icon} {result.message}", SWEditorUtils.WrappedLabelStyle);
 
                 if (!string.IsNullOrEmpty(result.key) || !string.IsNullOrEmpty(result.locale))
                 {

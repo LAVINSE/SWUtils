@@ -1,0 +1,119 @@
+.sw-theme {
+    --sw-background: #1e2028;
+    --sw-panel: #282b36;
+    --sw-sidebar: #242630;
+    --sw-toolbar: #252832;
+    --sw-card: #2d303c;
+    --sw-input: #323645;
+    --sw-border: #474b5e;
+    --sw-text: #eaeaf2;
+    --sw-muted: #b5b8cb;
+    --sw-accent: #b3acee;
+    --sw-selection: #3e3b58;
+    --sw-hover: #363a4b;
+    --sw-open: #2d2b40;
+    --sw-open-border: #79739c;
+    --sw-scrollbar: #656a82;
+    --sw-font-body: 14px;
+    --sw-font-small: 12px;
+    --sw-control-height: 32px;
+    background-color: var(--sw-background);
+    color: var(--sw-text);
+    font-size: var(--sw-font-body);
+}
+.sw-theme .unity-button, .sw-theme .unity-toolbar-button {
+    background-image: none;
+    background-color: var(--sw-toolbar);
+    color: var(--sw-text);
+    border-width: 1px;
+    border-color: var(--sw-border);
+    border-radius: 4px;
+    min-height: var(--sw-control-height);
+    padding: 4px 10px;
+    margin: 2px;
+    font-size: var(--sw-font-body);
+}
+.sw-theme .unity-button:hover, .sw-theme .unity-toolbar-button:hover { background-color: var(--sw-hover); border-color: var(--sw-accent); }
+.sw-theme .unity-button:focus, .sw-theme .unity-toolbar-button:focus { border-color: var(--sw-accent); }
+.sw-theme .unity-button:active, .sw-theme .unity-toolbar-button:active, .sw-theme .sw-selected { background-color: var(--sw-selection); border-color: var(--sw-accent); }
+.sw-theme .unity-button:disabled { opacity: 0.65; }
+.sw-theme .unity-base-field { margin: 4px 0; min-height: var(--sw-control-height); }
+.sw-theme .unity-foldout__toggle { min-height: 34px; }
+.sw-theme .unity-foldout__text { font-size: var(--sw-font-body); color: var(--sw-text); }
+.sw-theme .unity-list-view__footer { min-height: 32px; }
+.sw-theme .unity-list-view__footer .unity-button { min-height: 28px; padding: 2px 8px; }
+.sw-theme .unity-base-field__label { color: var(--sw-text); min-width: 100px; }
+.sw-theme .unity-base-text-field__input, .sw-theme .unity-popup-field__input, .sw-theme .unity-enum-field__input, .sw-theme .unity-object-field__input {
+    background-color: var(--sw-input);
+    color: var(--sw-text);
+    border-width: 1px;
+    border-color: var(--sw-border);
+    border-radius: 3px;
+    min-height: var(--sw-control-height);
+    padding: 4px 8px;
+    font-size: var(--sw-font-body);
+}
+.sw-theme .unity-base-field__input:focus { border-color: var(--sw-accent); }
+.sw-theme .unity-toggle__input { background-color: transparent; border-width: 0; }
+.sw-theme .unity-toggle__checkmark { width: 16px; height: 16px; }
+.sw-theme .unity-object-field__input { padding-right: 0; }
+.sw-theme .unity-object-field-display { color: var(--sw-text); }
+.sw-theme .unity-object-field__selector { background-color: transparent; }
+.sw-theme .unity-object-field__selector:hover { background-color: var(--sw-hover); }
+.sw-theme .unity-list-view__foldout-header > .unity-foldout__toggle { background-color: var(--sw-toolbar); border-color: var(--sw-border); }
+.sw-theme .unity-list-view__foldout-header > .unity-foldout__toggle:hover { background-color: var(--sw-hover); }
+.sw-theme .unity-collection-view__scroll-view.unity-collection-view--with-border { background-color: var(--sw-background); border-color: var(--sw-border); }
+.sw-theme .unity-list-view__footer { background-color: var(--sw-panel); border-color: var(--sw-border); }
+.sw-theme .unity-list-view__reorderable-handle-bar { background-color: var(--sw-muted); }
+.sw-theme .unity-toolbar { background-color: var(--sw-toolbar); border-bottom-width: 1px; border-bottom-color: var(--sw-border); }
+.sw-theme .unity-scroll-view__content-container { flex-shrink: 0; }
+.sw-theme .unity-scroller { background-color: var(--sw-panel); flex-shrink: 0; }
+.sw-theme .unity-scroller .unity-base-slider { margin: 0; min-height: 0; }
+.sw-theme .unity-scroller .unity-base-slider__input { background-color: transparent; border-width: 0; padding: 0; margin: 0; min-height: 0; }
+.sw-theme .unity-base-slider__dragger { background-color: var(--sw-scrollbar); border-radius: 4px; }
+.sw-theme .unity-scroller .unity-base-slider__dragger { background-image: none; border-width: 0; padding: 0; }
+.sw-theme .unity-scroller .unity-base-slider__dragger:hover { background-color: var(--sw-muted); }
+.sw-theme .unity-scroller__low-button, .sw-theme .unity-scroller__high-button { display: none; }
+.sw-theme .unity-help-box { background-color: var(--sw-card); border-width: 1px; border-color: var(--sw-border); border-radius: 4px; padding: 10px; margin: 6px 0; }
+.sw-theme .unity-help-box__label { color: var(--sw-text); font-size: var(--sw-font-small); white-space: normal; }
+.sw-theme .sw-foldout { background-color: var(--sw-panel); border-width: 1px; border-color: var(--sw-border); border-radius: 4px; margin: 8px 0; padding: 0; }
+.sw-theme .sw-foldout.sw-foldout-default-color { border-left-width: 3px; border-left-color: var(--sw-accent); }
+.sw-theme .sw-foldout > Toggle.sw-foldout-toggle { background-color: var(--sw-toolbar); color: var(--sw-text); min-height: 34px; padding: 6px 10px; margin: 0; }
+.sw-theme .sw-foldout > Toggle.sw-foldout-toggle .unity-foldout__text { color: var(--sw-text); font-size: var(--sw-font-body); -unity-font-style: bold; white-space: normal; }
+.sw-theme .sw-foldout > #unity-content { padding: 10px 12px; margin-left: 0; }
+.sw-theme .sw-foldout .unity-header-drawer__label { background-color: transparent; color: var(--sw-text); margin: 10px 0 4px 0; padding: 4px 0; }
+.sw-theme .sw-toolbar ToolbarButton.main-call-to-action { background-color: var(--sw-accent); color: var(--sw-background); border-color: var(--sw-accent); }
+.sw-theme .sw-inspector-root { padding: 8px 10px; }
+.sw-theme .sw-section { background-color: var(--sw-panel); border-width: 1px; border-color: var(--sw-border); border-radius: 4px; padding: 10px; margin: 0 0 16px 0; }
+.sw-theme .sw-section-title { color: var(--sw-text); -unity-font-style: bold; font-size: 15px; margin: 2px 0 10px 0; }
+.sw-theme .sw-validation-title { -unity-font-style: bold; white-space: normal; margin-bottom: 4px; }
+.sw-theme .sw-validation > .unity-help-box { background-color: transparent; border-width: 0; border-radius: 0; padding: 4px 0; margin: 0; }
+.sw-theme .sw-muted { color: var(--sw-muted); }
+.sw-theme .sw-heading { font-size: 20px; -unity-font-style: bold; margin: 0 0 4px 0; }
+.sw-theme .sw-row { flex-direction: row; align-items: center; }
+.sw-theme .sw-grow { flex-grow: 1; min-width: 0; }
+.sw-theme .sw-wrap { white-space: normal; }
+.sw-theme .sw-action { min-height: 32px; }
+.sw-theme .sw-primary { background-color: var(--sw-accent); color: var(--sw-background); border-color: var(--sw-accent); -unity-font-style: bold; }
+.sw-theme .sw-primary:hover, .sw-theme .sw-primary:active, .sw-theme .sw-toolbar ToolbarButton.main-call-to-action:hover, .sw-theme .sw-toolbar ToolbarButton.main-call-to-action:active { background-color: var(--sw-selection); color: var(--sw-text); }
+.sw-theme .unity-collection-view__item:hover { background-color: var(--sw-hover); }
+.sw-theme .unity-collection-view__item--selected { background-color: var(--sw-selection); border-left-width: 3px; border-left-color: var(--sw-accent); }
+.sw-theme .unity-collection-view__item--selected:hover { background-color: var(--sw-selection); }
+.sw-theme .sw-secondary-text { font-size: var(--sw-font-small); color: var(--sw-muted); }
+.sw-theme .sw-danger { color: #ffa29c; }
+.sw-theme .sw-behaviour-panel { background-color: var(--sw-panel); border-color: var(--sw-border); }
+.sw-theme .sw-behaviour-toolbar { background-color: var(--sw-toolbar); border-bottom-color: var(--sw-border); }
+.sw-theme .sw-behaviour-node { background-color: var(--sw-card); }
+.sw-theme .node #title { background-color: var(--sw-toolbar); }
+.sw-theme .node #title-label { color: var(--sw-text); font-size: var(--sw-font-body); }
+.sw-theme .node #input, .sw-theme .node #output { background-color: var(--sw-panel); }
+.sw-theme .node .connectorText { color: var(--sw-muted); font-size: var(--sw-font-small); }
+.sw-theme .node #selection-border { border-color: var(--sw-accent); }
+.sw-theme .sw-behaviour-welcome-card { background-color: var(--sw-panel); border-color: var(--sw-border); }
+.sw-theme .sw-behaviour-welcome-description { color: var(--sw-muted); }
+.sw-theme .sw-behaviour-welcome-overlay { background-color: rgba(30, 32, 40, 0.9); }
+.sw-theme GridBackground {
+    --grid-background-color: #1e2028;
+    --line-color: rgba(71, 75, 94, 0.2);
+    --thick-line-color: rgba(71, 75, 94, 0.4);
+}

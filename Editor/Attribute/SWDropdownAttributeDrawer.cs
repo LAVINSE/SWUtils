@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 using System;
+using System.Collections.Generic;
 
 using SW.Attributes;
 
@@ -38,6 +41,48 @@ namespace SW.EditorTools.Attributes
         private bool isInitialized;
         #endregion // 필드
 
+
+        #region 필드 표시
+        /// <summary>
+        /// 공통 스타일의 드롭다운을 생성하고 값 변경 및 실행 취소를 반영합니다.
+        /// 설정이 유효하지 않으면 기본 프로퍼티 필드를 반환합니다.
+        /// </summary>
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            if (!isInitialized)
+            {
+                Initialize(property);
+            }
+
+            if (!IsValid())
+            {
+                return new PropertyField(property);
+            }
+
+            PopupField<string> field = new PopupField<string>(
+                property.displayName,
+                new List<string>(dropdownDisplayNames),
+                FindCurrentValueIndex(property))
+            {
+                tooltip = property.tooltip,
+                showMixedValue = property.hasMultipleDifferentValues
+            };
+            field.AddToClassList(BaseField<string>.alignedFieldUssClassName);
+            field.RegisterValueChangedCallback(change =>
+            {
+                property.serializedObject.Update();
+                selectedIndex = field.index;
+                ApplySelectedValue(property);
+                field.showMixedValue = property.hasMultipleDifferentValues;
+            });
+            field.TrackPropertyValue(property, changedProperty =>
+            {
+                field.SetValueWithoutNotify(dropdownDisplayNames[FindCurrentValueIndex(changedProperty)]);
+                field.showMixedValue = changedProperty.hasMultipleDifferentValues;
+            });
+            return field;
+        }
+        #endregion // 필드 표시
 
         /// <summary>
         /// Inspector GUI를 그립니다.

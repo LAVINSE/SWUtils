@@ -234,7 +234,7 @@ namespace SW.EditorTools.Window
             }
 
             EditorGUILayout.Space(6);
-            EditorGUILayout.HelpBox("오브젝트 아이콘은 Unity 기본 GameObject 아이콘을 대체합니다. 오른쪽 영역은 컴포넌트 아이콘, 경고, 토글 표시에 사용됩니다.", MessageType.None);
+            SWEditorUtils.DrawHelpBox("오브젝트 아이콘은 Unity 기본 GameObject 아이콘을 대체합니다. 오른쪽 영역은 컴포넌트 아이콘, 경고, 토글 표시에 사용됩니다.", MessageType.None);
         }
 
         private void DrawApplyTab()

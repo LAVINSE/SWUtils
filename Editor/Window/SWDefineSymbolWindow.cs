@@ -37,6 +37,7 @@ namespace SW.EditorTools.Window
         private string newSymbol = "";
         private string presetInput = "";
         private Vector2 scrollPosition;
+        private Vector2 windowScrollPosition;
         #endregion // 필드
 
         #region 초기화
@@ -72,6 +73,8 @@ namespace SW.EditorTools.Window
         {
             using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
             using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this);
+            using var scrollScope = new EditorGUILayout.ScrollViewScope(windowScrollPosition);
+            windowScrollPosition = scrollScope.scrollPosition;
             DrawTargetSection();
             EditorGUILayout.Space(8);
             DrawAddSection();
@@ -123,7 +126,7 @@ namespace SW.EditorTools.Window
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.HelpBox("Use letters, numbers, and underscore only. Example: SW_DEBUG_MODE", MessageType.Info);
+            SWEditorUtils.DrawHelpBox("Use letters, numbers, and underscore only. Example: SW_DEBUG_MODE", MessageType.Info);
         }
 
         private void DrawPresetSection()

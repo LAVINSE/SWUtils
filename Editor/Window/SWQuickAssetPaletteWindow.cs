@@ -136,7 +136,15 @@ namespace SW.EditorTools.Window
                 CleanMissing();
             }
 
-            GUILayout.FlexibleSpace();
+            if (SWEditorWindowLayoutScope.GetContentWidth(position.width) < 620f)
+            {
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            }
+            else
+            {
+                GUILayout.FlexibleSpace();
+            }
 
             GUILayout.Label("아이콘", GUILayout.Width(40));
             iconSize = GUILayout.HorizontalSlider(iconSize, MIN_ICON, MAX_ICON, GUILayout.Width(80));

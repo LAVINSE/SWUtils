@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 using SW.Attributes;
 
@@ -28,6 +30,39 @@ namespace SW.EditorTools.Attributes
         {
             cachedPaths.Clear();
         }
+
+        #region 조건부 필드 표시
+        /// <summary>
+        /// 열거형 조건을 추적하는 필드를 생성합니다.
+        /// 조건 필드가 없으면 기존 검증 규칙에 따라 원인을 기록합니다.
+        /// </summary>
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            SWEnumConditionAttribute conditionAttribute = (SWEnumConditionAttribute)attribute;
+            PropertyField field = new PropertyField(property);
+            RefreshCondition();
+            int separatorIndex = property.propertyPath.LastIndexOf('.');
+            string conditionPath = property.propertyPath.Substring(0, separatorIndex + 1)
+                + conditionAttribute.ConditionEnum;
+            SerializedProperty conditionProperty = property.serializedObject.FindProperty(conditionPath);
+            if (conditionProperty != null)
+            {
+                field.TrackPropertyValue(conditionProperty, changedProperty => RefreshCondition());
+            }
+            return field;
+
+            /// <summary>
+            /// 현재 열거형 조건에 맞춰 필드의 표시와 활성 상태를 갱신합니다.
+            /// </summary>
+            void RefreshCondition()
+            {
+                bool enabled = GetConditionAttributeResult(conditionAttribute, property);
+                field.style.display = !conditionAttribute.Hidden || enabled
+                    ? DisplayStyle.Flex : DisplayStyle.None;
+                field.SetEnabled(enabled);
+            }
+        }
+        #endregion // 조건부 필드 표시
 
         /// <summary>
         /// 조건 열거형 값에 따라 필드를 표시하거나 비활성화 상태로 그립니다.

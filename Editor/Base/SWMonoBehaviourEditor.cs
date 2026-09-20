@@ -29,6 +29,7 @@ namespace SW.EditorTools.Base
         /// </summary>
         public StyleSheet EditorStyleSheet;
         private const string STYLESHEET_NAME = "SWMonoBehaviourEditorStylesheet";
+        private static readonly Color defaultGroupColor = new SWGroupAttribute(string.Empty).GroupColor;
 
         /// <summary>
         /// 중복 초기화 방지 플래그.
@@ -359,8 +360,12 @@ namespace SW.EditorTools.Base
             Initialized();
 
             VisualElement root = new();
-            if (EditorStyleSheet != null) root.styleSheets.Add(EditorStyleSheet);
+            if (EditorStyleSheet != null)
+            {
+                root.styleSheets.Add(EditorStyleSheet);
+            }
             root.AddToClassList("sw-inspector-root");
+            SWEditorTheme.ApplyInspector(root);
 
             SerializedProperty scriptProperty = serializedObject.FindProperty("m_Script");
 
@@ -492,7 +497,14 @@ namespace SW.EditorTools.Base
             foldout.text = groupData.GroupAttribute.GroupName;  // 그룹 이름 설정
             foldout.value = groupData.IsGroupOpen;               // 초기 접힘 상태
             foldout.AddToClassList("sw-foldout");               // CSS 클래스 추가
-            foldout.style.borderLeftColor = groupData.GroupColor; // 왼쪽 테두리 색상
+            if (groupData.GroupColor == defaultGroupColor)
+            {
+                foldout.AddToClassList("sw-foldout-default-color");
+            }
+            else
+            {
+                foldout.style.borderLeftColor = groupData.GroupColor;
+            }
 
             // viewDataKey: UI 상태 자동 저장/복원용 고유 키
             foldout.viewDataKey = target.name + "-" + targetTypeName + groupData.GroupAttribute.GroupName;

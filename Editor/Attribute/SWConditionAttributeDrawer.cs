@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
 using SW.Attributes;
 
@@ -35,6 +37,38 @@ namespace SW.EditorTools.Attributes
             cachedPaths.Clear();
         }
         #endregion // 초기화
+
+        #region 조건부 필드 표시
+        /// <summary>
+        /// Boolean 조건을 추적하는 필드를 생성합니다.
+        /// 조건 필드가 없으면 기존 검증 규칙에 따라 원인을 기록합니다.
+        /// </summary>
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            SWConditionAttribute conditionAttribute = (SWConditionAttribute)attribute;
+            PropertyField field = new PropertyField(property);
+            RefreshCondition();
+            string conditionPath = GetConditionPath(property, conditionAttribute.ConditionBoolean);
+            SerializedProperty conditionProperty = property.serializedObject.FindProperty(conditionPath)
+                ?? property.serializedObject.FindProperty(conditionAttribute.ConditionBoolean);
+            if (conditionProperty != null)
+            {
+                field.TrackPropertyValue(conditionProperty, changedProperty => RefreshCondition());
+            }
+            return field;
+
+            /// <summary>
+            /// 현재 조건에 맞춰 필드의 표시와 활성 상태를 갱신합니다.
+            /// </summary>
+            void RefreshCondition()
+            {
+                bool enabled = GetConditionAttributeResult(conditionAttribute, property);
+                field.style.display = ShouldDisplay(conditionAttribute, enabled)
+                    ? DisplayStyle.Flex : DisplayStyle.None;
+                field.SetEnabled(enabled);
+            }
+        }
+        #endregion // 조건부 필드 표시
 
         /// <summary>
         /// Inspector에서 프로퍼티를 그리는 메서드입니다.

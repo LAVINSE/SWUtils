@@ -126,7 +126,7 @@ namespace SW.EditorTools.Window
             if (!string.IsNullOrEmpty(statusMessage))
             {
                 EditorGUILayout.Space(4);
-                EditorGUILayout.HelpBox(statusMessage, MessageType.Info);
+                SWEditorUtils.DrawHelpBox(statusMessage, MessageType.Info);
             }
         }
 
@@ -161,7 +161,7 @@ namespace SW.EditorTools.Window
             DrawSearchSection();
 
 #if !UNITY_EDITOR_WIN
-            EditorGUILayout.HelpBox("현재 기본 PlayerPrefs 자동 목록은 Windows Editor 저장소만 지원합니다. 키를 직접 입력하면 추가, 수정, 삭제는 가능합니다.", MessageType.Warning);
+            SWEditorUtils.DrawHelpBox("현재 기본 PlayerPrefs 자동 목록은 Windows Editor 저장소만 지원합니다. 키를 직접 입력하면 추가, 수정, 삭제는 가능합니다.", MessageType.Warning);
 #endif
         }
 

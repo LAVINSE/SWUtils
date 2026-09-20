@@ -74,6 +74,7 @@ namespace SW.EditorTools.Window
         // 현재 검색 결과
         private List<string> currentResults = new();
         private Vector2 resultsScroll;
+        private Vector2 windowScrollPosition;
 
         // 진행 상황
         private bool isBuilding;
@@ -142,6 +143,8 @@ namespace SW.EditorTools.Window
         {
             using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
             using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, ModeTabNames, (int)searchMode);
+            using var scrollScope = new EditorGUILayout.ScrollViewScope(windowScrollPosition);
+            windowScrollPosition = scrollScope.scrollPosition;
             EditorGUILayout.Space(5);
 
             SearchMode previousMode = searchMode;
@@ -224,7 +227,7 @@ namespace SW.EditorTools.Window
         {
             SWEditorUtils.DrawHeader("Unused Assets");
 
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "역참조 인덱스에서 아무도 참조하지 않는 Assets/ 하위 에셋 후보를 찾습니다.\n" +
                 "주의: Resources.Load, Addressables, 코드에 의한 로드는 감지하지 못합니다.\n" +
                 "Editor/Resources/StreamingAssets/Plugins 폴더와 스크립트/셰이더, 빌드 세팅에 포함된 씬은 제외됩니다.",
@@ -284,7 +287,7 @@ namespace SW.EditorTools.Window
 
             if (reverseIndex != null)
             {
-                EditorGUILayout.HelpBox(
+                SWEditorUtils.DrawHelpBox(
                     $"인덱스: {indexedAssetCount}개 파일 스캔됨, {reverseIndex.Count}개 고유 GUID 참조됨\n" +
                     $"최근 빌드 시간: {SWEditorUtils.FormatDuration(lastIndexBuildTime)}",
                     MessageType.Info);
@@ -555,7 +558,7 @@ namespace SW.EditorTools.Window
 
             detailScroll = EditorGUILayout.BeginScrollView(detailScroll, GUILayout.MaxHeight(140f));
             for (int index = 0; index < detailResults.Count; index++)
-                EditorGUILayout.LabelField(detailResults[index], EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField(detailResults[index], SWEditorUtils.WrappedSecondaryLabelStyle);
             EditorGUILayout.EndScrollView();
 
             if (GUILayout.Button("결과 닫기", GUILayout.Height(20)))

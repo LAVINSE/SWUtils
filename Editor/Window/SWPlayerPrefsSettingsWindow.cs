@@ -21,6 +21,7 @@ namespace SW.EditorTools.Window
         private string salt;
         private string ivSalt;
         private string statusMessage;
+        private Vector2 scrollPosition;
 
         /// <summary>
         /// SWPlayerPrefs 설정 창을 엽니다.
@@ -42,6 +43,8 @@ namespace SW.EditorTools.Window
         {
             using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
             using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this);
+            using var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPosition);
+            scrollPosition = scrollScope.scrollPosition;
             DrawAssetSection();
             EditorGUILayout.Space(8);
             DrawSaltSection();
@@ -51,7 +54,7 @@ namespace SW.EditorTools.Window
             if (!string.IsNullOrEmpty(statusMessage))
             {
                 EditorGUILayout.Space(4);
-                EditorGUILayout.HelpBox(statusMessage, MessageType.Info);
+                SWEditorUtils.DrawHelpBox(statusMessage, MessageType.Info);
             }
         }
 
@@ -120,7 +123,7 @@ namespace SW.EditorTools.Window
 
         private static void DrawWarningSection()
         {
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "Salt 값을 변경하면 이전 salt로 저장된 SWPlayerPrefs 데이터는 읽을 수 없습니다. 변경 전에 데이터를 삭제하거나 별도 마이그레이션을 준비하세요.",
                 MessageType.Warning);
         }

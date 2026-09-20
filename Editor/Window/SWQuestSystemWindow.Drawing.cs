@@ -33,7 +33,7 @@ namespace SW.EditorTools.Window
         private void OnGUI()
         {
             using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
-            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, NavigationNames, navigationIndex);
+            using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, NavigationNames, navigationIndex, 680f);
             PrepareStyles();
             if (Event.current.type == EventType.MouseMove)
             {
@@ -71,11 +71,11 @@ namespace SW.EditorTools.Window
                     GUILayout.Space(12f);
                     if (navigationIndex == 2)
                     {
-                        componentIndex = GUILayout.Toolbar(componentIndex, ComponentNames, EditorStyles.miniButton, GUILayout.Height(24f));
+                        componentIndex = SWEditorUtils.DrawTabBar(componentIndex, ComponentNames);
                     }
                     else
                     {
-                        databaseIndex = GUILayout.Toolbar(databaseIndex, DatabaseNames, EditorStyles.miniButton, GUILayout.Height(24f));
+                        databaseIndex = SWEditorUtils.DrawTabBar(databaseIndex, DatabaseNames);
                     }
                     GUILayout.Space(12f);
                 }
@@ -125,7 +125,7 @@ namespace SW.EditorTools.Window
                     GUILayout.FlexibleSpace();
                     using (new EditorGUI.DisabledScope(creationTypesByKind[kind].Length == 0))
                     {
-                        if (GUILayout.Button("+ 새로 만들기", EditorStyles.miniButton, GUILayout.Width(98f), GUILayout.Height(24f)))
+                        if (GUILayout.Button("+ 새로 만들기", GUILayout.Width(110f), GUILayout.Height(SWEditorTheme.ControlHeight)))
                         {
                             ShowCreationMenu(kind);
                         }
@@ -133,16 +133,18 @@ namespace SW.EditorTools.Window
                 }
 
                 GUILayout.Space(10f);
+                GUILayout.Label("에셋 검색", EditorStyles.miniLabel);
                 searchTextsByKind[kind] = EditorGUILayout.TextField(
                     new GUIContent(string.Empty, "코드명, 표시명, 에셋 이름 또는 타입으로 검색"),
-                    searchTextsByKind[kind], EditorStyles.toolbarSearchField);
+                    searchTextsByKind[kind], GUILayout.Height(SWEditorTheme.ControlHeight));
 
                 GUILayout.Space(6f);
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    sortMode = (AssetSortMode)EditorGUILayout.Popup((int)sortMode, SortModeNames, GUILayout.Width(112f));
+                    sortMode = (AssetSortMode)EditorGUILayout.Popup((int)sortMode, SortModeNames,
+                        GUILayout.Width(138f), GUILayout.Height(SWEditorTheme.ControlHeight));
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("새로 고침", EditorStyles.miniButton, GUILayout.Width(72f)))
+                    if (GUILayout.Button("새로 고침", GUILayout.Width(82f), GUILayout.Height(SWEditorTheme.ControlHeight)))
                     {
                         RefreshAssets(kind);
                     }
@@ -204,12 +206,12 @@ namespace SW.EditorTools.Window
                 {
                     if (selected)
                     {
-                        EditorGUI.DrawRect(row, EditorGUIUtility.isProSkin
-                            ? new Color(0.24f, 0.34f, 0.44f) : new Color(0.70f, 0.81f, 0.91f));
+                        EditorGUI.DrawRect(row, SWEditorTheme.Selection);
+                        EditorGUI.DrawRect(new Rect(row.x, row.y, 3f, row.height), SWEditorTheme.Accent);
                     }
                     else if (row.Contains(Event.current.mousePosition))
                     {
-                        EditorGUI.DrawRect(row, new Color(0.5f, 0.5f, 0.5f, 0.12f));
+                        EditorGUI.DrawRect(row, SWEditorTheme.Hover);
                     }
                 }
 
@@ -369,7 +371,7 @@ namespace SW.EditorTools.Window
                 createPaths[settingsKindIndex] = EditorGUILayout.TextField("생성 경로", createPaths[settingsKindIndex]);
                 namePrefixes[settingsKindIndex] = EditorGUILayout.TextField("이름 접두사", namePrefixes[settingsKindIndex]);
                 GUILayout.Space(6f);
-                EditorGUILayout.LabelField("분류를 선택해 각 에셋의 저장 폴더와 이름 접두사를 설정하세요.", EditorStyles.wordWrappedMiniLabel);
+                EditorGUILayout.LabelField("분류를 선택해 각 에셋의 저장 폴더와 이름 접두사를 설정하세요.", SWEditorUtils.WrappedSecondaryLabelStyle);
 
                 GUILayout.Space(24f);
                 using (new EditorGUILayout.HorizontalScope())
@@ -414,8 +416,7 @@ namespace SW.EditorTools.Window
                 padding = new RectOffset(),
                 margin = new RectOffset()
             };
-            assetSubtitleStyle.normal.textColor = stylesUseDarkTheme
-                ? new Color(0.73f, 0.73f, 0.73f) : new Color(0.30f, 0.30f, 0.30f);
+            assetSubtitleStyle.normal.textColor = SWEditorTheme.MutedText;
             inspectorTitleStyle = new GUIStyle(EditorStyles.boldLabel)
             {
                 fontSize = 16,

@@ -269,7 +269,7 @@ namespace SW.EditorTools.Window
 
             if (!Application.isPlaying)
             {
-                EditorGUILayout.HelpBox("플레이 중에만 Time.timeScale에 반영됩니다.", MessageType.Info);
+                SWEditorUtils.DrawHelpBox("플레이 중에만 Time.timeScale에 반영됩니다.", MessageType.Info);
             }
 
             EditorGUI.BeginChangeCheck();
@@ -310,7 +310,7 @@ namespace SW.EditorTools.Window
             // Step Frame
             EditorGUILayout.Space(10);
             SWEditorUtils.DrawHeader("Step Frame");
-            EditorGUILayout.HelpBox("일시정지 상태에서 1프레임씩 진행합니다.", MessageType.None);
+            SWEditorUtils.DrawHelpBox("일시정지 상태에서 1프레임씩 진행합니다.", MessageType.None);
 
             using (new SWEditorUtils.GUIEnabledScope(Application.isPlaying))
             {
@@ -344,7 +344,7 @@ namespace SW.EditorTools.Window
             // Fixed DeltaTime
             EditorGUILayout.Space(10);
             SWEditorUtils.DrawHeader("Fixed DeltaTime (물리)");
-            EditorGUILayout.HelpBox($"기본값: {originalFixedDeltaTime:F4}s ({1f / originalFixedDeltaTime:F0} Hz)", MessageType.None);
+            SWEditorUtils.DrawHelpBox($"기본값: {originalFixedDeltaTime:F4}s ({1f / originalFixedDeltaTime:F0} Hz)", MessageType.None);
 
             EditorGUI.BeginChangeCheck();
             customFixedDeltaTime = EditorGUILayout.Slider("Fixed DeltaTime", customFixedDeltaTime, 0.001f, 0.1f);

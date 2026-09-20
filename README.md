@@ -1,4 +1,4 @@
-# SWUtils 1.4.2
+# SWUtils 1.4.3
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -6,17 +6,17 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 
 현재 테스트 단계의 패키지입니다. 퀘스트·업적을 포함한 각 기능은 적용할 프로젝트에서 동작과 저장 호환성을 확인해야 합니다.
 
-`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 분류·즐겨찾기·다중 탭으로 편집합니다. 편집기 창과 창 내부의 편집 영역에 공통 디자인을 적용하며, Unity 기본 Inspector 창은 기존 SWUtils 스타일을 유지합니다. [사용법과 디자인 분석](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
+`SWTools > SWUtils Data Editor`에서 ScriptableObject를 검색하고 분류·즐겨찾기·다중 탭으로 편집합니다. 편집기 창과 창 내부의 편집 영역에 공통 디자인을 적용합니다. Unity 기본 Inspector 창의 `SWMonoBehaviour`와 `SWScriptableObject`에는 별도 색상과 크기의 전용 테마를 적용하며, 직접 지정한 그룹 색상은 유지합니다. [사용법과 디자인 분석](Documentation~/SWUtilsEditor.ko.md)을 확인하세요.
 
 ## 설치
 
 Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.2
+https://github.com/LAVINSE/SWUtils.git#v1.4.3
 ```
 
-위 주소는 원격 저장소에 `v1.4.2` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
+위 주소는 원격 저장소에 `v1.4.3` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
 필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 

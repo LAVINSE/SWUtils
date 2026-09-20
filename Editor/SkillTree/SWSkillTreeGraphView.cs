@@ -61,7 +61,7 @@ namespace SW.EditorTools.SkillTree
                     node.output = Port.Create<Edge>(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(SWSkillTreeRequirement));
                     node.input.portName = data.RequirementMode == SWSkillTreeRequirementMode.All ? "모두 필요" : "하나 필요";
                     node.output.portName = "후속 해금";
-                    node.input.portColor = node.output.portColor = SW.EditorTools.SWEditorTheme.Selection;
+                    node.input.portColor = node.output.portColor = SW.EditorTools.SWEditorTheme.Accent;
                     node.inputContainer.Add(node.input);
                     node.outputContainer.Add(node.output);
                     Label summary = new(data.Skill != null ? $"최대 {data.Skill.MaximumLevel}레벨" : "오른쪽 패널에서 스킬 지정");

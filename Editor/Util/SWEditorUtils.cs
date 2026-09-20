@@ -18,6 +18,39 @@ namespace SW.EditorTools.Util
     /// </summary>
     public static class SWEditorUtils
     {
+        #region 스타일 캐시
+        private static GUIStyle themedHeaderTitleStyle;
+        private static GUIStyle inspectorHeaderTitleStyle;
+        private static GUIStyle themedWrappedLabelStyle;
+        private static GUIStyle inspectorWrappedLabelStyle;
+        private static GUIStyle themedWrappedSecondaryLabelStyle;
+        private static GUIStyle inspectorWrappedSecondaryLabelStyle;
+        #endregion // 스타일 캐시
+
+        #region 공통 텍스트 스타일
+        /// <summary>그리기 범위가 끝난 뒤 레이아웃을 계산할 때도 글자 크기가 유지되는 본문 스타일입니다.</summary>
+        public static GUIStyle WrappedLabelStyle
+        {
+            get
+            {
+                ref GUIStyle style = ref (SWEditorThemeScope.IsActive ? ref themedWrappedLabelStyle : ref inspectorWrappedLabelStyle);
+                style ??= new GUIStyle(EditorStyles.wordWrappedLabel);
+                return style;
+            }
+        }
+
+        /// <summary>범위 밖의 레이아웃 계산에서도 줄 높이를 유지하는 보조 설명 스타일입니다.</summary>
+        public static GUIStyle WrappedSecondaryLabelStyle
+        {
+            get
+            {
+                ref GUIStyle style = ref (SWEditorThemeScope.IsActive ? ref themedWrappedSecondaryLabelStyle : ref inspectorWrappedSecondaryLabelStyle);
+                style ??= new GUIStyle(EditorStyles.wordWrappedMiniLabel);
+                return style;
+            }
+        }
+        #endregion // 공통 텍스트 스타일
+
         #region 색상
         /// <summary> 헤더 구분선 색상 </summary>
         public static readonly Color HeaderLineColor = new(0.3f, 0.3f, 0.3f, 1f);
@@ -40,11 +73,11 @@ namespace SW.EditorTools.Util
         /// <summary> 기본 아이콘 크기 (하이어라키, 팔레트 등) </summary>
         public const int DefaultIconSize = 16;
         /// <summary> 기본 버튼 높이 </summary>
-        public const float DefaultButtonHeight = 25f;
+        public const float DefaultButtonHeight = SWEditorTheme.ControlHeight;
         /// <summary> 작은 버튼 높이 (Ping, Open 등) </summary>
-        public const float SmallButtonHeight = 20f;
+        public const float SmallButtonHeight = 26f;
         /// <summary> 탭바 높이 </summary>
-        public const float TabBarHeight = 25f;
+        public const float TabBarHeight = SWEditorTheme.ControlHeight;
         /// <summary> 기본 탭바 상단 여백 </summary>
         public const float TabBarTopSpace = 5f;
         /// <summary> 기본 탭바 하단 여백 </summary>
@@ -58,7 +91,7 @@ namespace SW.EditorTools.Util
         /// </summary>
         public static void DrawHeader(string title)
         {
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            DrawHeaderTitle(title);
             Rect rect = EditorGUILayout.GetControlRect(false, 1);
             EditorGUI.DrawRect(rect, CurrentHeaderLineColor);
             EditorGUILayout.Space(3);
@@ -69,10 +102,24 @@ namespace SW.EditorTools.Util
         /// </summary>
         public static void DrawHeader(string title, Color lineColor)
         {
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            DrawHeaderTitle(title);
             Rect rect = EditorGUILayout.GetControlRect(false, 1);
             EditorGUI.DrawRect(rect, lineColor);
             EditorGUILayout.Space(3);
+        }
+
+        /// <summary>
+        /// 좁은 작업 영역에서도 제목이 잘리지 않도록 실제 배치 너비에 맞춰 줄을 바꿉니다.
+        /// </summary>
+        private static void DrawHeaderTitle(string title)
+        {
+            ref GUIStyle style = ref (SWEditorThemeScope.IsActive ? ref themedHeaderTitleStyle : ref inspectorHeaderTitleStyle);
+            style ??= new GUIStyle(EditorStyles.boldLabel)
+            {
+                wordWrap = true,
+                fixedHeight = 0f
+            };
+            GUILayout.Label(title, style);
         }
 
         /// <summary>
@@ -144,17 +191,13 @@ namespace SW.EditorTools.Util
 
         #region 탭바
         /// <summary>
-        /// GUILayout.Toolbar 스타일의 탭바를 그립니다.
+        /// 공통 버튼 스타일의 탭바를 그립니다.
         /// 모든 SWTools 윈도우에서 동일한 탭바 스타일을 사용합니다.
         /// </summary>
         /// <returns>선택된 탭 인덱스</returns>
         public static int DrawTabBar(int selectedTab, string[] tabNames)
         {
-            if (SWEditorWindowLayoutScope.TryGetNavigation(tabNames, out int navigationIndex)) return navigationIndex;
-            EditorGUILayout.Space(TabBarTopSpace);
-            selectedTab = GUILayout.Toolbar(selectedTab, tabNames, GUILayout.Height(TabBarHeight));
-            EditorGUILayout.Space(TabBarBottomSpace);
-            return selectedTab;
+            return DrawTabBar(selectedTab, tabNames, TabBarHeight);
         }
 
         /// <summary>
@@ -162,9 +205,32 @@ namespace SW.EditorTools.Util
         /// </summary>
         public static int DrawTabBar(int selectedTab, string[] tabNames, float height)
         {
-            if (SWEditorWindowLayoutScope.TryGetNavigation(tabNames, out int navigationIndex)) return navigationIndex;
+            if (SWEditorWindowLayoutScope.TryGetNavigation(tabNames, out int navigationIndex))
+            {
+                return navigationIndex;
+            }
+
             EditorGUILayout.Space(TabBarTopSpace);
-            selectedTab = GUILayout.Toolbar(selectedTab, tabNames, GUILayout.Height(height));
+            int columns = GetTabColumnCount(tabNames.Length);
+            int previousTab = selectedTab;
+            using (new EditorGUILayout.VerticalScope())
+            {
+                for (int firstIndex = 0; firstIndex < tabNames.Length; firstIndex += columns)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        for (int index = firstIndex; index < Mathf.Min(firstIndex + columns, tabNames.Length); index++)
+                        {
+                            bool selected = GUILayout.Toggle(previousTab == index, tabNames[index], GUI.skin.button,
+                                GUILayout.MinHeight(Mathf.Max(height, SWEditorTheme.ControlHeight)), GUILayout.ExpandWidth(true));
+                            if (selected && previousTab != index)
+                            {
+                                selectedTab = index;
+                            }
+                        }
+                    }
+                }
+            }
             EditorGUILayout.Space(TabBarBottomSpace);
             return selectedTab;
         }
@@ -176,10 +242,7 @@ namespace SW.EditorTools.Util
         /// <returns>선택된 탭 인덱스</returns>
         public static int DrawTabBar(int selectedTab, GUIContent[] tabContents)
         {
-            EditorGUILayout.Space(TabBarTopSpace);
-            selectedTab = GUILayout.Toolbar(selectedTab, tabContents, GUILayout.Height(TabBarHeight));
-            EditorGUILayout.Space(TabBarBottomSpace);
-            return selectedTab;
+            return DrawTabBar(selectedTab, tabContents, TabBarHeight);
         }
 
         /// <summary>
@@ -188,9 +251,35 @@ namespace SW.EditorTools.Util
         public static int DrawTabBar(int selectedTab, GUIContent[] tabContents, float height)
         {
             EditorGUILayout.Space(TabBarTopSpace);
-            selectedTab = GUILayout.Toolbar(selectedTab, tabContents, GUILayout.Height(height));
+            int columns = GetTabColumnCount(tabContents.Length);
+            int previousTab = selectedTab;
+            using (new EditorGUILayout.VerticalScope())
+            {
+                for (int firstIndex = 0; firstIndex < tabContents.Length; firstIndex += columns)
+                {
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        for (int index = firstIndex; index < Mathf.Min(firstIndex + columns, tabContents.Length); index++)
+                        {
+                            bool selected = GUILayout.Toggle(previousTab == index, tabContents[index], GUI.skin.button,
+                                GUILayout.MinHeight(Mathf.Max(height, SWEditorTheme.ControlHeight)), GUILayout.ExpandWidth(true));
+                            if (selected && previousTab != index)
+                            {
+                                selectedTab = index;
+                            }
+                        }
+                    }
+                }
+            }
             EditorGUILayout.Space(TabBarBottomSpace);
             return selectedTab;
+        }
+
+        /// <summary>탭이 좁은 창 밖으로 밀려나지 않도록 한 줄에 배치할 개수를 계산합니다.</summary>
+        private static int GetTabColumnCount(int count)
+        {
+            float width = SWEditorWindowLayoutScope.GetContentWidth(EditorGUIUtility.currentViewWidth) - 24f;
+            return Mathf.Max(1, Mathf.Min(count, Mathf.FloorToInt(width / 110f)));
         }
 
         /// <summary>
@@ -881,7 +970,7 @@ namespace SW.EditorTools.Util
         {
             if (!Application.isPlaying)
             {
-                EditorGUILayout.HelpBox(message, MessageType.Info);
+                DrawHelpBox(message, MessageType.Info);
                 return true;
             }
             return false;
@@ -892,7 +981,27 @@ namespace SW.EditorTools.Util
         /// </summary>
         public static void DrawEmptyNotice(string message, MessageType type = MessageType.Info)
         {
-            EditorGUILayout.HelpBox(message, type);
+            DrawHelpBox(message, type);
+        }
+
+        /// <summary>아이콘 너비와 실제 본문 너비를 함께 계산하여 여러 줄 안내문이 잘리지 않게 표시합니다.</summary>
+        public static void DrawHelpBox(string message, MessageType type)
+        {
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+            {
+                if (type != MessageType.None)
+                {
+                    string iconName = type switch
+                    {
+                        MessageType.Warning => "console.warnicon",
+                        MessageType.Error => "console.erroricon",
+                        _ => "console.infoicon"
+                    };
+                    GUILayout.Label(EditorGUIUtility.IconContent(iconName), GUILayout.Width(28f), GUILayout.Height(28f));
+                }
+
+                GUILayout.Label(message, WrappedLabelStyle, GUILayout.ExpandWidth(true));
+            }
         }
         #endregion // 도움말
 
@@ -912,6 +1021,28 @@ namespace SW.EditorTools.Util
                 : new GUIContent(title);
 
             window.minSize = new Vector2(minWidth, minHeight);
+            string preferenceKey = "SWUtils.WindowTitle." + window.GetType().FullName;
+            SessionState.SetString(preferenceKey, title);
+            SessionState.SetString(preferenceKey + ".Icon", iconName ?? string.Empty);
+        }
+
+        /// <summary>스크립트 재로드로 제목이 타입 이름으로 돌아간 창의 표시 이름을 복원합니다.</summary>
+        internal static void RestoreWindowTitle(EditorWindow window)
+        {
+            string typeName = window.GetType().Name;
+            if (!string.IsNullOrEmpty(window.titleContent.text) && window.titleContent.text != typeName)
+            {
+                return;
+            }
+
+            string preferenceKey = "SWUtils.WindowTitle." + window.GetType().FullName;
+            string fallbackTitle = typeName.EndsWith("Window", StringComparison.Ordinal)
+                ? typeName.Substring(0, typeName.Length - "Window".Length)
+                : typeName;
+            string title = SessionState.GetString(preferenceKey, ObjectNames.NicifyVariableName(fallbackTitle));
+            string iconName = SessionState.GetString(preferenceKey + ".Icon", string.Empty);
+            Texture icon = string.IsNullOrEmpty(iconName) ? window.titleContent.image : EditorGUIUtility.FindTexture(iconName);
+            window.titleContent = new GUIContent(title, icon);
         }
         #endregion // EditorWindow 설정
 

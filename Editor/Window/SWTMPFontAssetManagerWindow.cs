@@ -26,6 +26,7 @@ namespace SW.EditorTools.Window
     {
         #region 필드 - 공통
         private int selectedTab = 0;
+        private Vector2 windowScrollPosition;
         private static readonly string[] tabNames = { "Quick Swap", "Presets", "Browser", "성능" };
         #endregion
 
@@ -209,6 +210,8 @@ namespace SW.EditorTools.Window
             using SW.EditorTools.SWEditorThemeScope themeScope = new(new UnityEngine.Rect(UnityEngine.Vector2.zero, position.size));
             using SW.EditorTools.SWEditorWindowLayoutScope layoutScope = new(this, tabNames, selectedTab);
             selectedTab = SWEditorUtils.DrawTabBar(selectedTab, tabNames);
+            using var windowScrollScope = new EditorGUILayout.ScrollViewScope(windowScrollPosition);
+            windowScrollPosition = windowScrollScope.scrollPosition;
 
             switch (selectedTab)
             {
@@ -226,7 +229,7 @@ namespace SW.EditorTools.Window
         {
             SWEditorUtils.DrawHeader("기본 폰트 (자동 적용)");
 
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "여기에 폰트를 지정하면 앞으로 생성되는 모든 TextMeshPro 컴포넌트에\n" +
                 "해당 폰트가 자동 적용됩니다.",
                 MessageType.Info);
@@ -977,7 +980,7 @@ namespace SW.EditorTools.Window
         private void DrawPerformanceTab()
         {
             SWEditorUtils.DrawHeader("TMP 성능 확인");
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "TMP_FontAsset을 넣으면 아틀라스 메모리, 글리프, 문자, 폴백 체인, 머티리얼 프리셋 비용을 확인합니다.",
                 MessageType.Info);
 
@@ -1280,7 +1283,7 @@ namespace SW.EditorTools.Window
 
             if (!hasWarning)
             {
-                EditorGUILayout.HelpBox("큰 성능 위험 신호가 보이지 않습니다.", MessageType.Info);
+                SWEditorUtils.DrawHelpBox("큰 성능 위험 신호가 보이지 않습니다.", MessageType.Info);
             }
         }
 
@@ -1288,7 +1291,7 @@ namespace SW.EditorTools.Window
         {
             if (!condition) return false;
 
-            EditorGUILayout.HelpBox(message, MessageType.Warning);
+            SWEditorUtils.DrawHelpBox(message, MessageType.Warning);
             return true;
         }
 

@@ -118,7 +118,7 @@ namespace SW.EditorTools.Window
         private void SetupStyle()
         {
             selectedBoxTexture = new Texture2D(1, 1);
-            selectedBoxTexture.SetPixel(0, 0, new Color(0.31f, 0.40f, 0.50f));
+            selectedBoxTexture.SetPixel(0, 0, SWEditorTheme.Selection);
             selectedBoxTexture.Apply();
             // Play 상태에 종속되어 파괴되지 않도록 DontSave 설정
             selectedBoxTexture.hideFlags = HideFlags.DontSave;
@@ -233,7 +233,9 @@ namespace SW.EditorTools.Window
 
             EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Width(listWidth));
+                float availableListWidth = Mathf.Clamp(listWidth, 240f,
+                    Mathf.Max(240f, SWEditorWindowLayoutScope.GetContentWidth(position.width) - 300f));
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Width(availableListWidth));
                 {
                     DrawListToolButtons(dataType, typeIndex);
 
@@ -336,10 +338,9 @@ namespace SW.EditorTools.Window
         private void DrawSortShortcutButton(string label, int targetSortMode)
         {
             bool isSelected = sortMode == targetSortMode;
-            using (new SWEditorUtils.GUIBgColorScope(isSelected ? new Color(0.55f, 0.75f, 1f) : Color.white))
+            if (GUILayout.Toggle(isSelected, label, EditorStyles.toolbarButton) && !isSelected)
             {
-                if (GUILayout.Button(label, EditorStyles.toolbarButton))
-                    SetSortMode(targetSortMode);
+                SetSortMode(targetSortMode);
             }
         }
 
@@ -430,7 +431,7 @@ namespace SW.EditorTools.Window
                 EditorGUILayout.EndHorizontal();
 
                 if (!IsValidProjectPath(createPaths[index]))
-                    EditorGUILayout.HelpBox("경로는 Assets/ 로 시작해야 합니다.", MessageType.Warning);
+                    SWEditorUtils.DrawHelpBox("경로는 Assets/ 로 시작해야 합니다.", MessageType.Warning);
 
                 namePrefixes[index] = EditorGUILayout.TextField("파일 이름 접두사", namePrefixes[index]);
                 EditorGUILayout.EndVertical();

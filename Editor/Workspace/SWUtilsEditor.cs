@@ -99,7 +99,7 @@ namespace SW.EditorTools.Window
         private void BuildWorkspace()
         {
             VisualElement sidebar = Element("sw-sidebar");
-            Label brand = new("SWUtils <color=#80bfff>Data Editor</color>")
+            Label brand = new($"SWUtils <color=#{ColorUtility.ToHtmlStringRGB(SWEditorTheme.Accent)}>Data Editor</color>")
             {
                 enableRichText = true
             };
@@ -143,7 +143,9 @@ namespace SW.EditorTools.Window
         private void BuildToolbar()
         {
             toolbar.Clear();
-            toolbar.Add(ActionButton("+", "Create asset", () => ShowCreatePicker(toolbar.worldBound)));
+            Button createButton = ActionButton("+", "Create asset", () => ShowCreatePicker(toolbar.worldBound));
+            createButton.AddToClassList("sw-primary");
+            toolbar.Add(createButton);
             TextField search = new()
             {
                 value = settings.SearchText

@@ -362,7 +362,7 @@ namespace SW.EditorTools.Window
             string inputGuide = tableLayout == SWExcelTableParser.TableLayout.Horizontal
                 ? "엑셀 또는 구글시트에서 헤더 행을 포함해 복사한 뒤 붙여넣으세요. 첫 줄은 컬럼명으로 사용됩니다."
                 : "각 행을 필드명과 값의 두 열로 작성한 뒤 붙여넣으세요. 일반 클래스 필드에만 사용할 수 있습니다.";
-            EditorGUILayout.HelpBox(inputGuide, MessageType.Info);
+            SWEditorUtils.DrawHelpBox(inputGuide, MessageType.Info);
 
             inputScroll = EditorGUILayout.BeginScrollView(inputScroll, GUILayout.MinHeight(120));
             tableText = EditorGUILayout.TextArea(tableText, GUILayout.ExpandHeight(true));
@@ -686,10 +686,10 @@ namespace SW.EditorTools.Window
         private void DrawParseMessages(SWExcelTableParser.ParseResult result)
         {
             foreach (string error in result.Errors)
-                EditorGUILayout.HelpBox(error, MessageType.Error);
+                SWEditorUtils.DrawHelpBox(error, MessageType.Error);
 
             foreach (string warning in result.Warnings)
-                EditorGUILayout.HelpBox(warning, MessageType.Warning);
+                SWEditorUtils.DrawHelpBox(warning, MessageType.Warning);
         }
         #endregion // 기존 함수
     }

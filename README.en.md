@@ -1,4 +1,4 @@
-# SWUtils 1.4.2
+# SWUtils 1.4.3
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -6,17 +6,17 @@ Shared runtime systems and editor tools for Unity 6. SWUtils provides save slots
 
 The package is in testing. Validate the features you use, including quest and achievement persistence, in your project before release.
 
-Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories, favourites, search and inspector tabs. Editor windows and their embedded editing panels share its theme; Unity's standard Inspector window retains the existing SWUtils style. See the [workspace guide and design analysis (Korean)](Documentation~/SWUtilsEditor.ko.md).
+Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories, favourites, search and inspector tabs. Editor windows and their embedded editing panels share its theme. In Unity's standard Inspector window, `SWMonoBehaviour` and `SWScriptableObject` use a dedicated theme with separate colors and sizing, preserving explicitly assigned group colors. See the [workspace guide and design analysis (Korean)](Documentation~/SWUtilsEditor.ko.md).
 
 ## Installation
 
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.2
+https://github.com/LAVINSE/SWUtils.git#v1.4.3
 ```
 
-The URL above requires the `v1.4.2` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.3` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 

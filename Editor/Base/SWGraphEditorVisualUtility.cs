@@ -11,7 +11,7 @@ namespace SW.EditorTools
         /// <summary>SW 그래프 편집기의 도구 모음에 공통 간격, 배경과 구분선을 적용합니다.</summary>
         public static void ApplyToolbar(VisualElement toolbar)
         {
-            toolbar.style.height = 34f;
+            toolbar.style.height = SWEditorTheme.GraphToolbarHeight;
             toolbar.style.flexShrink = 0f;
             toolbar.style.paddingLeft = 8f;
             toolbar.style.paddingRight = 8f;
@@ -28,7 +28,7 @@ namespace SW.EditorTools
             string tooltip = null)
         {
             ToolbarButton button = new ToolbarButton(clicked) { text = text, tooltip = tooltip };
-            button.style.height = 24f;
+            button.style.height = SWEditorTheme.ControlHeight;
             button.style.flexShrink = 0f;
             button.style.minWidth = 76f;
             button.style.marginLeft = 1f;
@@ -50,7 +50,7 @@ namespace SW.EditorTools
             titleLabel.style.unityTextAlign = TextAnchor.MiddleLeft;
             titleLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             titleLabel.style.paddingLeft = 8f;
-            titleLabel.style.fontSize = 13f;
+            titleLabel.style.fontSize = SWEditorTheme.BodyFontSize;
         }
     }
 }

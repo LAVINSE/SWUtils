@@ -129,7 +129,7 @@ namespace SW.EditorTools.Window
             DrawInfo("Screen.safeArea", Screen.safeArea.ToString());
 
             EditorGUILayout.Space(8f);
-            EditorGUILayout.HelpBox("Game View 또는 Device Simulator 해상도를 변경하면 값이 실시간으로 갱신됩니다.", MessageType.Info);
+            SWEditorUtils.DrawHelpBox("Game View 또는 Device Simulator 해상도를 변경하면 값이 실시간으로 갱신됩니다.", MessageType.Info);
         }
 
         private void DrawInfo(string label, string value)
@@ -147,7 +147,7 @@ namespace SW.EditorTools.Window
         private void DrawBaseResolutionTab()
         {
             EditorGUILayout.LabelField("기준 해상도 (BaseResolution)", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "프로젝트의 디자인 기준 해상도를 설정합니다. " +
                 "SWResolution.GetBaseResolutionScale() 등에서 사용됩니다.\n" +
                 "※ 런타임에만 유효하며, 플레이 모드에서도 값이 유지되진 않습니다.",
@@ -282,7 +282,7 @@ namespace SW.EditorTools.Window
             }
             if (!testCamera.orthographic)
             {
-                EditorGUILayout.HelpBox("FitOrthographicSize는 Orthographic 카메라에만 적용됩니다.", MessageType.Info);
+                SWEditorUtils.DrawHelpBox("FitOrthographicSize는 Orthographic 카메라에만 적용됩니다.", MessageType.Info);
             }
 
             EditorGUILayout.Space(8f);
@@ -316,7 +316,7 @@ namespace SW.EditorTools.Window
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("접근성 가이드라인", EditorStyles.boldLabel);
             DrawInfo("최소 터치 타겟 (9mm 기준)", $"{SWResolution.GetMinTouchSizePixels():F1} px");
-            EditorGUILayout.HelpBox(
+            SWEditorUtils.DrawHelpBox(
                 "iOS HIG: 44pt (~9mm)\n" +
                 "Material Design: 48dp (~9mm)\n" +
                 "버튼의 최소 크기는 위 값 이상이어야 합니다.",

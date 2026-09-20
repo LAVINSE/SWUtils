@@ -132,8 +132,15 @@ namespace SW.EditorTools.SkillTree
             try
             {
                 EditorGUILayout.Space(10);
-                if (definition == null) { EditorGUILayout.HelpBox("트리를 선택하면 노드와 선행 조건을 편집할 수 있습니다.", MessageType.None); return; }
-                foreach (string error in errors) EditorGUILayout.HelpBox(error, MessageType.Warning);
+                if (definition == null)
+                {
+                    SWEditorUtils.DrawHelpBox("트리를 선택하면 노드와 선행 조건을 편집할 수 있습니다.", MessageType.None);
+                    return;
+                }
+                foreach (string error in errors)
+                {
+                    SWEditorUtils.DrawHelpBox(error, MessageType.Warning);
+                }
                 SerializedObject serialized = new(definition);
                 SerializedProperty array = serialized.FindProperty("nodes");
                 SerializedProperty selected = null;
@@ -142,7 +149,7 @@ namespace SW.EditorTools.SkillTree
                 if (selected == null)
                 {
                     EditorGUILayout.LabelField("노드를 선택하세요", EditorStyles.boldLabel);
-                    EditorGUILayout.HelpBox("빈 곳의 오른쪽 클릭으로 노드를 추가합니다.\n출력 포트에서 다른 노드 입력 포트로 연결하세요.\n선택한 노드나 연결선은 Delete 키로 삭제합니다.", MessageType.None);
+                    SWEditorUtils.DrawHelpBox("빈 곳의 오른쪽 클릭으로 노드를 추가합니다.\n출력 포트에서 다른 노드 입력 포트로 연결하세요.\n선택한 노드나 연결선은 Delete 키로 삭제합니다.", MessageType.None);
                     return;
                 }
                 SWEditorUtils.DrawHeader("노드 설정");
@@ -171,7 +178,7 @@ namespace SW.EditorTools.SkillTree
                 }
                 EditorGUILayout.Space(14);
                 SWEditorUtils.DrawHeader("공유 스킬 정의");
-                EditorGUILayout.LabelField("이 스킬을 사용하는 다른 노드에도 적용됩니다.", EditorStyles.wordWrappedMiniLabel);
+                GUILayout.Label("이 스킬을 사용하는 다른 노드에도 적용됩니다.", SWEditorUtils.WrappedSecondaryLabelStyle);
                 Editor.CreateCachedEditor(skill, null, ref skillEditor);
                 EditorGUI.BeginChangeCheck();
                 skillEditor.OnInspectorGUI();

@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 using SW.Attributes;
 
@@ -14,6 +16,17 @@ namespace SW.EditorTools.Attributes
     public class SWReadOnlyAttributeDrawer : PropertyDrawer
     {
 
+
+        #region 필드 표시
+        /// <summary>
+        /// 공통 스타일을 상속하는 읽기 전용 필드를 생성합니다.
+        /// </summary>
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            PropertyField field = new PropertyField(property);
+            field.SetEnabled(false);
+            return field;
+        }
 
         /// <summary>
         /// 읽기 전용 필드의 기본 프로퍼티 높이를 반환합니다.
@@ -34,9 +47,11 @@ namespace SW.EditorTools.Attributes
         /// <param name="label">필드 라벨입니다.</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            GUI.enabled = false;
-            EditorGUI.PropertyField(position, property, label, true);
-            GUI.enabled = true;
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUI.PropertyField(position, property, label, true);
+            }
         }
+        #endregion // 필드 표시
     }
 }
