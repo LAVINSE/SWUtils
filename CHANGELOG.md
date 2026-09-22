@@ -2,6 +2,9 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.4] - 2026-09-22
+- Unity 6.6 fix
+
 ## [v1.4.3] - 2026-09-20
 
 - Updated the shared theme across the data workspace, editor windows and graphs with gray-purple colors, consistent text and control sizing, and clearer selection, active tab and creation button states. Moved the shared stylesheet to `Editor/StyleSheet/SWEditorThemeStylesheet.uss`, preserving its asset identifier.

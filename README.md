@@ -13,10 +13,10 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.3
+https://github.com/LAVINSE/SWUtils.git#v1.4.4
 ```
 
-위 주소는 원격 저장소에 `v1.4.3` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
+위 주소는 원격 저장소에 `v1.4.4` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
 필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 

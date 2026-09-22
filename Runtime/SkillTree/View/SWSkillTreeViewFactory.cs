@@ -52,7 +52,7 @@ namespace SW.SkillTree
             text.fontSize = size;
             text.color = color;
             text.raycastTarget = false;
-            text.enableWordWrapping = true;
+            text.textWrappingMode = TextWrappingModes.Normal;
             text.overflowMode = TextOverflowModes.Truncate;
             return text;
         }
