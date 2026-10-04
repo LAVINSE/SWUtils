@@ -1,89 +1,119 @@
 using UnityEditor;
 using UnityEditor.UI;
-using UnityEngine;
-
-using SW.Attributes;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
 using SW.Util;
 
 namespace SW.EditorTools.Util
 {
     /// <summary>
-    /// SWButtonExtension의 커스텀 인스펙터입니다.
+    /// 기본 Button 편집과 Iris Line 테마의 확장 설정을 제공하는 인스펙터입니다.
     /// </summary>
-    /// <remarks>
-    /// Button을 상속한 클래스에는 Unity의 ButtonEditor가 적용되어
-    /// 파생 클래스에서 추가한 직렬화 필드가 인스펙터에 표시되지 않습니다.
-    /// 이 에디터는 기본 Button 인스펙터(Interactable, Transition, Navigation, OnClick)를
-    /// 먼저 그린 뒤, 확장 필드를 SWEditorUtils.DrawHeader 기반의 섹션으로 그립니다.
-    /// SWCondition 어트리뷰트는 PropertyDrawer로 동작하므로 조건부 표시가 그대로 유지됩니다.
-    /// </remarks>
     [CustomEditor(typeof(SWButtonExtension), true)]
     [CanEditMultipleObjects]
     public class SWButtonExtensionEditor : ButtonEditor
     {
         #region 데이터
-        /// <summary>인스펙터 섹션 정의입니다.</summary>
-        private readonly struct Section
+        /// <summary>
+        /// 인스펙터를 열 때 한 번 조회한 섹션의 제목, 설명과 직렬화 속성입니다.
+        /// </summary>
+        private sealed class Section
         {
-            /// <summary>섹션 제목입니다.</summary>
             public readonly string title;
-            /// <summary>섹션에 포함될 직렬화 필드 이름 목록입니다.</summary>
-            public readonly string[] propertyNames;
+            public readonly string description;
+            public readonly SerializedProperty[] properties;
 
             /// <summary>
-            /// 제목과 직렬화 필드 이름으로 인스펙터 섹션을 생성합니다.
+            /// 섹션에 필요한 속성을 캐시하여 다시 그릴 때 조회하지 않습니다.
             /// </summary>
-            /// <param name="title">섹션 제목입니다.</param>
-            /// <param name="propertyNames">섹션에 포함할 직렬화 필드 이름입니다.</param>
-            public Section(string title, params string[] propertyNames)
+            public Section(
+                SerializedObject serializedObject, string title, string description, params string[] propertyNames)
             {
                 this.title = title;
-                this.propertyNames = propertyNames;
+                this.description = description;
+                properties = new SerializedProperty[propertyNames.Length];
+                for (int index = 0; index < propertyNames.Length; index++)
+                {
+                    properties[index] = serializedObject.FindProperty(propertyNames[index]);
+                }
             }
         }
         #endregion // 데이터
 
         #region 필드
-        /// <summary>인스펙터에 그릴 섹션 목록입니다. 선언 순서대로 표시됩니다.</summary>
-        private static readonly Section[] Sections =
-        {
-            new("연타 방지", "useCooldown", "cooldownSeconds", "disableButtonDuringCooldown"),
-            new("롱프레스", "useLongPress", "longPressSeconds", "suppressClickAfterLongPress", "onLongPress"),
-            new("홀드 반복", "useRepeat", "repeatStartDelay", "repeatInterval", "repeatMinInterval", "repeatAccelerateDuration", "onRepeat"),
-            new("사운드", "useClickSfx", "clickSfxKey"),
-            new("설정", "useUnscaledTime"),
-        };
+        private Section[] sections;
         #endregion // 필드
 
+        #region 초기화
         /// <summary>
-        /// 기본 Button 인스펙터를 그린 뒤 확장 필드를 섹션별로 그립니다.
+        /// 기본 Button 속성과 확장 설정을 인스펙터 생명주기당 한 번 준비합니다.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            sections = new[]
+            {
+                new Section(serializedObject, "연타 방지", "클릭 후 지정한 시간 동안 추가 입력을 막습니다.",
+                    "useCooldown", "cooldownSeconds", "disableButtonDuringCooldown"),
+                new Section(serializedObject, "롱프레스", "길게 누르면 한 번 실행합니다. 홀드 반복과 함께 켜면 반복이 우선됩니다.",
+                    "useLongPress", "longPressSeconds", "suppressClickAfterLongPress", "onLongPress"),
+                new Section(serializedObject, "홀드 반복", "누르는 동안 반복 실행하며 최소 간격까지 점차 빨라집니다.",
+                    "useRepeat", "repeatStartDelay", "repeatInterval", "repeatMinInterval", "repeatAccelerateDuration", "onRepeat"),
+                new Section(serializedObject, "사운드", "클릭 효과음을 SWAudioManager로 재생합니다.",
+                    "useClickSfx", "clickSfxKey"),
+                new Section(serializedObject, "시간", "일시정지 중에도 동작해야 하는 UI는 배율 무시를 켜세요.",
+                    "useUnscaledTime"),
+            };
+        }
+        #endregion // 초기화
+
+        #region 인스펙터
+        /// <summary>
+        /// UI Toolkit 설정 패널을 한 번 만들고 속성 바인딩으로 변경을 반영합니다.
+        /// </summary>
+        public override VisualElement CreateInspectorGUI()
+        {
+            VisualElement root = SWSelectableExtensionEditorUI.CreateRoot("기본 버튼", DrawBaseInspector);
+            foreach (Section section in sections)
+            {
+                VisualElement panel = SWSelectableExtensionEditorUI.CreateSection(section.title, section.description);
+                foreach (SerializedProperty property in section.properties)
+                {
+                    panel.Add(new PropertyField(property));
+                }
+                root.Add(panel);
+            }
+
+            return root;
+        }
+
+        /// <summary>
+        /// Unity의 기본 클릭 이벤트와 전환 설정을 유지합니다.
+        /// </summary>
+        private void DrawBaseInspector()
+        {
+            base.OnInspectorGUI();
+        }
+
+        /// <summary>
+        /// IMGUI 기반 작업 공간에서는 캐시한 속성으로 확장 설정을 표시합니다.
         /// </summary>
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-
-            EditorGUILayout.Space(10f);
-
             serializedObject.Update();
-
-            for (int sectionIndex = 0; sectionIndex < Sections.Length; sectionIndex++)
+            foreach (Section section in sections)
             {
-                Section section = Sections[sectionIndex];
-
-                SWEditorUtils.DrawHeader(section.title);
-
-                for (int propertyIndex = 0; propertyIndex < section.propertyNames.Length; propertyIndex++)
+                EditorGUILayout.Space(8f);
+                SWEditorUtils.DrawHeader(section.title, SWEditorTheme.Accent);
+                foreach (SerializedProperty property in section.properties)
                 {
-                    SerializedProperty property = serializedObject.FindProperty(section.propertyNames[propertyIndex]);
-                    if (property != null)
-                        EditorGUILayout.PropertyField(property, true);
+                    EditorGUILayout.PropertyField(property, true);
                 }
-
-                EditorGUILayout.Space(6f);
             }
-
             serializedObject.ApplyModifiedProperties();
         }
+        #endregion // 인스펙터
     }
 }

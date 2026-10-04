@@ -2,6 +2,13 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.5] - 2026-10-05
+
+- Added `SWToggleExtension` with selected/unselected TextMeshPro colors, standard ToggleGroup behavior, and editor previews.
+- Applied the shared Iris Line theme and settings panels to both extension inspectors. UI Toolkit elements and serialized properties are prepared when the inspector is created.
+- Subscribed to toggle changes once per lifetime, blocked button holds during cooldowns, and stopped repetition after interaction is disabled. Prepared repeat timing once per hold and clamped invalid timing values.
+- Connected component icons, component dots, missing-script warnings, and active toggles to the right side of Unity 6.6's new Hierarchy. Recycled rows release previous object callbacks, and active-toggle hit areas account for missing-script warnings.
+
 ## [v1.4.4] - 2026-09-22
 - Unity 6.6 fix
 

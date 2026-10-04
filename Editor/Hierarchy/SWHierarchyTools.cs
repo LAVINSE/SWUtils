@@ -7,6 +7,12 @@ using UnityEngine;
 
 using SW.EditorTools.Util;
 
+#if UNITY_6000_6_OR_NEWER
+using Unity.Hierarchy;
+using Unity.Hierarchy.Editor;
+using UnityEngine.UIElements;
+#endif
+
 #if UNITY_6000_4_OR_NEWER
 using SWObjectIdentifier = UnityEngine.EntityId;
 #else
@@ -75,6 +81,11 @@ namespace SW.EditorTools.Hierarchy
         private const string ZebraKey = "SWTools.HierarchyTools.Zebra";
         private const string ShortcutsKey = "SWTools.HierarchyTools.Shortcuts";
         private const string LineWidthKey = "SWTools.HierarchyTools.LineWidth";
+        private const int MaxComponentIcons = 6;
+        private const int MaxComponentDots = 5;
+#if UNITY_6000_6_OR_NEWER
+        private const string RightToolsElementName = "sw-hierarchy-right-tools";
+#endif
 
         private static readonly Dictionary<string, Entry> entriesById = new();
         private static readonly Dictionary<SWObjectIdentifier, Entry> entriesByObjectIdentifier = new();
@@ -208,7 +219,105 @@ namespace SW.EditorTools.Hierarchy
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
 #endif
             EditorApplication.hierarchyChanged += ClearTransientCaches;
+#if UNITY_6000_6_OR_NEWER
+            HierarchyWindow.BindViewItem += BindRightTools;
+            HierarchyWindow.UnbindViewItem += UnbindRightTools;
+#endif
         }
+
+#if UNITY_6000_6_OR_NEWER
+        #region Unity 6.6 하이어라키
+        /// <summary>
+        /// 새 하이어라키의 GameObject 행 오른쪽에 기존 보조 도구를 연결합니다.
+        /// 재사용되는 행에는 컨테이너를 중복 생성하지 않습니다.
+        /// </summary>
+        private static void BindRightTools(HierarchyWindow window, HierarchyView view, HierarchyViewItem item)
+        {
+            if (item.Handler is not HierarchyGameObjectHandler handler)
+            {
+                return;
+            }
+
+            GameObject gameObject = handler.GetGameObject(item.Node);
+            IMGUIContainer container = item.RightCustomContainer.Q<IMGUIContainer>(RightToolsElementName);
+            if (container == null)
+            {
+                container = new IMGUIContainer { name = RightToolsElementName };
+                item.RightCustomContainer.Add(container);
+            }
+
+            container.onGUIHandler = () => DrawRightToolsContainer(gameObject);
+            container.MarkDirtyLayout();
+        }
+
+        /// <summary>
+        /// 행 재활용 전에 이전 GameObject를 캡처한 콜백을 해제합니다.
+        /// </summary>
+        private static void UnbindRightTools(HierarchyWindow window, HierarchyView view, HierarchyViewItem item)
+        {
+            IMGUIContainer container = item.RightCustomContainer.Q<IMGUIContainer>(RightToolsElementName);
+            if (container != null)
+            {
+                container.onGUIHandler = null;
+                container.MarkDirtyLayout();
+            }
+        }
+
+        /// <summary>
+        /// 표시 옵션에 필요한 너비를 확보하고 오른쪽 도구의 입력과 그리기를 처리합니다.
+        /// </summary>
+        private static void DrawRightToolsContainer(GameObject gameObject)
+        {
+            if (!Enabled || gameObject == null)
+            {
+                return;
+            }
+
+            float width = GetRightToolsWidth(gameObject);
+            Rect rowRect = GUILayoutUtility.GetRect(width, SWEditorUtils.DefaultIconSize);
+            DrawIntegratedRightTools(gameObject, rowRect);
+        }
+
+        /// <summary>
+        /// 오른쪽 도구가 오브젝트 이름을 덮지 않도록 현재 설정의 표시 너비를 계산합니다.
+        /// </summary>
+        private static float GetRightToolsWidth(GameObject gameObject)
+        {
+            float width = 0f;
+            if (drawMissingScriptWarning && HasMissingScriptsCached(gameObject))
+            {
+                width += 21f;
+            }
+
+            if (drawActiveToggle)
+            {
+                width += 20f;
+            }
+
+            int componentCount = 0;
+            foreach (Component component in GetCachedComponents(gameObject))
+            {
+                if (component != null && component is not Transform)
+                {
+                    componentCount++;
+                }
+            }
+
+            if (drawComponentIcons && componentCount > 0)
+            {
+                width += Mathf.Min(componentCount, MaxComponentIcons)
+                    * (SWEditorUtils.DefaultIconSize + componentIconSpacing) + 3f;
+            }
+
+            if (drawComponentMinimap)
+            {
+                width += Mathf.Min(componentCount, MaxComponentDots) * 8f;
+            }
+
+            return width > 0f ? width + 6f : 0f;
+        }
+        #endregion // Unity 6.6 하이어라키
+#endif
 
         /// <summary>
         /// 선택한 오브젝트에 하이어라키 색상 스타일을 적용합니다.
@@ -434,7 +543,11 @@ namespace SW.EditorTools.Hierarchy
         /// <param name="rowRect">하이어라키 행 영역입니다.</param>
         public static void DrawIntegratedRightTools(GameObject gameObject, Rect rowRect)
         {
-            if (!Enabled || Event.current.type != EventType.Repaint || gameObject == null)
+            if (!Enabled || gameObject == null)
+                return;
+
+            HandleMouse(gameObject, rowRect);
+            if (Event.current.type != EventType.Repaint)
                 return;
 
             DrawRightTools(gameObject, rowRect, TryGetEntry(gameObject));
@@ -524,7 +637,7 @@ namespace SW.EditorTools.Hierarchy
 
             float x = startX;
             int drawn = 0;
-            for (int i = components.Length - 1; i >= 0 && drawn < 6; i--)
+            for (int i = components.Length - 1; i >= 0 && drawn < MaxComponentIcons; i--)
             {
                 Component component = components[i];
                 if (component == null || component is Transform)
@@ -551,7 +664,7 @@ namespace SW.EditorTools.Hierarchy
 
             float x = startX;
             int drawn = 0;
-            for (int i = components.Length - 1; i >= 0 && drawn < 5; i--)
+            for (int i = components.Length - 1; i >= 0 && drawn < MaxComponentDots; i--)
             {
                 Component component = components[i];
                 if (component == null || component is Transform)
@@ -569,7 +682,8 @@ namespace SW.EditorTools.Hierarchy
             if (!enabled || !drawActiveToggle || Event.current.type != EventType.MouseDown)
                 return;
 
-            Rect activeRect = new(rowRect.xMax - 22f, rowRect.y + 2f, 14f, 14f);
+            float warningWidth = drawMissingScriptWarning && HasMissingScriptsCached(gameObject) ? 21f : 0f;
+            Rect activeRect = new(rowRect.xMax - 22f - warningWidth, rowRect.y + 2f, 14f, 14f);
             if (!activeRect.Contains(Event.current.mousePosition))
                 return;
 

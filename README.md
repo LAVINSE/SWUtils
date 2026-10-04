@@ -1,4 +1,4 @@
-# SWUtils 1.4.3
+# SWUtils 1.4.5
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.4
+https://github.com/LAVINSE/SWUtils.git#v1.4.5
 ```
 
-위 주소는 원격 저장소에 `v1.4.4` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
+위 주소는 원격 저장소에 `v1.4.5` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
 필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 
@@ -557,6 +557,7 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 - `SWAmountFormat`, `SWAmountFormatProfile`: 큰 숫자의 단위와 소수점 표시를 관리합니다.
 - `SWAudioLibrary`, `SWAudioManager`: 음악과 효과음 등록, 재생과 볼륨을 관리합니다.
 - `SWButtonExtension`: 연타 방지, 길게 누르기, 반복 실행과 클릭 효과음을 제공합니다.
+- `SWToggleExtension`: 기본 Toggle과 ToggleGroup을 유지하면서 선택 상태에 따라 TextMeshPro 텍스트 색상을 바꿉니다.
 - `SWCooldown`, `SWTimer`, `SWRefillTimer`, `SWTime`: 시간과 타이머 기능을 제공합니다.
 - `SWEventBus`: 타입 기반 이벤트 발행과 구독을 제공합니다.
 - `SWRandom`, `SWShuffleBag`: 가중치 선택, 섞기와 반복 없는 무작위 선택을 제공합니다.
@@ -590,6 +591,10 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 #### 입력과 공통 도구
 
 `SWButtonExtension`은 연타 방지, 길게 누르기, 누르는 동안 반복과 효과음을 구성합니다. 키보드·게임패드의 확정 입력도 지원합니다. `SWRectDummy`는 이미지를 그리지 않고 입력 영역을 만들며 `SWTriggerDispatcher`는 물리 트리거 진입·유지·종료를 이벤트로 전달합니다.
+
+`SWToggleExtension`은 `Toggle`을 상속합니다. 탭의 `_Toggle` 오브젝트에서 기본 `Toggle` 대신 사용하고, `Group`에는 부모의 `ToggleGroup`, `Target Graphic`에는 배경, `Graphic`에는 체크 이미지를 연결합니다. 확장 설정의 `텍스트`에는 탭의 TextMeshPro를 연결하고 `선택 색상`·`비선택 색상`을 지정합니다. 기본 `Is On`, 내비게이션과 `On Value Changed` 이벤트를 그대로 사용합니다. 텍스트는 체크 이미지와 별도 오브젝트에 두어 비선택 상태에서도 보이게 합니다.
+
+두 확장 인스펙터는 공통 Iris Line 테마와 설정 패널을 사용합니다. 설정 요소와 직렬화 속성은 인스펙터 생성 시 준비합니다. 토글은 선택 변경 이벤트를 한 번 구독하며 `Update`로 감시하지 않습니다. 버튼의 코루틴은 홀드·쿨다운이 진행되는 동안에만 실행하고 쿨다운 중에는 홀드를 시작하지 않습니다. `SetIsOnWithoutNotify` 또는 `ToggleGroup.SetAllTogglesOff(false)`로 이벤트 없이 상태를 바꾸면 영향받은 각 `SWToggleExtension`의 `RefreshTextColor()`를 호출해야 합니다.
 
 `SWSingleton<T>`와 `SWSingletonScene<T>`는 각각 전역·씬 단위의 컴포넌트 조회를 제공합니다. `SWFactory`는 오브젝트 생성을, `SWExtension`·`SWString`·`SWUtility`는 공통 계산·확장 함수·문자열 처리를 제공합니다. `SWUtility.SetGaugeText`는 현재 값과 최대 값을 텍스트로 표시하며 기존 `SetGauge`도 같은 동작을 유지합니다. `SWVibration`은 지원 플랫폼의 진동을 호출합니다.
 
@@ -648,6 +653,8 @@ Runtime 어트리뷰트에 대응하는 프로퍼티 서랍과 `SWMonoBehaviour`
 - `SWTools/Utils/Screen/Resolution Window`: 화면 크기와 비율을 확인합니다.
 - `SWTools/Utils/Simulation/Random Simulator`: 가중치·섞기 기반 선택 결과를 시뮬레이션합니다.
 - `SWTools/Utils/State Machine/Graph Editor`: 다중 계층·스택 상태 머신의 노드와 전이를 편집합니다.
+
+Unity 6.6의 새 Hierarchy에서는 `BindViewItem`과 `RightCustomContainer`를 통해 오른쪽 컴포넌트 아이콘·미니맵·누락 경고·활성 토글을 표시합니다. 이 연결은 오른쪽 보조 도구에 적용되며, 기존 IMGUI 행 배경과 단축키까지 새 Hierarchy로 이식하는 것은 포함하지 않습니다.
 
 #### `SWTools/Debug/Console/Debug Console Settings`
 

@@ -86,6 +86,9 @@
 .sw-theme .sw-inspector-root { padding: 8px 10px; }
 .sw-theme .sw-section { background-color: var(--sw-panel); border-width: 1px; border-color: var(--sw-border); border-radius: 4px; padding: 10px; margin: 0 0 16px 0; }
 .sw-theme .sw-section-title { color: var(--sw-text); -unity-font-style: bold; font-size: 15px; margin: 2px 0 10px 0; }
+.sw-theme.sw-selectable-inspector { padding: 8px 10px; }
+.sw-theme.sw-selectable-inspector .sw-section { border-left-width: 3px; border-left-color: var(--sw-accent); }
+.sw-theme .sw-hidden { display: none; }
 .sw-theme .sw-validation-title { -unity-font-style: bold; white-space: normal; margin-bottom: 4px; }
 .sw-theme .sw-validation > .unity-help-box { background-color: transparent; border-width: 0; border-radius: 0; padding: 4px 0; margin: 0; }
 .sw-theme .sw-muted { color: var(--sw-muted); }

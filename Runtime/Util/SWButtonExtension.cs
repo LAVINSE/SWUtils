@@ -96,10 +96,16 @@ namespace SW.Util
             base.OnValidate();
 
             if (useLongPress && useRepeat)
+            {
                 SWLog.LogWarning($"[SWButtonExtension] 롱프레스와 홀드 반복은 동시에 사용할 수 없습니다. 홀드 반복이 우선됩니다: {name}");
+            }
 
-            if (repeatMinInterval > repeatInterval)
-                repeatMinInterval = repeatInterval;
+            cooldownSeconds = Mathf.Max(0.01f, cooldownSeconds);
+            longPressSeconds = Mathf.Max(0.01f, longPressSeconds);
+            repeatStartDelay = Mathf.Max(0f, repeatStartDelay);
+            repeatInterval = Mathf.Max(0.01f, repeatInterval);
+            repeatMinInterval = Mathf.Clamp(repeatMinInterval, 0.01f, repeatInterval);
+            repeatAccelerateDuration = Mathf.Max(0f, repeatAccelerateDuration);
         }
 #endif // UNITY_EDITOR
         #endregion // 초기화
@@ -112,17 +118,24 @@ namespace SW.Util
         {
             base.OnPointerDown(eventData);
 
-            if (eventData.button != PointerEventData.InputButton.Left) return;
-            if (!IsInteractable()) return;
+            if (eventData.button != PointerEventData.InputButton.Left
+                || !IsActive() || !IsInteractable() || isCooldown)
+            {
+                return;
+            }
 
             isLongPressFired = false;
             repeatFiredCount = 0;
 
             StopHoldRoutine();
             if (useRepeat)
+            {
                 holdRoutine = StartCoroutine(RepeatRoutine());
+            }
             else if (useLongPress)
+            {
                 holdRoutine = StartCoroutine(LongPressRoutine());
+            }
         }
 
         /// <summary>
@@ -220,9 +233,21 @@ namespace SW.Util
 
             while (elapsed < duration)
             {
+                if (!IsInteractable())
+                {
+                    holdRoutine = null;
+                    yield break;
+                }
+
                 elapsed += GetDeltaTime();
                 OnHoldProgress?.Invoke(Mathf.Clamp01(elapsed / duration));
                 yield return null;
+            }
+
+            if (!IsActive() || !IsInteractable())
+            {
+                holdRoutine = null;
+                yield break;
             }
 
             isLongPressFired = true;
@@ -242,25 +267,34 @@ namespace SW.Util
 
             while (elapsed < startDelay)
             {
+                if (!IsInteractable())
+                {
+                    holdRoutine = null;
+                    yield break;
+                }
+
                 elapsed += GetDeltaTime();
                 yield return null;
             }
 
             float holdTime = 0f;
             float intervalTimer = 0f;
+            float interval = Mathf.Max(0.01f, repeatInterval);
+            float minInterval = Mathf.Clamp(repeatMinInterval, 0.01f, interval);
+            float inverseAccelerateDuration = repeatAccelerateDuration > 0f ? 1f / repeatAccelerateDuration : 0f;
 
             FireRepeat();
 
-            while (true)
+            while (IsActive() && IsInteractable())
             {
                 float deltaTime = GetDeltaTime();
                 holdTime += deltaTime;
                 intervalTimer += deltaTime;
 
-                float accelerateProgress = repeatAccelerateDuration > 0f
-                    ? Mathf.Clamp01(holdTime / repeatAccelerateDuration)
+                float accelerateProgress = inverseAccelerateDuration > 0f
+                    ? Mathf.Clamp01(holdTime * inverseAccelerateDuration)
                     : 1f;
-                float currentInterval = Mathf.Lerp(repeatInterval, repeatMinInterval, accelerateProgress);
+                float currentInterval = Mathf.Lerp(interval, minInterval, accelerateProgress);
 
                 if (intervalTimer >= currentInterval)
                 {
@@ -270,6 +304,8 @@ namespace SW.Util
 
                 yield return null;
             }
+
+            holdRoutine = null;
         }
 
         /// <summary>
@@ -277,9 +313,8 @@ namespace SW.Util
         /// </summary>
         private void FireRepeat()
         {
-            if (!IsInteractable())
+            if (!IsActive() || !IsInteractable())
             {
-                StopHoldRoutine();
                 return;
             }
 
@@ -292,8 +327,15 @@ namespace SW.Util
         /// </summary>
         private void StartCooldown()
         {
+            if (!IsActive() || isCooldown)
+            {
+                return;
+            }
+
             if (cooldownRoutine != null)
+            {
                 StopCoroutine(cooldownRoutine);
+            }
 
             cooldownRoutine = StartCoroutine(CooldownRoutine());
         }
