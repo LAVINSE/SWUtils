@@ -2,6 +2,11 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.7] - 2026-10-13
+
+- Cached the `SWPlayerPrefs` AES key and IV after the first PBKDF2 derivation to avoid repeating the 1,000-iteration calculation on reads and writes. Preserved existing encryption parameters and the stored data format.
+- Cleared encryption settings and derived values in `ReloadSettings` and at play startup, including when domain reload is disabled.
+
 ## [v1.4.6] - 2026-10-05
 
 - Added a Use Text Color option to `SWToggleExtension`. Turning it off allows standard Toggle behavior without a label reference, hides the related settings and missing-reference warning, and immediately skips color updates. It defaults to enabled to preserve existing behavior.

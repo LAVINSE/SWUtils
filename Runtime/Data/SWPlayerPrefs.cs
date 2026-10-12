@@ -47,6 +47,10 @@ namespace SW.Data
         #region 필드
         /// <summary>암호화 설정 에셋 캐시입니다.</summary>
         private static SWPlayerPrefsSettings settingsCache;
+        /// <summary>현재 설정에서 한 번 계산한 AES 키입니다.</summary>
+        private static byte[] cachedKey;
+        /// <summary>현재 설정에서 한 번 계산한 AES IV입니다.</summary>
+        private static byte[] cachedIV;
         /// <summary>관리 중인 키 목록을 저장하는 PlayerPrefs 키.</summary>
         private static string KeyIndexName => $"SwUtilsPrefs_KeyIndex_{currentSlot}";
         /// <summary>암호화된 키 접두사 (일반 PlayerPrefs와 구분).</summary>
@@ -69,11 +73,13 @@ namespace SW.Data
         public static string CurrentIVSalt => Settings.IVSalt;
 
         /// <summary>
-        /// 암호화 설정 캐시를 비우고 다음 접근 시 Resources 설정 에셋을 다시 읽습니다.
+        /// 설정과 AES 키·IV 캐시를 비우고 다음 접근 시 설정을 다시 읽어 계산합니다.
         /// </summary>
         public static void ReloadSettings()
         {
             settingsCache = null;
+            cachedKey = null;
+            cachedIV = null;
         }
 
         /// <summary>프로젝트 설정 에셋 또는 기본 설정을 반환합니다.</summary>
@@ -107,6 +113,17 @@ namespace SW.Data
         }
         #endregion // 프로퍼티
 
+        #region 초기화
+        /// <summary>
+        /// 도메인 리로드가 꺼져 있어도 플레이 진입 시 암호화 설정 캐시를 초기화합니다.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetEncryptionCache()
+        {
+            ReloadSettings();
+        }
+        #endregion // 초기화
+
         #region 슬롯 관리
         /// <summary>
         /// 활성 슬롯을 변경합니다. 슬롯을 생략한 읽기와 쓰기에 적용됩니다.
@@ -122,17 +139,25 @@ namespace SW.Data
 
         #region 암호화 / 복호화
         /// <summary>
-        /// AES 키와 IV를 생성합니다. 솔트 기반으로 항상 동일한 값을 반환.
+        /// 현재 설정의 AES 키와 IV를 처음 접근할 때 계산하고 이후에는 캐시를 반환합니다.
         /// </summary>
         /// <param name="key">생성된 AES 키</param>
         /// <param name="iv">생성된 AES IV</param>
         private static void GetKeyIV(out byte[] key, out byte[] iv)
         {
-            using (var derive = new Rfc2898DeriveBytes(CurrentSalt, Encoding.UTF8.GetBytes(CurrentIVSalt), 1000))
+            if (cachedKey == null || cachedIV == null)
             {
-                key = derive.GetBytes(16);
-                iv = derive.GetBytes(16);
+                using (var derive = new Rfc2898DeriveBytes(CurrentSalt, Encoding.UTF8.GetBytes(CurrentIVSalt), 1000))
+                {
+                    byte[] derivedKey = derive.GetBytes(16);
+                    byte[] derivedIV = derive.GetBytes(16);
+                    cachedKey = derivedKey;
+                    cachedIV = derivedIV;
+                }
             }
+
+            key = cachedKey;
+            iv = cachedIV;
         }
 
         /// <summary>
