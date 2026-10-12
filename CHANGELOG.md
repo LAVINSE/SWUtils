@@ -2,6 +2,10 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.6] - 2026-10-05
+
+- Added a Use Text Color option to `SWToggleExtension`. Turning it off allows standard Toggle behavior without a label reference, hides the related settings and missing-reference warning, and immediately skips color updates. It defaults to enabled to preserve existing behavior.
+
 ## [v1.4.5] - 2026-10-05
 
 - Added `SWToggleExtension` with selected/unselected TextMeshPro colors, standard ToggleGroup behavior, and editor previews.

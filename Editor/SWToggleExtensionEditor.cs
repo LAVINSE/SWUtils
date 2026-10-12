@@ -16,9 +16,11 @@ namespace SW.EditorTools.Util
     public class SWToggleExtensionEditor : ToggleEditor
     {
         #region 필드
+        private SerializedProperty useTextColor;
         private SerializedProperty labelText;
         private SerializedProperty selectedTextColor;
         private SerializedProperty unselectedTextColor;
+        private readonly GUIContent useTextColorLabel = new("텍스트 색상 변경 사용");
         private readonly GUIContent textLabel = new("텍스트");
         private readonly GUIContent selectedLabel = new("선택 색상");
         private readonly GUIContent unselectedLabel = new("비선택 색상");
@@ -31,6 +33,7 @@ namespace SW.EditorTools.Util
         protected override void OnEnable()
         {
             base.OnEnable();
+            useTextColor = serializedObject.FindProperty("useTextColor");
             labelText = serializedObject.FindProperty("labelText");
             selectedTextColor = serializedObject.FindProperty("selectedTextColor");
             unselectedTextColor = serializedObject.FindProperty("unselectedTextColor");
@@ -46,6 +49,7 @@ namespace SW.EditorTools.Util
             VisualElement root = SWSelectableExtensionEditorUI.CreateRoot("기본 토글", DrawBaseInspector);
             VisualElement section = SWSelectableExtensionEditorUI.CreateSection(
                 "선택 상태별 텍스트 색상", "Is On 상태에 따라 탭 텍스트의 색상이 바뀝니다.");
+            section.Add(new PropertyField(useTextColor, useTextColorLabel.text));
             section.Add(new PropertyField(labelText, textLabel.text));
             section.Add(new PropertyField(selectedTextColor, selectedLabel.text));
             section.Add(new PropertyField(unselectedTextColor, unselectedLabel.text));
@@ -54,6 +58,7 @@ namespace SW.EditorTools.Util
             section.Add(warning);
             RefreshReferenceWarning(warning);
             warning.TrackPropertyValue(labelText, property => RefreshReferenceWarning(warning));
+            warning.TrackPropertyValue(useTextColor, property => RefreshReferenceWarning(warning));
             root.Add(section);
             return root;
         }
@@ -67,12 +72,13 @@ namespace SW.EditorTools.Util
         }
 
         /// <summary>
-        /// 참조가 바뀔 때만 누락 안내의 표시 여부를 갱신합니다.
+        /// 사용 여부나 참조가 바뀔 때만 누락 안내의 표시 여부를 갱신합니다.
         /// </summary>
         private void RefreshReferenceWarning(HelpBox warning)
         {
             warning.EnableInClassList(
-                "sw-hidden", labelText.hasMultipleDifferentValues || labelText.objectReferenceValue != null);
+                "sw-hidden", !useTextColor.boolValue || useTextColor.hasMultipleDifferentValues
+                    || labelText.hasMultipleDifferentValues || labelText.objectReferenceValue != null);
         }
 
         /// <summary>
@@ -85,11 +91,13 @@ namespace SW.EditorTools.Util
             serializedObject.Update();
             EditorGUILayout.Space(10f);
             SWEditorUtils.DrawHeader("선택 상태별 텍스트 색상");
+            EditorGUILayout.PropertyField(useTextColor, useTextColorLabel);
             EditorGUILayout.PropertyField(labelText, textLabel);
             EditorGUILayout.PropertyField(selectedTextColor, selectedLabel);
             EditorGUILayout.PropertyField(unselectedTextColor, unselectedLabel);
 
-            if (!labelText.hasMultipleDifferentValues && labelText.objectReferenceValue == null)
+            if (useTextColor.boolValue && !useTextColor.hasMultipleDifferentValues
+                && !labelText.hasMultipleDifferentValues && labelText.objectReferenceValue == null)
             {
                 EditorGUILayout.HelpBox("색상을 변경할 TextMeshPro 텍스트를 연결하세요.", MessageType.Warning);
             }

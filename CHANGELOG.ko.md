@@ -2,6 +2,10 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.6] - 2026-10-05
+
+- `SWToggleExtension`에 `텍스트 색상 변경 사용` 옵션을 추가했습니다. 끄면 텍스트 참조 없이 기본 Toggle로 사용할 수 있고 관련 설정과 참조 누락 안내를 숨깁니다. 색상 갱신은 즉시 건너뛰며 기존 동작을 유지하도록 기본값은 켜짐입니다.
+
 ## [v1.4.5] - 2026-10-05
 
 - `SWToggleExtension`을 추가했습니다. 기본 ToggleGroup 동작을 유지하며 선택·비선택 TextMeshPro 색상을 설정하고 편집기에서 미리 볼 수 있습니다.

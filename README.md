@@ -1,4 +1,4 @@
-# SWUtils 1.4.5
+# SWUtils 1.4.6
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Unity 6용 공통 런타임과 편집기 도구 모음입니다. 저장 슬롯, 
 Unity Package Manager에서 `+ > Add package from git URL...`을 선택하고 배포 태그를 입력합니다.
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.5
+https://github.com/LAVINSE/SWUtils.git#v1.4.6
 ```
 
-위 주소는 원격 저장소에 `v1.4.5` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
+위 주소는 원격 저장소에 `v1.4.6` 태그가 등록된 후 사용할 수 있습니다. 태그 등록 전에는 `+ > Add package from disk...`에서 로컬 `package.json`을 선택합니다. 개발 중인 코드를 받을 때는 원하는 브랜치 또는 커밋을 지정합니다. [버전별 변경 기록](CHANGELOG.ko.md)을 확인하세요.
 
 필수 패키지와 모듈은 `package.json`으로 연결됩니다. Localization, Unity UI 2.0에 포함된 TextMeshPro, Audio, Android JNI, IMGUI, JSON Serialize, Physics, Physics 2D를 사용합니다. Input System은 프로젝트에 설치되어 있을 때 선택적으로 사용합니다.
 
@@ -593,6 +593,8 @@ public sealed class HasTargetNode : SWBehaviourActionNode
 `SWButtonExtension`은 연타 방지, 길게 누르기, 누르는 동안 반복과 효과음을 구성합니다. 키보드·게임패드의 확정 입력도 지원합니다. `SWRectDummy`는 이미지를 그리지 않고 입력 영역을 만들며 `SWTriggerDispatcher`는 물리 트리거 진입·유지·종료를 이벤트로 전달합니다.
 
 `SWToggleExtension`은 `Toggle`을 상속합니다. 탭의 `_Toggle` 오브젝트에서 기본 `Toggle` 대신 사용하고, `Group`에는 부모의 `ToggleGroup`, `Target Graphic`에는 배경, `Graphic`에는 체크 이미지를 연결합니다. 확장 설정의 `텍스트`에는 탭의 TextMeshPro를 연결하고 `선택 색상`·`비선택 색상`을 지정합니다. 기본 `Is On`, 내비게이션과 `On Value Changed` 이벤트를 그대로 사용합니다. 텍스트는 체크 이미지와 별도 오브젝트에 두어 비선택 상태에서도 보이게 합니다.
+
+`텍스트 색상 변경 사용`을 끄면 관련 설정과 참조 누락 안내를 숨기고 텍스트 색상을 수정하지 않습니다. 이때 텍스트 참조는 필요하지 않으며 현재 색상은 유지됩니다. 기존 동작을 유지하도록 기본값은 켜짐입니다.
 
 두 확장 인스펙터는 공통 Iris Line 테마와 설정 패널을 사용합니다. 설정 요소와 직렬화 속성은 인스펙터 생성 시 준비합니다. 토글은 선택 변경 이벤트를 한 번 구독하며 `Update`로 감시하지 않습니다. 버튼의 코루틴은 홀드·쿨다운이 진행되는 동안에만 실행하고 쿨다운 중에는 홀드를 시작하지 않습니다. `SetIsOnWithoutNotify` 또는 `ToggleGroup.SetAllTogglesOff(false)`로 이벤트 없이 상태를 바꾸면 영향받은 각 `SWToggleExtension`의 `RefreshTextColor()`를 호출해야 합니다.
 

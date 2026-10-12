@@ -1,4 +1,4 @@
-# SWUtils 1.4.5
+# SWUtils 1.4.6
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.5
+https://github.com/LAVINSE/SWUtils.git#v1.4.6
 ```
 
-The URL above requires the `v1.4.5` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.6` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 
@@ -827,6 +827,8 @@ A collection of small, general-purpose game utilities.
 Configure `SWButtonExtension` on the button and use its events for held or repeated actions. Keyboard and gamepad submit input is handled independently of previous pointer holds. Compare random-selection settings in `SWTools > Utils > Simulation > Random Simulator`.
 
 Use `SWToggleExtension` in place of the standard `Toggle` on each tab. Assign the parent `ToggleGroup` to `Group`, the background to `Target Graphic`, and the check image to `Graphic`. Assign the tab's TextMeshPro label and its selected/unselected colors in the extension panel. Keep the label separate from the check image so it remains visible when off. Standard `Is On`, navigation, and `On Value Changed` remain available.
+
+Turn off `텍스트 색상 변경 사용` (Use Text Color) to hide its settings and missing-reference warning and skip text color changes. No label reference is required while disabled, and the current color is preserved. The option defaults to enabled to preserve existing behavior.
 
 Both extension inspectors use the shared Iris Line theme and settings panels, with UI elements and serialized properties prepared when the inspector is created. Toggle colors use one lifetime event subscription without an `Update` loop. Button coroutines run only during a hold or cooldown, and cooldowns block new holds. After silent changes through `SetIsOnWithoutNotify` or `ToggleGroup.SetAllTogglesOff(false)`, call `RefreshTextColor()` on every affected `SWToggleExtension`.
 
