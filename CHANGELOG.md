@@ -2,6 +2,12 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.8] - 2026-10-20
+
+- Added per-sound volume (0-1) to `SWAudioLibrary` entries. It multiplies with master, music, and effect volumes, and the default of 1 preserves existing loudness.
+- Added an Apply Volume to Playing button to the `SWAudioLibrary` inspector so changed volumes apply immediately to music and effects that are already playing.
+- `SWAudioManager` now interpolates a fade ratio instead of the raw volume for music fades, so master and per-sound volume changes also apply during a fade.
+
 ## [v1.4.7] - 2026-10-13
 
 - Cached the `SWPlayerPrefs` AES key and IV after the first PBKDF2 derivation to avoid repeating the 1,000-iteration calculation on reads and writes. Preserved existing encryption parameters and the stored data format.

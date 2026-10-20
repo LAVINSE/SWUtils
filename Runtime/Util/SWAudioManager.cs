@@ -56,10 +56,13 @@ namespace SW.Util
         [SerializeField] private float sfxVolume = 1f;
 
         private readonly List<AudioSource> sfxSources = new();
-        private readonly Dictionary<AudioSource, float> effectVolumeScales = new();
+        private readonly Dictionary<AudioSource, (string Key, float Scale)> effectVolumes = new();
         /// <summary>클립별 마지막 재생 시각(Time.unscaledTime)입니다. 재생 간격 제한에 사용합니다.</summary>
         private readonly Dictionary<AudioClip, float> lastPlayTimeDictionary = new();
         private Coroutine musicFadeRoutine;
+        private float musicVolumeScale = 1f;
+        private float musicFadeRatio = 1f;
+        private string currentMusicKey;
         #endregion // 필드
 
         #region 프로퍼티
@@ -73,6 +76,8 @@ namespace SW.Util
         public float MusicVolume => musicVolume;
         /// <summary>효과음 볼륨.</summary>
         public float SfxVolume => sfxVolume;
+        /// <summary>전체·배경음·사운드별 음량을 모두 반영한 출력 음량입니다.</summary>
+        private float CurrentMusicVolume => masterVolume * musicVolume * musicVolumeScale * musicFadeRatio;
         #endregion // 프로퍼티
 
         #region 초기화
@@ -84,7 +89,7 @@ namespace SW.Util
 
             EnsureMusicSource();
             PrewarmSfxSources(initialSfxSources);
-            ApplyVolumes();
+            SetAudioLibrary(audioLibrary);
 
             SWLog.Log($"[SWAudioManager] Initialized. SFX Sources: {sfxSources.Count}");
         }
@@ -98,9 +103,14 @@ namespace SW.Util
         /// <inheritdoc />
         public override void OnDestroy()
         {
+            if (audioLibrary != null)
+            {
+                audioLibrary.VolumesChanged -= RefreshLibraryVolumes;
+            }
+
             StopAllCoroutines();
             sfxSources.Clear();
-            effectVolumeScales.Clear();
+            effectVolumes.Clear();
             lastPlayTimeDictionary.Clear();
             SWLog.Log("[SWAudioManager] Destroyed.");
             base.OnDestroy();
@@ -114,7 +124,27 @@ namespace SW.Util
         /// <param name="library">BGM/SFX 키가 등록된 라이브러리.</param>
         public void SetAudioLibrary(SWAudioLibrary library)
         {
+            if (audioLibrary != null)
+            {
+                audioLibrary.VolumesChanged -= RefreshLibraryVolumes;
+            }
+
             audioLibrary = library;
+
+            if (audioLibrary != null)
+            {
+                audioLibrary.VolumesChanged += RefreshLibraryVolumes;
+            }
+
+            RefreshLibraryVolumes();
+        }
+
+        /// <summary>재생 중인 배경음의 개별 음량을 다시 읽고 모든 음원에 적용합니다.</summary>
+        private void RefreshLibraryVolumes()
+        {
+            musicVolumeScale = audioLibrary != null && !string.IsNullOrEmpty(currentMusicKey)
+                ? audioLibrary.GetMusicVolume(currentMusicKey) : 1f;
+            ApplyVolumes();
         }
         #endregion // 라이브러리
 
@@ -130,7 +160,7 @@ namespace SW.Util
             if (!TryGetMusicClip(key, out AudioClip clip))
                 return;
 
-            PlayMusicClip(clip, loop, fadeDuration);
+            PlayMusicClip(key, clip, loop, fadeDuration);
         }
 
         /// <summary>
@@ -189,7 +219,7 @@ namespace SW.Util
             if (!TryGetSfxClip(key, out AudioClip clip))
                 return null;
 
-            return PlaySfxClip(clip, volumeScale, pitch);
+            return PlaySfxClip(key, clip, volumeScale, pitch);
         }
 
         /// <summary>
@@ -207,7 +237,7 @@ namespace SW.Util
                 return null;
 
             float pitch = Random.Range(Mathf.Min(minPitch, maxPitch), Mathf.Max(minPitch, maxPitch));
-            return PlaySfxClip(clip, volumeScale, pitch);
+            return PlaySfxClip(key, clip, volumeScale, pitch);
         }
 
         /// <summary>
@@ -223,7 +253,7 @@ namespace SW.Util
             if (!TryGetSfxClip(key, out AudioClip clip))
                 return null;
 
-            AudioSource source = PlaySfxClip(clip, volumeScale, pitch);
+            AudioSource source = PlaySfxClip(key, clip, volumeScale, pitch);
             if (source == null) return null;
 
             source.transform.position = position;
@@ -369,10 +399,11 @@ namespace SW.Util
         /// <summary>
         /// BGM 클립을 재생합니다. 페이드 시간이 지정되면 크로스 페이드를 수행합니다.
         /// </summary>
+        /// <param name="key">개별 음량을 조회할 배경음 키입니다.</param>
         /// <param name="clip">재생할 클립.</param>
         /// <param name="loop">반복 재생 여부.</param>
         /// <param name="fadeDuration">페이드 전환 시간.</param>
-        private void PlayMusicClip(AudioClip clip, bool loop, float fadeDuration)
+        private void PlayMusicClip(string key, AudioClip clip, bool loop, float fadeDuration)
         {
             if (clip == null)
             {
@@ -387,14 +418,17 @@ namespace SW.Util
 
             if (fadeDuration > 0f && musicSource.isPlaying)
             {
-                musicFadeRoutine = StartCoroutine(FadeToNewMusicRoutine(clip, loop, fadeDuration));
+                musicFadeRoutine = StartCoroutine(FadeToNewMusicRoutine(key, clip, loop, fadeDuration));
                 SWLog.Log($"[SWAudioManager] Fade music to: {clip.name}");
                 return;
             }
 
             musicSource.clip = clip;
             musicSource.loop = loop;
-            musicSource.volume = masterVolume * musicVolume;
+            currentMusicKey = key;
+            musicVolumeScale = audioLibrary.GetMusicVolume(key);
+            musicFadeRatio = 1f;
+            musicSource.volume = CurrentMusicVolume;
             musicSource.Play();
 
             SWLog.Log($"[SWAudioManager] Play music: {clip.name}");
@@ -403,11 +437,12 @@ namespace SW.Util
         /// <summary>
         /// SFX 클립을 재생합니다. 폭주 방지 옵션(재생 간격, 동시 보이스 제한)을 통과해야 재생됩니다.
         /// </summary>
+        /// <param name="key">개별 음량을 조회할 효과음 키입니다.</param>
         /// <param name="clip">재생할 클립.</param>
         /// <param name="volumeScale">효과음 볼륨 배율.</param>
         /// <param name="pitch">재생 피치.</param>
         /// <returns>재생에 사용된 AudioSource. 제한에 걸리면 null.</returns>
-        private AudioSource PlaySfxClip(AudioClip clip, float volumeScale, float pitch)
+        private AudioSource PlaySfxClip(string key, AudioClip clip, float volumeScale, float pitch)
         {
             if (clip == null)
             {
@@ -428,8 +463,8 @@ namespace SW.Util
             source.clip = clip;
             source.loop = false;
             source.pitch = pitch;
-            effectVolumeScales[source] = Mathf.Clamp01(volumeScale);
-            source.volume = masterVolume * sfxVolume * effectVolumeScales[source];
+            effectVolumes[source] = (key, Mathf.Clamp01(volumeScale));
+            source.volume = masterVolume * sfxVolume * effectVolumes[source].Scale * audioLibrary.GetSfxVolume(key);
             source.spatialBlend = 0f;
             source.transform.SetParent(transform, false);
             source.Play();
@@ -548,13 +583,18 @@ namespace SW.Util
         private void ApplyVolumes()
         {
             if (musicSource != null)
-                musicSource.volume = masterVolume * musicVolume;
+                musicSource.volume = CurrentMusicVolume;
 
             foreach (AudioSource source in sfxSources)
             {
                 if (source != null)
                 {
-                    float volumeScale = effectVolumeScales.TryGetValue(source, out float storedScale) ? storedScale : 1f;
+                    float volumeScale = 1f;
+                    if (effectVolumes.TryGetValue(source, out var playback))
+                    {
+                        float individualVolume = audioLibrary != null ? audioLibrary.GetSfxVolume(playback.Key) : 1f;
+                        volumeScale = playback.Scale * individualVolume;
+                    }
                     source.volume = masterVolume * sfxVolume * volumeScale;
                 }
             }
@@ -563,15 +603,17 @@ namespace SW.Util
         /// <summary>
         /// 기존 음악을 페이드아웃한 뒤 새 음악으로 교체합니다.
         /// </summary>
-        private IEnumerator FadeToNewMusicRoutine(AudioClip clip, bool loop, float duration)
+        private IEnumerator FadeToNewMusicRoutine(string key, AudioClip clip, bool loop, float duration)
         {
-            yield return FadeMusicVolumeRoutine(musicSource.volume, 0f, duration * 0.5f);
+            yield return FadeMusicVolumeRoutine(musicFadeRatio, 0f, duration * 0.5f);
 
             musicSource.clip = clip;
             musicSource.loop = loop;
+            currentMusicKey = key;
+            musicVolumeScale = audioLibrary.GetMusicVolume(key);
             musicSource.Play();
 
-            yield return FadeMusicVolumeRoutine(0f, masterVolume * musicVolume, duration * 0.5f);
+            yield return FadeMusicVolumeRoutine(0f, 1f, duration * 0.5f);
             musicFadeRoutine = null;
             SWLog.Log($"[SWAudioManager] Fade music complete: {clip.name}");
         }
@@ -581,21 +623,23 @@ namespace SW.Util
         /// </summary>
         private IEnumerator FadeOutMusicRoutine(float duration)
         {
-            yield return FadeMusicVolumeRoutine(musicSource.volume, 0f, duration);
+            yield return FadeMusicVolumeRoutine(musicFadeRatio, 0f, duration);
 
             musicSource.Stop();
-            musicSource.volume = masterVolume * musicVolume;
+            musicFadeRatio = 1f;
+            musicSource.volume = CurrentMusicVolume;
             musicFadeRoutine = null;
         }
 
         /// <summary>
-        /// 음악 볼륨을 지정 시간 동안 보간합니다.
+        /// 음악의 페이드 비율을 보간해 실시간 개별 음량 변경도 함께 반영합니다.
         /// </summary>
-        private IEnumerator FadeMusicVolumeRoutine(float fromVolume, float toVolume, float duration)
+        private IEnumerator FadeMusicVolumeRoutine(float fromRatio, float toRatio, float duration)
         {
             if (duration <= 0f)
             {
-                musicSource.volume = toVolume;
+                musicFadeRatio = toRatio;
+                musicSource.volume = CurrentMusicVolume;
                 yield break;
             }
 
@@ -603,11 +647,13 @@ namespace SW.Util
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                musicSource.volume = Mathf.Lerp(fromVolume, toVolume, Mathf.Clamp01(elapsed / duration));
+                musicFadeRatio = Mathf.Lerp(fromRatio, toRatio, Mathf.Clamp01(elapsed / duration));
+                musicSource.volume = CurrentMusicVolume;
                 yield return null;
             }
 
-            musicSource.volume = toVolume;
+            musicFadeRatio = toRatio;
+            musicSource.volume = CurrentMusicVolume;
         }
         #endregion // 내부
     }

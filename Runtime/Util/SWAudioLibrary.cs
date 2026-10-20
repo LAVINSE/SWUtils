@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+using SW.Attributes;
+
 namespace SW.Util
 {
     /// <summary>
@@ -19,11 +21,15 @@ namespace SW.Util
         {
             [SerializeField] private string key;
             [SerializeField] private AudioClip clip;
+            [SerializeField, Range(0f, 1f), Tooltip("사운드별 음량입니다. 1은 원래 음량이며 전체 음량과 곱해 적용합니다.")]
+            private float volume = 1f;
 
             /// <summary>사운드를 찾을 때 사용할 키입니다.</summary>
             public string Key => key;
             /// <summary>키에 연결된 AudioClip입니다.</summary>
             public AudioClip Clip => clip;
+            /// <summary>전체 음량에 곱할 사운드별 음량입니다.</summary>
+            public float Volume => Mathf.Clamp01(volume);
         }
         #endregion // 타입
 
@@ -34,8 +40,15 @@ namespace SW.Util
         [Header("=====> 효과음 <=====")]
         [SerializeField] private List<AudioEntry> sfxEntries = new();
 
-        private Dictionary<string, AudioClip> musicMap;
-        private Dictionary<string, AudioClip> sfxMap;
+        [Header("=====> 재생 중 음량 <=====")]
+        [SerializeField, SWButtonBar(
+            new[] { "현재 재생에 음량 적용" },
+            new[] { nameof(ApplyVolumesToPlaying) },
+            new[] { true })]
+        private bool volumeActions;
+
+        private Dictionary<string, AudioEntry> musicMap;
+        private Dictionary<string, AudioEntry> sfxMap;
         #endregion // 필드
 
         #region 프로퍼티
@@ -44,6 +57,21 @@ namespace SW.Util
         /// <summary>SFX 항목 목록입니다.</summary>
         public IReadOnlyList<AudioEntry> SfxEntries => sfxEntries;
         #endregion // 프로퍼티
+
+        #region 이벤트
+        /// <summary>이 라이브러리의 최신 음량을 현재 재생에 적용하도록 알립니다.</summary>
+        public event Action VolumesChanged;
+        #endregion // 이벤트
+
+        #region 실시간 적용
+        /// <summary>최신 항목을 다시 읽고 이 라이브러리를 쓰는 재생기에 음량 적용을 알립니다.</summary>
+        public void ApplyVolumesToPlaying()
+        {
+            musicMap = null;
+            sfxMap = null;
+            VolumesChanged?.Invoke();
+        }
+        #endregion // 실시간 적용
 
         #region 조회
         /// <summary>
@@ -55,7 +83,9 @@ namespace SW.Util
         public bool TryGetMusicClip(string key, out AudioClip clip)
         {
             EnsureMaps();
-            return musicMap.TryGetValue(key, out clip) && clip != null;
+            musicMap.TryGetValue(key, out AudioEntry entry);
+            clip = entry?.Clip;
+            return clip != null;
         }
 
         /// <summary>
@@ -67,7 +97,23 @@ namespace SW.Util
         public bool TryGetSfxClip(string key, out AudioClip clip)
         {
             EnsureMaps();
-            return sfxMap.TryGetValue(key, out clip) && clip != null;
+            sfxMap.TryGetValue(key, out AudioEntry entry);
+            clip = entry?.Clip;
+            return clip != null;
+        }
+
+        /// <summary>배경음 키에 설정한 개별 음량입니다. 없는 키는 원래 음량을 유지합니다.</summary>
+        public float GetMusicVolume(string key)
+        {
+            EnsureMaps();
+            return musicMap.TryGetValue(key, out AudioEntry entry) ? entry.Volume : 1f;
+        }
+
+        /// <summary>효과음 키에 설정한 개별 음량입니다. 없는 키는 원래 음량을 유지합니다.</summary>
+        public float GetSfxVolume(string key)
+        {
+            EnsureMaps();
+            return sfxMap.TryGetValue(key, out AudioEntry entry) ? entry.Volume : 1f;
         }
         #endregion // 조회
 
@@ -84,9 +130,9 @@ namespace SW.Util
             sfxMap ??= BuildMap(sfxEntries, "SFX");
         }
 
-        private Dictionary<string, AudioClip> BuildMap(IReadOnlyList<AudioEntry> entries, string category)
+        private Dictionary<string, AudioEntry> BuildMap(IReadOnlyList<AudioEntry> entries, string category)
         {
-            Dictionary<string, AudioClip> map = new();
+            Dictionary<string, AudioEntry> map = new();
 
             if (entries == null) return map;
 
@@ -101,7 +147,7 @@ namespace SW.Util
                     continue;
                 }
 
-                map.Add(entry.Key, entry.Clip);
+                map.Add(entry.Key, entry);
             }
 
             return map;
