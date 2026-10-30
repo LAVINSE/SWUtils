@@ -1,4 +1,4 @@
-# SWUtils 1.4.8
+# SWUtils 1.4.9
 
 [한국어](README.md) | [English](README.en.md)
 
@@ -13,10 +13,10 @@ Open `SWTools > SWUtils Data Editor` to browse ScriptableObjects with categories
 In Unity Package Manager, choose `+ > Add package from git URL...` and enter the release tag:
 
 ```text
-https://github.com/LAVINSE/SWUtils.git#v1.4.8
+https://github.com/LAVINSE/SWUtils.git#v1.4.9
 ```
 
-The URL above requires the `v1.4.8` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
+The URL above requires the `v1.4.9` tag in the remote repository. Before the tag is published, use `+ > Add package from disk...` and select the local `package.json`. To fetch development code, specify the branch or commit you need. See the [version history](CHANGELOG.md).
 
 Required packages and modules are declared in `package.json`: Localization, TextMeshPro included in Unity UI 2.0, Audio, Android JNI, IMGUI, JSON Serialize, Physics and Physics 2D. Input System support is optional and uses the package already installed in your project.
 
@@ -816,7 +816,7 @@ A collection of small, general-purpose game utilities.
 - `SWTime`: Provides time formatting and calculation helpers.
 - `SWTriggerDispatcher`: Delegates trigger events.
 - `SWUtility`: Provides shared helpers such as user interface gauge updates.
-- `SWVibration`: Invokes vibration on Android and iOS.
+- `SWVibration`: Invokes vibration on Android and iOS. The `android.permission.VIBRATE` permission is added to Android builds automatically.
 - `SWAmountFormat`: Formats large numbers with suffixes such as K, M, B, and T.
 - `SWAmountFormatProfile`: Stores number suffixes, decimal places, and decimal handling in a Resources preset asset.
 - `SWRectDummy`: A mesh-free Graphic that creates a rectangular user interface raycast area without an Image.

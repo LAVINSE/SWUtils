@@ -2,6 +2,11 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.9] - 2026-10-30
+
+- Fixed `SWVibration` not vibrating because Android builds lacked the `android.permission.VIBRATE` permission. `SWVibration` calls the native `Vibrator` on Android, so Unity does not add the permission automatically; the package now declares it in `Runtime/Plugins/Android/SWVibration.androidlib`.
+- `SWVibration` now resolves the Android `Vibrator` once and reuses it, removing the repeated service lookups on each vibration and the undisposed `AndroidJavaObject` instances.
+
 ## [v1.4.8] - 2026-10-20
 
 - Added per-sound volume (0-1) to `SWAudioLibrary` entries. It multiplies with master, music, and effect volumes, and the default of 1 preserves existing loudness.

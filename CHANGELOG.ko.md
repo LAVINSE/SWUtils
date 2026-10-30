@@ -2,6 +2,11 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.4.9] - 2026-10-30
+
+- Android 빌드에 `android.permission.VIBRATE` 권한이 빠져 `SWVibration` 진동이 실행되지 않던 문제를 수정했습니다. `SWVibration`은 Android에서 네이티브 `Vibrator`를 호출해 Unity가 권한을 자동으로 넣지 않으므로, 패키지의 `Runtime/Plugins/Android/SWVibration.androidlib`에서 권한을 선언합니다.
+- `SWVibration`이 Android `Vibrator`를 한 번만 가져와 재사용합니다. 진동마다 반복되던 서비스 조회를 없애고 해제되지 않던 `AndroidJavaObject`를 정리했습니다.
+
 ## [v1.4.8] - 2026-10-20
 
 - `SWAudioLibrary` 항목에 사운드별 음량(0~1)을 추가했습니다. 전체·배경음·효과음 음량과 곱해 적용하며 기본값 1은 기존 음량을 유지합니다.

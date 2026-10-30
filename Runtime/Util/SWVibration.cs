@@ -268,24 +268,56 @@ namespace SW.Util
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         #region Android
+        // 진동마다 JNI로 다시 찾지 않도록 Vibrator를 한 번만 가져와 앱이 끝날 때까지 재사용합니다.
+        private static AndroidJavaObject androidVibrator;
+        private static bool isAndroidVibratorResolved;
+
         /// <summary>
-        /// Android Vibrator 서비스를 가져옵니다.
+        /// 재사용할 Android Vibrator를 가져옵니다.
         /// </summary>
-        /// <returns>Android Vibrator 객체입니다.</returns>
+        /// <returns>Android Vibrator 객체입니다. 진동 장치가 없거나 가져오지 못했으면 null입니다.</returns>
         private static AndroidJavaObject GetAndroidVibrator()
+        {
+            if (!isAndroidVibratorResolved)
+            {
+                ResolveAndroidVibrator();
+            }
+
+            return androidVibrator;
+        }
+
+        /// <summary>
+        /// Android Vibrator를 찾아 진동 장치가 있을 때만 보관합니다.
+        /// Activity가 아직 없거나 실패하면 다음 요청에서 다시 시도합니다.
+        /// </summary>
+        private static void ResolveAndroidVibrator()
         {
             try
             {
                 using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
                 using (AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
                 {
-                    return activity?.Call<AndroidJavaObject>("getSystemService", "vibrator");
+                    if (activity == null) return;
+
+                    using (AndroidJavaObject context = activity.Call<AndroidJavaObject>("getApplicationContext"))
+                    {
+                        AndroidJavaObject vibrator = context.Call<AndroidJavaObject>("getSystemService", "vibrator");
+                        if (vibrator != null && vibrator.Call<bool>("hasVibrator"))
+                        {
+                            androidVibrator = vibrator;
+                        }
+                        else
+                        {
+                            vibrator?.Dispose();
+                        }
+
+                        isAndroidVibratorResolved = true;
+                    }
                 }
             }
             catch (System.Exception exception)
             {
                 SWLog.LogWarning($"[SWVibration] Failed to get Android vibrator: {exception.Message}");
-                return null;
             }
         }
 
@@ -295,16 +327,7 @@ namespace SW.Util
         /// <returns>진동 장치가 있으면 true입니다.</returns>
         private static bool HasAndroidVibrator()
         {
-            try
-            {
-                AndroidJavaObject vibrator = GetAndroidVibrator();
-                return vibrator != null && vibrator.Call<bool>("hasVibrator");
-            }
-            catch (System.Exception exception)
-            {
-                SWLog.LogWarning($"[SWVibration] Failed to check Android vibrator: {exception.Message}");
-                return false;
-            }
+            return GetAndroidVibrator() != null;
         }
 
         /// <summary>
