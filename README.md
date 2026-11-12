@@ -209,6 +209,19 @@ SWPlayerPrefs.Save();
 
 `SWCloud`는 Google Play Games, Steam Cloud, 프로젝트에서 제공하는 iCloud 연결과 로컬 대체 저장을 제공합니다. 실제 연동에는 해당 라이브러리·인증·정의 심볼이 필요합니다. 파일과 PlayerPrefs를 함께 다루는 복원의 범위와 이전 캐시 호환은 [저장·실행 규칙](Documentation~/Reliability.ko.md)에 설명되어 있습니다.
 
+`SWSaveDataManager.LoadAll`(cloudFirst)은 기기와 클라우드를 비교해 맞는 쪽을 씁니다. 둘 다 바뀌어 고를 수 없으면 `ConflictHandler`로 게임에 묻고, 처리기가 없으면 기기 저장을 유지합니다. 저장 파일과 클라우드 백업은 기본으로 암호화합니다(`EncryptFiles`).
+
+```csharp
+SWSaveDataManager.ConflictHandler = conflict =>
+{
+    PlayerSaveData device = conflict.Local.ReadData<PlayerSaveData>();
+    PlayerSaveData cloud = conflict.Cloud.ReadData<PlayerSaveData>();
+    // 두 진행을 보여 주고 플레이어가 고르면 둘 중 하나를 부릅니다.
+    ShowChoice(device, cloud, conflict.UseCloud, conflict.KeepLocal);
+};
+SWSaveDataManager.LoadAll(OnLoaded);
+```
+
 <a id="runtime-debug"></a>
 
 ### 디버그

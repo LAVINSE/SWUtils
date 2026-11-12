@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -38,6 +39,15 @@ namespace SW.Data
         private static bool isInitialized;
         /// <summary>인증 완료 여부.</summary>
         private static bool isAuthenticated;
+
+        /// <summary>
+        /// 편집기에서 로컬 대체 저장을 실제 클라우드처럼 다룹니다. SWSaveDataManager의 클라우드 비교·충돌 흐름을 편집기에서 확인할 때만 켭니다.
+        /// 빌드에서는 무시합니다.
+        /// </summary>
+        public static bool SimulateCloudInEditor;
+
+        /// <summary>편집기 클라우드 흉내에서 쓰는 계정 ID입니다. 계정 변경 상황을 확인할 때 바꿉니다.</summary>
+        public static string SimulatedAccountId = "editor";
         #endregion // 필드
 
         #region 프로퍼티
@@ -59,7 +69,27 @@ namespace SW.Data
 #elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return SteamManager.Initialized;
 #else
-                return false;
+                return Application.isEditor && SimulateCloudInEditor;
+#endif
+            }
+        }
+
+        /// <summary>
+        /// 로그인한 클라우드 계정 ID입니다. 알 수 없거나 로그인 전이면 빈 문자열입니다.
+        /// SWSaveDataManager가 다른 계정의 저장을 섞지 않도록 비교할 때 씁니다.
+        /// </summary>
+        public static string AccountId
+        {
+            get
+            {
+#if UNITY_ANDROID && SW_GOOGLEPLAY_ENABLE && !UNITY_EDITOR
+                return isAuthenticated ? PlayGamesPlatform.Instance.GetUserId() ?? string.Empty : string.Empty;
+#elif UNITY_IOS && SW_ICLOUD_ENABLE && !UNITY_EDITOR
+                return string.Empty;
+#elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
+                return SteamManager.Initialized ? SteamUser.GetSteamID().ToString() : string.Empty;
+#else
+                return IsAvailable ? SimulatedAccountId ?? string.Empty : string.Empty;
 #endif
             }
         }
@@ -76,7 +106,7 @@ namespace SW.Data
 #elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
                 return "Steam Cloud";
 #else
-                return "Local Fallback";
+                return IsAvailable ? "Editor Simulation" : "Local Fallback";
 #endif
             }
         }
@@ -219,7 +249,7 @@ namespace SW.Data
             PlayGamesPlatform.Instance.SavedGame.OpenWithAutomaticConflictResolution(
                 saveName,
                 DataSource.ReadCacheOrNetwork,
-                ConflictResolutionStrategy.UseLongestPlaytime,
+                ConflictResolutionStrategy.UseMostRecentlySaved,
                 (status, metadata) =>
                 {
                     if (status != SavedGameRequestStatus.Success)
@@ -276,6 +306,12 @@ namespace SW.Data
                 SaveLocalAndComplete(json, saveName, onComplete, false);
             }
 #else
+            if (IsAvailable)
+            {
+                onComplete?.Invoke(WriteSimulatedCloud(saveName, json));
+                return;
+            }
+
             SWLog.Log("[SWCloud] 로컬 fallback 저장");
             SaveLocalAndComplete(json, saveName, onComplete, true);
 #endif
@@ -303,6 +339,25 @@ namespace SW.Data
         /// <param name="saveName">저장 슬롯 이름</param>
         public static void Load(Action<bool, string> onComplete, string saveName = DefaultSaveName)
         {
+            LoadCore(onComplete, saveName, true);
+        }
+
+        /// <summary>
+        /// 실제 클라우드에서만 읽습니다. 클라우드를 쓸 수 없거나 읽지 못하면 로컬 대체 저장 대신 (false, null)을 돌려줍니다.
+        /// SWSaveDataManager가 마지막으로 올린 사본(로컬 대체 저장)을 최신 클라우드로 착각하지 않도록 씁니다.
+        /// </summary>
+        /// <param name="onComplete">완료 콜백 (성공 여부, JSON 문자열)</param>
+        /// <param name="saveName">저장 슬롯 이름</param>
+        internal static void LoadRemote(Action<bool, string> onComplete, string saveName = DefaultSaveName)
+        {
+            LoadCore(onComplete, saveName, false);
+        }
+
+        /// <summary>
+        /// 클라우드에서 읽습니다. allowFallback이면 실패할 때 로컬 대체 저장을 돌려주고, 아니면 (false, null)입니다.
+        /// </summary>
+        private static void LoadCore(Action<bool, string> onComplete, string saveName, bool allowFallback)
+        {
             saveName = NormalizeSaveName(saveName);
             SWLog.Log($"[SWCloud] 로드 시작 (제공자: {ProviderName})");
 
@@ -310,20 +365,20 @@ namespace SW.Data
             if (!isAuthenticated)
             {
                 SWLog.LogWarning("[SWCloud] GPGS 인증이 없어 로컬에서만 로드합니다.");
-                LoadLocalAndComplete(saveName, onComplete);
+                LoadLocalAndComplete(saveName, onComplete, allowFallback);
                 return;
             }
 
             PlayGamesPlatform.Instance.SavedGame.OpenWithAutomaticConflictResolution(
                 saveName,
                 DataSource.ReadCacheOrNetwork,
-                ConflictResolutionStrategy.UseLongestPlaytime,
+                ConflictResolutionStrategy.UseMostRecentlySaved,
                 (status, metadata) =>
                 {
                     if (status != SavedGameRequestStatus.Success)
                     {
                         SWLog.LogError($"[SWCloud] GPGS 저장 데이터 열기 실패: {status}");
-                        LoadLocalAndComplete(saveName, onComplete);
+                        LoadLocalAndComplete(saveName, onComplete, allowFallback);
                         return;
                     }
 
@@ -332,7 +387,7 @@ namespace SW.Data
                         if (readStatus != SavedGameRequestStatus.Success || data == null || data.Length == 0)
                         {
                             SWLog.LogWarning($"[SWCloud] GPGS 읽기 결과가 비어 있습니다: {readStatus}");
-                            LoadLocalAndComplete(saveName, onComplete);
+                            LoadLocalAndComplete(saveName, onComplete, allowFallback);
                             return;
                         }
 
@@ -349,7 +404,7 @@ namespace SW.Data
                 if (string.IsNullOrEmpty(json))
                 {
                     SWLog.LogWarning("[SWCloud] iCloud 데이터가 비어 있어 로컬 fallback으로 로드합니다.");
-                    LoadLocalAndComplete(saveName, onComplete);
+                    LoadLocalAndComplete(saveName, onComplete, allowFallback);
                 }
                 else
                 {
@@ -360,13 +415,13 @@ namespace SW.Data
             catch (Exception exception)
             {
                 SWLog.LogError($"[SWCloud] iCloud 로드 실패: {exception.Message}");
-                LoadLocalAndComplete(saveName, onComplete);
+                LoadLocalAndComplete(saveName, onComplete, allowFallback);
             }
 #elif (UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX) && SW_STEAMWORKS_NET && !UNITY_EDITOR
             if (!SteamManager.Initialized)
             {
                 SWLog.LogWarning("[SWCloud] Steam이 초기화되지 않아 로컬에서만 로드합니다.");
-                LoadLocalAndComplete(saveName, onComplete);
+                LoadLocalAndComplete(saveName, onComplete, allowFallback);
                 return;
             }
 
@@ -376,7 +431,7 @@ namespace SW.Data
                 if (!SteamRemoteStorage.FileExists(fileName))
                 {
                     SWLog.LogWarning("[SWCloud] Steam 파일을 찾을 수 없어 로컬 fallback으로 로드합니다.");
-                    LoadLocalAndComplete(saveName, onComplete);
+                    LoadLocalAndComplete(saveName, onComplete, allowFallback);
                     return;
                 }
 
@@ -387,7 +442,7 @@ namespace SW.Data
                 if (read <= 0)
                 {
                     SWLog.LogWarning("[SWCloud] Steam 읽기 결과가 비어 있어 로컬 fallback으로 로드합니다.");
-                    LoadLocalAndComplete(saveName, onComplete);
+                    LoadLocalAndComplete(saveName, onComplete, allowFallback);
                     return;
                 }
 
@@ -399,10 +454,17 @@ namespace SW.Data
             catch (Exception exception)
             {
                 SWLog.LogError($"[SWCloud] Steam 로드 실패: {exception.Message}");
-                LoadLocalAndComplete(saveName, onComplete);
+                LoadLocalAndComplete(saveName, onComplete, allowFallback);
             }
 #else
-            LoadLocalAndComplete(saveName, onComplete);
+            if (IsAvailable)
+            {
+                string simulated = ReadSimulatedCloud(saveName);
+                onComplete?.Invoke(!string.IsNullOrEmpty(simulated), simulated);
+                return;
+            }
+
+            LoadLocalAndComplete(saveName, onComplete, allowFallback);
 #endif
         }
 
@@ -441,7 +503,7 @@ namespace SW.Data
             PlayGamesPlatform.Instance.SavedGame.OpenWithAutomaticConflictResolution(
                 saveName,
                 DataSource.ReadCacheOrNetwork,
-                ConflictResolutionStrategy.UseLongestPlaytime,
+                ConflictResolutionStrategy.UseMostRecentlySaved,
                 (status, metadata) =>
                 {
                     if (status == SavedGameRequestStatus.Success)
@@ -487,6 +549,11 @@ namespace SW.Data
                 onComplete?.Invoke(false);
             }
 #else
+            if (IsAvailable)
+            {
+                DeleteSimulatedCloud(saveName);
+            }
+
             DeleteLocal(saveName);
             SWLog.Log("[SWCloud] 로컬 fallback 삭제");
             onComplete?.Invoke(true);
@@ -583,6 +650,49 @@ namespace SW.Data
         }
         #endregion // JSON Helper
 
+        #region 편집기 클라우드 흉내
+        /// <summary>편집기 클라우드 흉내 파일 경로입니다. 저장 파일과 섞이지 않게 따로 둡니다.</summary>
+        private static string SimulatedCloudPath(string saveName)
+        {
+            return Path.Combine(Application.persistentDataPath, "SaveData", "EditorCloud", saveName + ".json");
+        }
+
+        /// <summary>편집기 클라우드 흉내 파일에 씁니다.</summary>
+        private static bool WriteSimulatedCloud(string saveName, string json)
+        {
+            try
+            {
+                string path = SimulatedCloudPath(saveName);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, json);
+                SWLog.Log($"[SWCloud] 편집기 클라우드 흉내 저장 (길이: {json.Length})");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                SWLog.LogError($"[SWCloud] 편집기 클라우드 흉내 저장 실패: {exception.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>편집기 클라우드 흉내 파일을 읽습니다. 없으면 null입니다.</summary>
+        private static string ReadSimulatedCloud(string saveName)
+        {
+            string path = SimulatedCloudPath(saveName);
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        }
+
+        /// <summary>편집기 클라우드 흉내 파일을 지웁니다.</summary>
+        private static void DeleteSimulatedCloud(string saveName)
+        {
+            string path = SimulatedCloudPath(saveName);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        #endregion // 편집기 클라우드 흉내
+
         #region 로컬 폴백
         /// <summary>
         /// 비어 있거나 공백인 저장 이름을 기본값으로 정규화합니다.
@@ -615,8 +725,15 @@ namespace SW.Data
         /// <summary>
         /// 로컬 PlayerPrefs에서 폴백 로드한 뒤 콜백을 호출합니다.
         /// </summary>
-        private static void LoadLocalAndComplete(string saveName, Action<bool, string> onComplete)
+        private static void LoadLocalAndComplete(string saveName, Action<bool, string> onComplete, bool allowFallback)
         {
+            if (!allowFallback)
+            {
+                SWLog.Log("[SWCloud] 클라우드에서 읽지 못했습니다. 로컬 대체 저장은 쓰지 않습니다.");
+                onComplete?.Invoke(false, null);
+                return;
+            }
+
             string local = LoadLocal(saveName);
             SWLog.Log($"[SWCloud] 로컬 fallback 로드 (길이: {local?.Length ?? 0})");
             onComplete?.Invoke(!string.IsNullOrEmpty(local), local);

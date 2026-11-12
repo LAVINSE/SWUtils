@@ -2,6 +2,16 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.5.0] - 2026-11-13
+
+- `SWSaveDataManager.LoadAll`(cloudFirst)이 클라우드 사본을 비교 없이 기기 저장 위에 덮어써, 아직 올리지 않은 진행(오프라인 플레이, 마지막 백업 뒤 저장)이 사라지던 문제를 고쳤습니다. 클라우드 SDK가 없는 편집기에서도 마지막 백업(로컬 대체 저장)이 최신 저장을 덮어썼습니다.
+- `LoadAll`(cloudFirst)이 기기와 클라우드를 비교합니다. 클라우드를 쓸 수 없거나 비어 있으면 기기 저장, 기기 저장이 없으면 클라우드, 마지막으로 맞춘 뒤 한쪽만 바뀌었으면 바뀐 쪽을 씁니다. 기기 쪽만 바뀌었으면 읽은 뒤 클라우드에 올립니다. 마지막으로 맞춘 내용은 슬롯마다 `.json.sync` 파일에 지문으로 남기며 클라우드에 올리지 않습니다.
+- 둘 다 바뀌었거나 계정이 달라졌거나 맞춘 기록이 없으면 `SWSaveDataManager.ConflictHandler`에 `SWSaveConflict`(이유, 기기·클라우드 저장, 저장 시각, 저장 횟수)를 넘깁니다. 게임은 `UseCloud` 또는 `KeepLocal`을 부릅니다. 처리기가 없으면 아무것도 덮어쓰지 않고 기기 저장을 씁니다.
+- 저장 파일과 클라우드 백업을 AES로 암호화합니다(`SWSaveDataManager.EncryptFiles`, 기본값 켜짐). 키는 `SWPlayerPrefs`와 같은 설정에서 만들고 IV는 쓸 때마다 새로 만듭니다. 이전 버전의 평문 파일과 클라우드 데이터도 그대로 읽습니다. 이 버전으로 저장한 파일은 이전 버전에서 읽을 수 없습니다.
+- `SWCloud`: Google Play Games 충돌 해결을 기록되지 않던 플레이 시간 기준(`UseLongestPlaytime`)에서 최근 저장 기준(`UseMostRecentlySaved`)으로 바꿨습니다. 로그인 계정 ID(`AccountId`)를 추가했습니다. `SimulateCloudInEditor`를 켜면 편집기에서 별도 파일을 클라우드처럼 써서 비교·충돌 흐름을 확인할 수 있습니다.
+- `SWPlayerPrefs.ExportSlotToJson`이 항목을 키 순서로 정렬합니다. 같은 값이면 같은 JSON이 됩니다.
+- `RestoreFromCloud`는 지금처럼 비교 없이 클라우드를 적용합니다(사용자가 고른 복원용). 기기 저장만 쓰는 호출(`LoadAll(cloudFirst: false)`, `SaveAll(backupToCloud: false)`)은 동작이 같습니다.
+
 ## [v1.4.9] - 2026-10-30
 
 - Android 빌드에 `android.permission.VIBRATE` 권한이 빠져 `SWVibration` 진동이 실행되지 않던 문제를 수정했습니다. `SWVibration`은 Android에서 네이티브 `Vibrator`를 호출해 Unity가 권한을 자동으로 넣지 않으므로, 패키지의 `Runtime/Plugins/Android/SWVibration.androidlib`에서 권한을 선언합니다.

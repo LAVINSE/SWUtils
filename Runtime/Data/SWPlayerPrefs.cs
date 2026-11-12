@@ -161,6 +161,16 @@ namespace SW.Data
         }
 
         /// <summary>
+        /// 저장 파일 암호화(SWSaveCrypto)가 같은 설정의 AES 키를 쓰도록 키를 돌려줍니다. IV는 파일마다 새로 만듭니다.
+        /// </summary>
+        /// <returns>현재 설정의 AES 키</returns>
+        internal static byte[] GetFileKey()
+        {
+            GetKeyIV(out byte[] key, out _);
+            return key;
+        }
+
+        /// <summary>
         /// 문자열을 AES 암호화하여 Base64 문자열로 반환합니다.
         /// </summary>
         /// <param name="plain">암호화할 평문</param>
@@ -526,6 +536,8 @@ namespace SW.Data
                     data.entries.Add(new PrefsEntry { key = key, value = value });
                 }
             }
+            // 키 목록은 HashSet이라 순서가 바뀔 수 있습니다. 같은 값이면 같은 JSON이 되도록 키 순서로 정렬합니다(저장 비교용).
+            data.entries.Sort((left, right) => string.CompareOrdinal(left.key, right.key));
             return JsonUtility.ToJson(data);
         }
 

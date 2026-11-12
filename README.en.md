@@ -279,7 +279,7 @@ Provides save data, PlayerPrefs, encryption, and cloud save features.
 
 - `SWPlayerPrefs`: A PlayerPrefs wrapper with slot selection, encryption, and JSON import and export.
 - `SWPlayerPrefsSettings`: A settings asset that stores project-specific salt and initialization-vector salt values.
-- `SWSaveDataManager`: Saves and loads multiple data types in a file.
+- `SWSaveDataManager`: Saves and loads multiple data types in a file. `LoadAll` (cloudFirst) compares the device and the cloud, asks `ConflictHandler` when both changed, and encrypts files by default (`EncryptFiles`).
 - `SWCloud`: A unified entry point for Google Play Games, iCloud, Steamworks.NET, and local fallback saves.
 - `SWEncrypt<T>`: Stores `int`, `long`, `float`, `double`, `bool`, and `string` values as encrypted PlayerPrefs data.
 - `SWSaveSlot`: Provides default save-slot constants.

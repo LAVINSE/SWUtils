@@ -2,6 +2,16 @@
 
 [한국어](CHANGELOG.ko.md) | [English](CHANGELOG.md)
 
+## [v1.5.0] - 2026-11-13
+
+- Fixed `SWSaveDataManager.LoadAll` (cloudFirst) overwriting the device save with the cloud copy without comparing them, which lost progress that had not been uploaded yet (offline play, saves after the last backup). Even in the Editor without a cloud SDK, the last backup (local fallback) overwrote the newest save.
+- `LoadAll` (cloudFirst) now compares the device and the cloud. It uses the device save when the cloud is unavailable or empty, the cloud when there is no device save, and the side that changed when only one side changed since the last sync. When only the device changed, it uploads after loading. The last synced content is kept as a fingerprint in a per-slot `.json.sync` file that is never uploaded.
+- When both sides changed, the account changed, or there is no sync record, it passes an `SWSaveConflict` (reason, device and cloud saves, save time, save count) to `SWSaveDataManager.ConflictHandler`. The game calls `UseCloud` or `KeepLocal`. Without a handler, nothing is overwritten and the device save is used.
+- Save files and cloud backups are encrypted with AES (`SWSaveDataManager.EncryptFiles`, on by default). The key comes from the same settings as `SWPlayerPrefs` and a new IV is generated on every write. Plain files and cloud data from earlier versions are still read. Files saved by this version cannot be read by earlier versions.
+- `SWCloud`: Google Play Games conflict resolution now uses the most recent save (`UseMostRecentlySaved`) instead of the play time that was never recorded (`UseLongestPlaytime`). Added the signed-in account ID (`AccountId`). Turning on `SimulateCloudInEditor` uses a separate file as the cloud in the Editor so the compare and conflict flow can be checked.
+- `SWPlayerPrefs.ExportSlotToJson` sorts entries by key, so equal values produce equal JSON.
+- `RestoreFromCloud` still applies the cloud without comparing (for a restore the user chose). Device-only calls (`LoadAll(cloudFirst: false)`, `SaveAll(backupToCloud: false)`) behave the same.
+
 ## [v1.4.9] - 2026-10-30
 
 - Fixed `SWVibration` not vibrating because Android builds lacked the `android.permission.VIBRATE` permission. `SWVibration` calls the native `Vibrator` on Android, so Unity does not add the permission automatically; the package now declares it in `Runtime/Plugins/Android/SWVibration.androidlib`.
